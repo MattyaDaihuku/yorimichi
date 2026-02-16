@@ -5,7 +5,6 @@
 #   初回:    docker compose up --build
 #   以降:    docker compose up
 #   停止:    docker compose down
-#   リセット: docker compose down -v  (ボリュームも削除)
 #
 # パッケージ追加:
 #   docker compose exec app npm install <package-name>
@@ -24,13 +23,9 @@ services:
 
     volumes:
       # ソースコード同期 (ホスト ⇔ コンテナ 双方向)
+      # node_modules や .next もバインドマウントに含まれるため、
+      # コンテナ内で生成されたファイルがローカルにも同期されます
       - .:/app
-
-      # ----- 以下はコンテナ内にのみ存在させる (GitHub に上げるべきでないもの) -----
-      # node_modules: npm パッケージ
-      - node_modules:/app/node_modules
-      # .next: Next.js ビルドキャッシュ
-      - next_cache:/app/.next
 
     env_file:
       - .env.local
@@ -42,11 +37,3 @@ services:
 
     # 手動停止以外で異常終了した場合は自動再起動
     restart: unless-stopped
-
-# ---------- 名前付きボリューム ----------
-# ホストにはマウントされず、コンテナ内にのみ存在する
-volumes:
-  node_modules:
-    driver: local
-  next_cache:
-    driver: local
