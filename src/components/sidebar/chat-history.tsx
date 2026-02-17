@@ -1,17 +1,28 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link"; // ButtonではなくLinkを使って遷移させるのがNext.jsの定石です
+import Link from "next/link";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { MessageSquare, Clock } from "lucide-react";
-import { getAllChats, Chat } from "@/lib/api";
+import { ChatList } from "@/types/db"; // 型だけインポート
 
 export function ChatHistory({ onClickItem }: { onClickItem?: () => void }) {
-  const [chats, setChats] = useState<Chat[]>([]);
+  const [chats, setChats] = useState<ChatList[]>([]);
 
   useEffect(() => {
-    // コンポーネントマウント時に履歴を取得
-    getAllChats().then(setChats);
+    // APIルートから直接取得
+    const fetchChats = async () => {
+      try {
+        const res = await fetch("/api/chats");
+        if (!res.ok) throw new Error("Failed to fetch");
+        const data = await res.json();
+        setChats(data);
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    fetchChats();
   }, []);
 
   return (
@@ -22,19 +33,20 @@ export function ChatHistory({ onClickItem }: { onClickItem?: () => void }) {
       <div className="flex flex-col gap-1">
         {chats.map((chat) => (
           <Link
-            key={chat.id}
-            href={`/chat/${chat.id}`}
+            key={chat.chat_id}
+            href={`/chat/${chat.chat_id}`}
             onClick={onClickItem}
             className="flex items-center gap-3 py-3 px-3 rounded-md hover:bg-accent group transition-colors"
           >
             <MessageSquare className="h-4 w-4 text-muted-foreground group-hover:text-primary" />
             <div className="flex flex-col items-start gap-1 overflow-hidden w-full">
               <span className="truncate w-full text-left text-sm font-medium">
-                {chat.title}
+                {chat.chat_title}
               </span>
               <div className="flex items-center text-xs text-muted-foreground">
                 <Clock className="mr-1 h-3 w-3" />
-                {chat.date}
+                {/* 簡易的な日付表示 */}
+                {new Date(chat.created_at).toLocaleDateString()}
               </div>
             </div>
           </Link>

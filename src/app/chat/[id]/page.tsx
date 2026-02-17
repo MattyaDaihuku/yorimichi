@@ -2,54 +2,82 @@
 
 import { useEffect, use, useState } from "react";
 import { useHeader } from "@/context/header-context";
-import { getChatById } from "@/lib/api"; // 作成したAPIをインポート
+import { ChatDetailResponse } from "@/types/db"; // 型インポート
 
 interface ChatPageProps {
   params: Promise<{ id: string }>;
 }
 
 export default function ChatPage({ params }: ChatPageProps) {
-  // 1. まず params をアンラップする
   const { id } = use(params);
-  const { setTitle } = useHeader();
-  
-  // 状態管理（将来的にDBから取得したデータを保持するため）
-  const [chatData, setChatData] = useState<{ id: string; title: string } | null>(null);
+  const { setTitle, setHeaderBg } = useHeader();
+  const [chatData, setChatData] = useState<ChatDetailResponse | null>(null);
 
   useEffect(() => {
-    // 2. 非同期でデータを取得する関数を定義
     const fetchChat = async () => {
-      const data = await getChatById(id);
-      setChatData(data);
-      setTitle(data.title);
+      try {
+        // IDを使ってAPIルートを叩く
+        const res = await fetch(`/api/chats/${id}`);
+        
+        if (!res.ok) {
+           if (res.status === 404) {
+             console.error("Chat not found");
+             return;
+           }
+           throw new Error("Failed to fetch");
+        }
+
+        const data: ChatDetailResponse = await res.json();
+        setChatData(data);
+        setTitle(data.chat_title);
+        setHeaderBg("bg-background");
+      } catch (e) {
+        console.error(e);
+      }
     };
 
     fetchChat();
 
-    // アンマウント時にヘッダーをリセット
-    return () => setTitle("");
-  }, [id, setTitle]); // 依存配列は常に [id, setTitle] で固定されるためエラーが出ません
+    return () => {
+      setTitle("");
+      setHeaderBg("bg-background");
+    };
+  }, [id, setTitle, setHeaderBg]);
 
-  // 読み込み中の表示（必要であれば）
   if (!chatData) return <div className="p-8 text-muted-foreground">Loading...</div>;
 
   return (
     <div className="max-w-4xl mx-auto space-y-8">
-      {/* 以前のモック表示 */}
       <div className="p-6 border rounded-xl bg-muted/20 shadow-sm">
         <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-          Current Context
+          Current Context (ID: {chatData.chat_id})
         </h2>
         <div className="flex flex-col gap-1">
-          <p className="text-2xl font-bold">{chatData.title}</p>
-          <p className="text-xs font-mono text-muted-foreground">ID: {chatData.id}</p>
-        </div>
-      </div>
+          <p className="text-2xl font-bold">{chatData.chat_title}</p>
+          
+          {/* ブランチ情報の表示 */}
+          <div className="mt-4">
+             <p className="font-semibold">Branches:</p>
+             <ul className="list-disc list-inside text-sm">
+               {chatData.branches.map(b => (
+                 <li key={b.branch_id}>{b.branch_title} ({b.status})</li>
+               ))}
+             </ul>
+          </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* ここに将来的なブランチ作成UIなどが来る */}
-        <div className="p-4 border border-dashed rounded-lg flex items-center justify-center text-sm text-muted-foreground">
-          会話のメッセージ履歴がここに表示されます
+          {/* メッセージ（ブロック）の表示 */}
+          <div className="mt-4">
+             <p className="font-semibold">Messages:</p>
+             {chatData.blocks.map(blk => (
+                <div key={blk.block_id} className="mt-2 p-2 bg-white rounded border">
+                    <p className="font-bold text-xs text-primary">User</p>
+                    <p className="text-sm mb-2">{blk.user_content}</p>
+                    <p className="font-bold text-xs text-green-600">AI</p>
+                    <p className="text-sm">{blk.ai_content}</p>
+                </div>
+             ))}
+          </div>
+
         </div>
       </div>
     </div>
