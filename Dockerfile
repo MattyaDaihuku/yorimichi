@@ -16,4 +16,4 @@ EXPOSE 3000
 # 3. npm run dev       : Next.js 開発サーバー起動
 CMD sh -c 'npm install && \
     if [ -f prisma/schema.prisma ]; then npx prisma generate; fi && \
-    npm run dev'
+    sleep infinity'
