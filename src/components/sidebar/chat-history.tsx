@@ -28,7 +28,7 @@ export function ChatHistory({ onClickItem }: { onClickItem?: () => void }) {
   return (
     <ScrollArea className="flex-1 px-4 py-4">
       <div className="px-2 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-        Recent Repositories
+        Conversation History
       </div>
       <div className="flex flex-col gap-1">
         {chats.map((chat) => (
