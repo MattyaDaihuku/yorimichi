@@ -1,0 +1,16 @@
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client" //
+  output   = "../generated/prisma" //
+}
+
+model Message {
+  id        String   @id @default(cuid()) // 自動生成される一意のID
+  userId    String                        // ClerkのUser IDを保存
+  text      String                        // メッセージ本文
+  isAi      Boolean  @default(false)      // AIかどうかの判定フラグ
+  createdAt DateTime @default(now())      // 保存された日時
+}
