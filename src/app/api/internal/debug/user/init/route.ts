@@ -9,11 +9,9 @@ export async function POST() {
         }
 
         const testUser = {
-            user_id: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
-            clerk_id: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
-            name: "User",
-            email: "user@example.com",
-            // timestamps are handled by default/updatedAt
+            user_id: "user_2t1aaaaaaaaaaaaaaaaaaaaaa", // Clerk-like string ID
+            name: "Test User",
+            email: "test@example.com",
         };
 
         const user = await prisma.users.upsert({
@@ -24,7 +22,6 @@ export async function POST() {
             },
             create: {
                 user_id: testUser.user_id,
-                clerk_id: testUser.clerk_id,
                 name: testUser.name,
                 email: testUser.email,
             }

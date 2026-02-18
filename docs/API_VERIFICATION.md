@@ -15,7 +15,7 @@
 | Key | Value | 説明 |
 | :--- | :--- | :--- |
 | `Content-Type` | `application/json` | JSONボディを使用するため必須 |
-| `X-Test-User-Id` | `aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa` | 開発用認証バイパス (※有効なUUID形式である必要があります) |
+| `X-Test-User-Id` | `user_2t1aaaaaaaaaaaaaaaaaaaaaa` | 開発用認証バイパス (Clerk ID等の文字列) |
 
 ---
 
@@ -31,7 +31,7 @@
 *   **Body**: なし
 
 ### Step 0.5: テストユーザー作成
-開発環境用のテストユーザー (`aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa`) を作成します。
+開発環境用のテストユーザー (`user_2t1aaaaaaaaaaaaaaaaaaaaaa`) を作成します。
 `init` APIを呼ぶ前に必ず実行してください。
 
 *   **Endpoint**: `POST /api/internal/debug/user/init`
@@ -150,6 +150,14 @@ Step 4で作ったブランチの内容をメインブランチに統合しま�
 ---
 
 ## 3. その他のAPI
+
+### チャットリストの取得
+ユーザーが作成したチャットの一覧を取得します。認証は共通ヘッダーで行います。
+
+*   **Endpoint**: `GET /api/internal/chat/list`
+*   **Body**: なし
+*   **確認事項**:
+    *   配列形式でチャット一覧（`chat_id`, `chat_title` など）が返ってくること。
 
 ### ブランチの削除 (ゴミ箱)
 *   **Endpoint**: `POST /api/internal/branch/trash`
