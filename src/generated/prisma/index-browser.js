@@ -122,6 +122,7 @@ exports.Prisma.TransactionIsolationLevel = makeStrictEnum({
 
 exports.Prisma.UsersScalarFieldEnum = {
   user_id: 'user_id',
+  clerk_id: 'clerk_id',
   name: 'name',
   email: 'email',
   created_at: 'created_at',
@@ -131,7 +132,6 @@ exports.Prisma.UsersScalarFieldEnum = {
 exports.Prisma.ChatlistScalarFieldEnum = {
   chat_id: 'chat_id',
   user_id: 'user_id',
-  main_branch_id: 'main_branch_id',
   is_pinned: 'is_pinned',
   chat_title: 'chat_title',
   created_at: 'created_at',
@@ -145,6 +145,7 @@ exports.Prisma.BranchesScalarFieldEnum = {
   parent_block_id: 'parent_block_id',
   branch_title: 'branch_title',
   status: 'status',
+  depth: 'depth',
   created_at: 'created_at',
   update_at: 'update_at'
 };

@@ -4,11 +4,13 @@ datasource db {
 
 generator client {
   provider = "prisma-client-js" //
+  previewFeatures = ["driverAdapters"]
   output   = "../generated/prisma" //
 }
 
 model Users {
   user_id    String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  clerk_id   String   @unique @db.VarChar
   name       String   @db.VarChar
   email      String   @db.VarChar
   created_at DateTime @default(now()) @db.Timestamp
@@ -23,9 +25,6 @@ model Users {
 model Chatlist {
   chat_id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   user_id        String   @db.Uuid
-  // 作成時の循環参照を防ぐため、Prisma上では一時的にOptional(?)にすることを推奨しますが、
-  // ここではER図の主旨に従い定義します。実装時はトランザクション管理にご注意ください。
-  main_branch_id String?  @unique @db.Uuid 
   is_pinned      Boolean
   chat_title     String   @db.VarChar
   created_at     DateTime @default(now()) @db.Timestamp
@@ -33,7 +32,6 @@ model Chatlist {
 
   // Relations
   user        Users     @relation(fields: [user_id], references: [user_id])
-  main_branch Branches? @relation("MainBranch", fields: [main_branch_id], references: [branch_id])
   branches    Branches[] @relation("ChatBranches")
 
   @@map("CHATLIST")
@@ -46,13 +44,13 @@ model Branches {
   parent_block_id  String?  @db.Uuid
   branch_title     String   @db.VarChar
   status           String   @db.VarChar
+  depth            Int      @default(0)
   created_at       DateTime @default(now()) @db.Timestamp
   update_at        DateTime @updatedAt @db.Timestamp
 
   // Relations
   chat          Chatlist   @relation("ChatBranches", fields: [chat_id], references: [chat_id])
-  main_chat     Chatlist?  @relation("MainBranch") // Inverse relation for main_branch_id
-  
+
   // Self-referencing relation (親ブランチ -> 子ブランチ)
   parent_branch Branches?  @relation("BranchHierarchy", fields: [parent_branch_id], references: [branch_id])
   child_branches Branches[] @relation("BranchHierarchy")

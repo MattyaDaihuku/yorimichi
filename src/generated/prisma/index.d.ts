@@ -1279,6 +1279,7 @@ export namespace Prisma {
 
   export type UsersMinAggregateOutputType = {
     user_id: string | null
+    clerk_id: string | null
     name: string | null
     email: string | null
     created_at: Date | null
@@ -1287,6 +1288,7 @@ export namespace Prisma {
 
   export type UsersMaxAggregateOutputType = {
     user_id: string | null
+    clerk_id: string | null
     name: string | null
     email: string | null
     created_at: Date | null
@@ -1295,6 +1297,7 @@ export namespace Prisma {
 
   export type UsersCountAggregateOutputType = {
     user_id: number
+    clerk_id: number
     name: number
     email: number
     created_at: number
@@ -1305,6 +1308,7 @@ export namespace Prisma {
 
   export type UsersMinAggregateInputType = {
     user_id?: true
+    clerk_id?: true
     name?: true
     email?: true
     created_at?: true
@@ -1313,6 +1317,7 @@ export namespace Prisma {
 
   export type UsersMaxAggregateInputType = {
     user_id?: true
+    clerk_id?: true
     name?: true
     email?: true
     created_at?: true
@@ -1321,6 +1326,7 @@ export namespace Prisma {
 
   export type UsersCountAggregateInputType = {
     user_id?: true
+    clerk_id?: true
     name?: true
     email?: true
     created_at?: true
@@ -1402,6 +1408,7 @@ export namespace Prisma {
 
   export type UsersGroupByOutputType = {
     user_id: string
+    clerk_id: string
     name: string
     email: string
     created_at: Date
@@ -1427,6 +1434,7 @@ export namespace Prisma {
 
   export type UsersSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     user_id?: boolean
+    clerk_id?: boolean
     name?: boolean
     email?: boolean
     created_at?: boolean
@@ -1437,6 +1445,7 @@ export namespace Prisma {
 
   export type UsersSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     user_id?: boolean
+    clerk_id?: boolean
     name?: boolean
     email?: boolean
     created_at?: boolean
@@ -1445,6 +1454,7 @@ export namespace Prisma {
 
   export type UsersSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     user_id?: boolean
+    clerk_id?: boolean
     name?: boolean
     email?: boolean
     created_at?: boolean
@@ -1453,13 +1463,14 @@ export namespace Prisma {
 
   export type UsersSelectScalar = {
     user_id?: boolean
+    clerk_id?: boolean
     name?: boolean
     email?: boolean
     created_at?: boolean
     update_at?: boolean
   }
 
-  export type UsersOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"user_id" | "name" | "email" | "created_at" | "update_at", ExtArgs["result"]["users"]>
+  export type UsersOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"user_id" | "clerk_id" | "name" | "email" | "created_at" | "update_at", ExtArgs["result"]["users"]>
   export type UsersInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     chatlists?: boolean | Users$chatlistsArgs<ExtArgs>
     _count?: boolean | UsersCountOutputTypeDefaultArgs<ExtArgs>
@@ -1474,6 +1485,7 @@ export namespace Prisma {
     }
     scalars: $Extensions.GetPayloadResult<{
       user_id: string
+      clerk_id: string
       name: string
       email: string
       created_at: Date
@@ -1903,6 +1915,7 @@ export namespace Prisma {
    */
   interface UsersFieldRefs {
     readonly user_id: FieldRef<"Users", 'String'>
+    readonly clerk_id: FieldRef<"Users", 'String'>
     readonly name: FieldRef<"Users", 'String'>
     readonly email: FieldRef<"Users", 'String'>
     readonly created_at: FieldRef<"Users", 'DateTime'>
@@ -2350,7 +2363,6 @@ export namespace Prisma {
   export type ChatlistMinAggregateOutputType = {
     chat_id: string | null
     user_id: string | null
-    main_branch_id: string | null
     is_pinned: boolean | null
     chat_title: string | null
     created_at: Date | null
@@ -2360,7 +2372,6 @@ export namespace Prisma {
   export type ChatlistMaxAggregateOutputType = {
     chat_id: string | null
     user_id: string | null
-    main_branch_id: string | null
     is_pinned: boolean | null
     chat_title: string | null
     created_at: Date | null
@@ -2370,7 +2381,6 @@ export namespace Prisma {
   export type ChatlistCountAggregateOutputType = {
     chat_id: number
     user_id: number
-    main_branch_id: number
     is_pinned: number
     chat_title: number
     created_at: number
@@ -2382,7 +2392,6 @@ export namespace Prisma {
   export type ChatlistMinAggregateInputType = {
     chat_id?: true
     user_id?: true
-    main_branch_id?: true
     is_pinned?: true
     chat_title?: true
     created_at?: true
@@ -2392,7 +2401,6 @@ export namespace Prisma {
   export type ChatlistMaxAggregateInputType = {
     chat_id?: true
     user_id?: true
-    main_branch_id?: true
     is_pinned?: true
     chat_title?: true
     created_at?: true
@@ -2402,7 +2410,6 @@ export namespace Prisma {
   export type ChatlistCountAggregateInputType = {
     chat_id?: true
     user_id?: true
-    main_branch_id?: true
     is_pinned?: true
     chat_title?: true
     created_at?: true
@@ -2485,7 +2492,6 @@ export namespace Prisma {
   export type ChatlistGroupByOutputType = {
     chat_id: string
     user_id: string
-    main_branch_id: string | null
     is_pinned: boolean
     chat_title: string
     created_at: Date
@@ -2512,13 +2518,11 @@ export namespace Prisma {
   export type ChatlistSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     chat_id?: boolean
     user_id?: boolean
-    main_branch_id?: boolean
     is_pinned?: boolean
     chat_title?: boolean
     created_at?: boolean
     update_at?: boolean
     user?: boolean | UsersDefaultArgs<ExtArgs>
-    main_branch?: boolean | Chatlist$main_branchArgs<ExtArgs>
     branches?: boolean | Chatlist$branchesArgs<ExtArgs>
     _count?: boolean | ChatlistCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["chatlist"]>
@@ -2526,64 +2530,54 @@ export namespace Prisma {
   export type ChatlistSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     chat_id?: boolean
     user_id?: boolean
-    main_branch_id?: boolean
     is_pinned?: boolean
     chat_title?: boolean
     created_at?: boolean
     update_at?: boolean
     user?: boolean | UsersDefaultArgs<ExtArgs>
-    main_branch?: boolean | Chatlist$main_branchArgs<ExtArgs>
   }, ExtArgs["result"]["chatlist"]>
 
   export type ChatlistSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     chat_id?: boolean
     user_id?: boolean
-    main_branch_id?: boolean
     is_pinned?: boolean
     chat_title?: boolean
     created_at?: boolean
     update_at?: boolean
     user?: boolean | UsersDefaultArgs<ExtArgs>
-    main_branch?: boolean | Chatlist$main_branchArgs<ExtArgs>
   }, ExtArgs["result"]["chatlist"]>
 
   export type ChatlistSelectScalar = {
     chat_id?: boolean
     user_id?: boolean
-    main_branch_id?: boolean
     is_pinned?: boolean
     chat_title?: boolean
     created_at?: boolean
     update_at?: boolean
   }
 
-  export type ChatlistOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"chat_id" | "user_id" | "main_branch_id" | "is_pinned" | "chat_title" | "created_at" | "update_at", ExtArgs["result"]["chatlist"]>
+  export type ChatlistOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"chat_id" | "user_id" | "is_pinned" | "chat_title" | "created_at" | "update_at", ExtArgs["result"]["chatlist"]>
   export type ChatlistInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UsersDefaultArgs<ExtArgs>
-    main_branch?: boolean | Chatlist$main_branchArgs<ExtArgs>
     branches?: boolean | Chatlist$branchesArgs<ExtArgs>
     _count?: boolean | ChatlistCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type ChatlistIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UsersDefaultArgs<ExtArgs>
-    main_branch?: boolean | Chatlist$main_branchArgs<ExtArgs>
   }
   export type ChatlistIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UsersDefaultArgs<ExtArgs>
-    main_branch?: boolean | Chatlist$main_branchArgs<ExtArgs>
   }
 
   export type $ChatlistPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Chatlist"
     objects: {
       user: Prisma.$UsersPayload<ExtArgs>
-      main_branch: Prisma.$BranchesPayload<ExtArgs> | null
       branches: Prisma.$BranchesPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       chat_id: string
       user_id: string
-      main_branch_id: string | null
       is_pinned: boolean
       chat_title: string
       created_at: Date
@@ -2983,7 +2977,6 @@ export namespace Prisma {
   export interface Prisma__ChatlistClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     user<T extends UsersDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UsersDefaultArgs<ExtArgs>>): Prisma__UsersClient<$Result.GetResult<Prisma.$UsersPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    main_branch<T extends Chatlist$main_branchArgs<ExtArgs> = {}>(args?: Subset<T, Chatlist$main_branchArgs<ExtArgs>>): Prisma__BranchesClient<$Result.GetResult<Prisma.$BranchesPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     branches<T extends Chatlist$branchesArgs<ExtArgs> = {}>(args?: Subset<T, Chatlist$branchesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BranchesPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -3016,7 +3009,6 @@ export namespace Prisma {
   interface ChatlistFieldRefs {
     readonly chat_id: FieldRef<"Chatlist", 'String'>
     readonly user_id: FieldRef<"Chatlist", 'String'>
-    readonly main_branch_id: FieldRef<"Chatlist", 'String'>
     readonly is_pinned: FieldRef<"Chatlist", 'Boolean'>
     readonly chat_title: FieldRef<"Chatlist", 'String'>
     readonly created_at: FieldRef<"Chatlist", 'DateTime'>
@@ -3417,25 +3409,6 @@ export namespace Prisma {
   }
 
   /**
-   * Chatlist.main_branch
-   */
-  export type Chatlist$main_branchArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Branches
-     */
-    select?: BranchesSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Branches
-     */
-    omit?: BranchesOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: BranchesInclude<ExtArgs> | null
-    where?: BranchesWhereInput
-  }
-
-  /**
    * Chatlist.branches
    */
   export type Chatlist$branchesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -3484,8 +3457,18 @@ export namespace Prisma {
 
   export type AggregateBranches = {
     _count: BranchesCountAggregateOutputType | null
+    _avg: BranchesAvgAggregateOutputType | null
+    _sum: BranchesSumAggregateOutputType | null
     _min: BranchesMinAggregateOutputType | null
     _max: BranchesMaxAggregateOutputType | null
+  }
+
+  export type BranchesAvgAggregateOutputType = {
+    depth: number | null
+  }
+
+  export type BranchesSumAggregateOutputType = {
+    depth: number | null
   }
 
   export type BranchesMinAggregateOutputType = {
@@ -3495,6 +3478,7 @@ export namespace Prisma {
     parent_block_id: string | null
     branch_title: string | null
     status: string | null
+    depth: number | null
     created_at: Date | null
     update_at: Date | null
   }
@@ -3506,6 +3490,7 @@ export namespace Prisma {
     parent_block_id: string | null
     branch_title: string | null
     status: string | null
+    depth: number | null
     created_at: Date | null
     update_at: Date | null
   }
@@ -3517,11 +3502,20 @@ export namespace Prisma {
     parent_block_id: number
     branch_title: number
     status: number
+    depth: number
     created_at: number
     update_at: number
     _all: number
   }
 
+
+  export type BranchesAvgAggregateInputType = {
+    depth?: true
+  }
+
+  export type BranchesSumAggregateInputType = {
+    depth?: true
+  }
 
   export type BranchesMinAggregateInputType = {
     branch_id?: true
@@ -3530,6 +3524,7 @@ export namespace Prisma {
     parent_block_id?: true
     branch_title?: true
     status?: true
+    depth?: true
     created_at?: true
     update_at?: true
   }
@@ -3541,6 +3536,7 @@ export namespace Prisma {
     parent_block_id?: true
     branch_title?: true
     status?: true
+    depth?: true
     created_at?: true
     update_at?: true
   }
@@ -3552,6 +3548,7 @@ export namespace Prisma {
     parent_block_id?: true
     branch_title?: true
     status?: true
+    depth?: true
     created_at?: true
     update_at?: true
     _all?: true
@@ -3595,6 +3592,18 @@ export namespace Prisma {
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
+     * Select which fields to average
+    **/
+    _avg?: BranchesAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: BranchesSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
      * Select which fields to find the minimum value
     **/
     _min?: BranchesMinAggregateInputType
@@ -3625,6 +3634,8 @@ export namespace Prisma {
     take?: number
     skip?: number
     _count?: BranchesCountAggregateInputType | true
+    _avg?: BranchesAvgAggregateInputType
+    _sum?: BranchesSumAggregateInputType
     _min?: BranchesMinAggregateInputType
     _max?: BranchesMaxAggregateInputType
   }
@@ -3636,9 +3647,12 @@ export namespace Prisma {
     parent_block_id: string | null
     branch_title: string
     status: string
+    depth: number
     created_at: Date
     update_at: Date
     _count: BranchesCountAggregateOutputType | null
+    _avg: BranchesAvgAggregateOutputType | null
+    _sum: BranchesSumAggregateOutputType | null
     _min: BranchesMinAggregateOutputType | null
     _max: BranchesMaxAggregateOutputType | null
   }
@@ -3664,10 +3678,10 @@ export namespace Prisma {
     parent_block_id?: boolean
     branch_title?: boolean
     status?: boolean
+    depth?: boolean
     created_at?: boolean
     update_at?: boolean
     chat?: boolean | ChatlistDefaultArgs<ExtArgs>
-    main_chat?: boolean | Branches$main_chatArgs<ExtArgs>
     parent_branch?: boolean | Branches$parent_branchArgs<ExtArgs>
     child_branches?: boolean | Branches$child_branchesArgs<ExtArgs>
     parent_block?: boolean | Branches$parent_blockArgs<ExtArgs>
@@ -3682,6 +3696,7 @@ export namespace Prisma {
     parent_block_id?: boolean
     branch_title?: boolean
     status?: boolean
+    depth?: boolean
     created_at?: boolean
     update_at?: boolean
     chat?: boolean | ChatlistDefaultArgs<ExtArgs>
@@ -3696,6 +3711,7 @@ export namespace Prisma {
     parent_block_id?: boolean
     branch_title?: boolean
     status?: boolean
+    depth?: boolean
     created_at?: boolean
     update_at?: boolean
     chat?: boolean | ChatlistDefaultArgs<ExtArgs>
@@ -3710,14 +3726,14 @@ export namespace Prisma {
     parent_block_id?: boolean
     branch_title?: boolean
     status?: boolean
+    depth?: boolean
     created_at?: boolean
     update_at?: boolean
   }
 
-  export type BranchesOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"branch_id" | "chat_id" | "parent_branch_id" | "parent_block_id" | "branch_title" | "status" | "created_at" | "update_at", ExtArgs["result"]["branches"]>
+  export type BranchesOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"branch_id" | "chat_id" | "parent_branch_id" | "parent_block_id" | "branch_title" | "status" | "depth" | "created_at" | "update_at", ExtArgs["result"]["branches"]>
   export type BranchesInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     chat?: boolean | ChatlistDefaultArgs<ExtArgs>
-    main_chat?: boolean | Branches$main_chatArgs<ExtArgs>
     parent_branch?: boolean | Branches$parent_branchArgs<ExtArgs>
     child_branches?: boolean | Branches$child_branchesArgs<ExtArgs>
     parent_block?: boolean | Branches$parent_blockArgs<ExtArgs>
@@ -3739,7 +3755,6 @@ export namespace Prisma {
     name: "Branches"
     objects: {
       chat: Prisma.$ChatlistPayload<ExtArgs>
-      main_chat: Prisma.$ChatlistPayload<ExtArgs> | null
       parent_branch: Prisma.$BranchesPayload<ExtArgs> | null
       child_branches: Prisma.$BranchesPayload<ExtArgs>[]
       parent_block: Prisma.$BlockPayload<ExtArgs> | null
@@ -3752,6 +3767,7 @@ export namespace Prisma {
       parent_block_id: string | null
       branch_title: string
       status: string
+      depth: number
       created_at: Date
       update_at: Date
     }, ExtArgs["result"]["branches"]>
@@ -4149,7 +4165,6 @@ export namespace Prisma {
   export interface Prisma__BranchesClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     chat<T extends ChatlistDefaultArgs<ExtArgs> = {}>(args?: Subset<T, ChatlistDefaultArgs<ExtArgs>>): Prisma__ChatlistClient<$Result.GetResult<Prisma.$ChatlistPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    main_chat<T extends Branches$main_chatArgs<ExtArgs> = {}>(args?: Subset<T, Branches$main_chatArgs<ExtArgs>>): Prisma__ChatlistClient<$Result.GetResult<Prisma.$ChatlistPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     parent_branch<T extends Branches$parent_branchArgs<ExtArgs> = {}>(args?: Subset<T, Branches$parent_branchArgs<ExtArgs>>): Prisma__BranchesClient<$Result.GetResult<Prisma.$BranchesPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     child_branches<T extends Branches$child_branchesArgs<ExtArgs> = {}>(args?: Subset<T, Branches$child_branchesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BranchesPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     parent_block<T extends Branches$parent_blockArgs<ExtArgs> = {}>(args?: Subset<T, Branches$parent_blockArgs<ExtArgs>>): Prisma__BlockClient<$Result.GetResult<Prisma.$BlockPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
@@ -4189,6 +4204,7 @@ export namespace Prisma {
     readonly parent_block_id: FieldRef<"Branches", 'String'>
     readonly branch_title: FieldRef<"Branches", 'String'>
     readonly status: FieldRef<"Branches", 'String'>
+    readonly depth: FieldRef<"Branches", 'Int'>
     readonly created_at: FieldRef<"Branches", 'DateTime'>
     readonly update_at: FieldRef<"Branches", 'DateTime'>
   }
@@ -4584,25 +4600,6 @@ export namespace Prisma {
      * Limit how many Branches to delete.
      */
     limit?: number
-  }
-
-  /**
-   * Branches.main_chat
-   */
-  export type Branches$main_chatArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Chatlist
-     */
-    select?: ChatlistSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Chatlist
-     */
-    omit?: ChatlistOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: ChatlistInclude<ExtArgs> | null
-    where?: ChatlistWhereInput
   }
 
   /**
@@ -5827,6 +5824,7 @@ export namespace Prisma {
 
   export const UsersScalarFieldEnum: {
     user_id: 'user_id',
+    clerk_id: 'clerk_id',
     name: 'name',
     email: 'email',
     created_at: 'created_at',
@@ -5839,7 +5837,6 @@ export namespace Prisma {
   export const ChatlistScalarFieldEnum: {
     chat_id: 'chat_id',
     user_id: 'user_id',
-    main_branch_id: 'main_branch_id',
     is_pinned: 'is_pinned',
     chat_title: 'chat_title',
     created_at: 'created_at',
@@ -5856,6 +5853,7 @@ export namespace Prisma {
     parent_block_id: 'parent_block_id',
     branch_title: 'branch_title',
     status: 'status',
+    depth: 'depth',
     created_at: 'created_at',
     update_at: 'update_at'
   };
@@ -5951,6 +5949,20 @@ export namespace Prisma {
    */
   export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>
     
+
+
+  /**
+   * Reference to a field of type 'Float'
+   */
+  export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
+    
+
+
+  /**
+   * Reference to a field of type 'Float[]'
+   */
+  export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float[]'>
+    
   /**
    * Deep Input Types
    */
@@ -5961,6 +5973,7 @@ export namespace Prisma {
     OR?: UsersWhereInput[]
     NOT?: UsersWhereInput | UsersWhereInput[]
     user_id?: UuidFilter<"Users"> | string
+    clerk_id?: StringFilter<"Users"> | string
     name?: StringFilter<"Users"> | string
     email?: StringFilter<"Users"> | string
     created_at?: DateTimeFilter<"Users"> | Date | string
@@ -5970,6 +5983,7 @@ export namespace Prisma {
 
   export type UsersOrderByWithRelationInput = {
     user_id?: SortOrder
+    clerk_id?: SortOrder
     name?: SortOrder
     email?: SortOrder
     created_at?: SortOrder
@@ -5979,6 +5993,7 @@ export namespace Prisma {
 
   export type UsersWhereUniqueInput = Prisma.AtLeast<{
     user_id?: string
+    clerk_id?: string
     AND?: UsersWhereInput | UsersWhereInput[]
     OR?: UsersWhereInput[]
     NOT?: UsersWhereInput | UsersWhereInput[]
@@ -5987,10 +6002,11 @@ export namespace Prisma {
     created_at?: DateTimeFilter<"Users"> | Date | string
     update_at?: DateTimeFilter<"Users"> | Date | string
     chatlists?: ChatlistListRelationFilter
-  }, "user_id">
+  }, "user_id" | "clerk_id">
 
   export type UsersOrderByWithAggregationInput = {
     user_id?: SortOrder
+    clerk_id?: SortOrder
     name?: SortOrder
     email?: SortOrder
     created_at?: SortOrder
@@ -6005,6 +6021,7 @@ export namespace Prisma {
     OR?: UsersScalarWhereWithAggregatesInput[]
     NOT?: UsersScalarWhereWithAggregatesInput | UsersScalarWhereWithAggregatesInput[]
     user_id?: UuidWithAggregatesFilter<"Users"> | string
+    clerk_id?: StringWithAggregatesFilter<"Users"> | string
     name?: StringWithAggregatesFilter<"Users"> | string
     email?: StringWithAggregatesFilter<"Users"> | string
     created_at?: DateTimeWithAggregatesFilter<"Users"> | Date | string
@@ -6017,32 +6034,27 @@ export namespace Prisma {
     NOT?: ChatlistWhereInput | ChatlistWhereInput[]
     chat_id?: UuidFilter<"Chatlist"> | string
     user_id?: UuidFilter<"Chatlist"> | string
-    main_branch_id?: UuidNullableFilter<"Chatlist"> | string | null
     is_pinned?: BoolFilter<"Chatlist"> | boolean
     chat_title?: StringFilter<"Chatlist"> | string
     created_at?: DateTimeFilter<"Chatlist"> | Date | string
     update_at?: DateTimeFilter<"Chatlist"> | Date | string
     user?: XOR<UsersScalarRelationFilter, UsersWhereInput>
-    main_branch?: XOR<BranchesNullableScalarRelationFilter, BranchesWhereInput> | null
     branches?: BranchesListRelationFilter
   }
 
   export type ChatlistOrderByWithRelationInput = {
     chat_id?: SortOrder
     user_id?: SortOrder
-    main_branch_id?: SortOrderInput | SortOrder
     is_pinned?: SortOrder
     chat_title?: SortOrder
     created_at?: SortOrder
     update_at?: SortOrder
     user?: UsersOrderByWithRelationInput
-    main_branch?: BranchesOrderByWithRelationInput
     branches?: BranchesOrderByRelationAggregateInput
   }
 
   export type ChatlistWhereUniqueInput = Prisma.AtLeast<{
     chat_id?: string
-    main_branch_id?: string
     AND?: ChatlistWhereInput | ChatlistWhereInput[]
     OR?: ChatlistWhereInput[]
     NOT?: ChatlistWhereInput | ChatlistWhereInput[]
@@ -6052,14 +6064,12 @@ export namespace Prisma {
     created_at?: DateTimeFilter<"Chatlist"> | Date | string
     update_at?: DateTimeFilter<"Chatlist"> | Date | string
     user?: XOR<UsersScalarRelationFilter, UsersWhereInput>
-    main_branch?: XOR<BranchesNullableScalarRelationFilter, BranchesWhereInput> | null
     branches?: BranchesListRelationFilter
-  }, "chat_id" | "main_branch_id">
+  }, "chat_id">
 
   export type ChatlistOrderByWithAggregationInput = {
     chat_id?: SortOrder
     user_id?: SortOrder
-    main_branch_id?: SortOrderInput | SortOrder
     is_pinned?: SortOrder
     chat_title?: SortOrder
     created_at?: SortOrder
@@ -6075,7 +6085,6 @@ export namespace Prisma {
     NOT?: ChatlistScalarWhereWithAggregatesInput | ChatlistScalarWhereWithAggregatesInput[]
     chat_id?: UuidWithAggregatesFilter<"Chatlist"> | string
     user_id?: UuidWithAggregatesFilter<"Chatlist"> | string
-    main_branch_id?: UuidNullableWithAggregatesFilter<"Chatlist"> | string | null
     is_pinned?: BoolWithAggregatesFilter<"Chatlist"> | boolean
     chat_title?: StringWithAggregatesFilter<"Chatlist"> | string
     created_at?: DateTimeWithAggregatesFilter<"Chatlist"> | Date | string
@@ -6092,10 +6101,10 @@ export namespace Prisma {
     parent_block_id?: UuidNullableFilter<"Branches"> | string | null
     branch_title?: StringFilter<"Branches"> | string
     status?: StringFilter<"Branches"> | string
+    depth?: IntFilter<"Branches"> | number
     created_at?: DateTimeFilter<"Branches"> | Date | string
     update_at?: DateTimeFilter<"Branches"> | Date | string
     chat?: XOR<ChatlistScalarRelationFilter, ChatlistWhereInput>
-    main_chat?: XOR<ChatlistNullableScalarRelationFilter, ChatlistWhereInput> | null
     parent_branch?: XOR<BranchesNullableScalarRelationFilter, BranchesWhereInput> | null
     child_branches?: BranchesListRelationFilter
     parent_block?: XOR<BlockNullableScalarRelationFilter, BlockWhereInput> | null
@@ -6109,10 +6118,10 @@ export namespace Prisma {
     parent_block_id?: SortOrderInput | SortOrder
     branch_title?: SortOrder
     status?: SortOrder
+    depth?: SortOrder
     created_at?: SortOrder
     update_at?: SortOrder
     chat?: ChatlistOrderByWithRelationInput
-    main_chat?: ChatlistOrderByWithRelationInput
     parent_branch?: BranchesOrderByWithRelationInput
     child_branches?: BranchesOrderByRelationAggregateInput
     parent_block?: BlockOrderByWithRelationInput
@@ -6129,10 +6138,10 @@ export namespace Prisma {
     parent_block_id?: UuidNullableFilter<"Branches"> | string | null
     branch_title?: StringFilter<"Branches"> | string
     status?: StringFilter<"Branches"> | string
+    depth?: IntFilter<"Branches"> | number
     created_at?: DateTimeFilter<"Branches"> | Date | string
     update_at?: DateTimeFilter<"Branches"> | Date | string
     chat?: XOR<ChatlistScalarRelationFilter, ChatlistWhereInput>
-    main_chat?: XOR<ChatlistNullableScalarRelationFilter, ChatlistWhereInput> | null
     parent_branch?: XOR<BranchesNullableScalarRelationFilter, BranchesWhereInput> | null
     child_branches?: BranchesListRelationFilter
     parent_block?: XOR<BlockNullableScalarRelationFilter, BlockWhereInput> | null
@@ -6146,11 +6155,14 @@ export namespace Prisma {
     parent_block_id?: SortOrderInput | SortOrder
     branch_title?: SortOrder
     status?: SortOrder
+    depth?: SortOrder
     created_at?: SortOrder
     update_at?: SortOrder
     _count?: BranchesCountOrderByAggregateInput
+    _avg?: BranchesAvgOrderByAggregateInput
     _max?: BranchesMaxOrderByAggregateInput
     _min?: BranchesMinOrderByAggregateInput
+    _sum?: BranchesSumOrderByAggregateInput
   }
 
   export type BranchesScalarWhereWithAggregatesInput = {
@@ -6163,6 +6175,7 @@ export namespace Prisma {
     parent_block_id?: UuidNullableWithAggregatesFilter<"Branches"> | string | null
     branch_title?: StringWithAggregatesFilter<"Branches"> | string
     status?: StringWithAggregatesFilter<"Branches"> | string
+    depth?: IntWithAggregatesFilter<"Branches"> | number
     created_at?: DateTimeWithAggregatesFilter<"Branches"> | Date | string
     update_at?: DateTimeWithAggregatesFilter<"Branches"> | Date | string
   }
@@ -6232,6 +6245,7 @@ export namespace Prisma {
 
   export type UsersCreateInput = {
     user_id?: string
+    clerk_id: string
     name: string
     email: string
     created_at?: Date | string
@@ -6241,6 +6255,7 @@ export namespace Prisma {
 
   export type UsersUncheckedCreateInput = {
     user_id?: string
+    clerk_id: string
     name: string
     email: string
     created_at?: Date | string
@@ -6250,6 +6265,7 @@ export namespace Prisma {
 
   export type UsersUpdateInput = {
     user_id?: StringFieldUpdateOperationsInput | string
+    clerk_id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -6259,6 +6275,7 @@ export namespace Prisma {
 
   export type UsersUncheckedUpdateInput = {
     user_id?: StringFieldUpdateOperationsInput | string
+    clerk_id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -6268,6 +6285,7 @@ export namespace Prisma {
 
   export type UsersCreateManyInput = {
     user_id?: string
+    clerk_id: string
     name: string
     email: string
     created_at?: Date | string
@@ -6276,6 +6294,7 @@ export namespace Prisma {
 
   export type UsersUpdateManyMutationInput = {
     user_id?: StringFieldUpdateOperationsInput | string
+    clerk_id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -6284,6 +6303,7 @@ export namespace Prisma {
 
   export type UsersUncheckedUpdateManyInput = {
     user_id?: StringFieldUpdateOperationsInput | string
+    clerk_id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -6297,14 +6317,12 @@ export namespace Prisma {
     created_at?: Date | string
     update_at?: Date | string
     user: UsersCreateNestedOneWithoutChatlistsInput
-    main_branch?: BranchesCreateNestedOneWithoutMain_chatInput
     branches?: BranchesCreateNestedManyWithoutChatInput
   }
 
   export type ChatlistUncheckedCreateInput = {
     chat_id?: string
     user_id: string
-    main_branch_id?: string | null
     is_pinned: boolean
     chat_title: string
     created_at?: Date | string
@@ -6319,14 +6337,12 @@ export namespace Prisma {
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     update_at?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UsersUpdateOneRequiredWithoutChatlistsNestedInput
-    main_branch?: BranchesUpdateOneWithoutMain_chatNestedInput
     branches?: BranchesUpdateManyWithoutChatNestedInput
   }
 
   export type ChatlistUncheckedUpdateInput = {
     chat_id?: StringFieldUpdateOperationsInput | string
     user_id?: StringFieldUpdateOperationsInput | string
-    main_branch_id?: NullableStringFieldUpdateOperationsInput | string | null
     is_pinned?: BoolFieldUpdateOperationsInput | boolean
     chat_title?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -6337,7 +6353,6 @@ export namespace Prisma {
   export type ChatlistCreateManyInput = {
     chat_id?: string
     user_id: string
-    main_branch_id?: string | null
     is_pinned: boolean
     chat_title: string
     created_at?: Date | string
@@ -6355,7 +6370,6 @@ export namespace Prisma {
   export type ChatlistUncheckedUpdateManyInput = {
     chat_id?: StringFieldUpdateOperationsInput | string
     user_id?: StringFieldUpdateOperationsInput | string
-    main_branch_id?: NullableStringFieldUpdateOperationsInput | string | null
     is_pinned?: BoolFieldUpdateOperationsInput | boolean
     chat_title?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -6366,10 +6380,10 @@ export namespace Prisma {
     branch_id?: string
     branch_title: string
     status: string
+    depth?: number
     created_at?: Date | string
     update_at?: Date | string
     chat: ChatlistCreateNestedOneWithoutBranchesInput
-    main_chat?: ChatlistCreateNestedOneWithoutMain_branchInput
     parent_branch?: BranchesCreateNestedOneWithoutChild_branchesInput
     child_branches?: BranchesCreateNestedManyWithoutParent_branchInput
     parent_block?: BlockCreateNestedOneWithoutForked_branchesInput
@@ -6383,9 +6397,9 @@ export namespace Prisma {
     parent_block_id?: string | null
     branch_title: string
     status: string
+    depth?: number
     created_at?: Date | string
     update_at?: Date | string
-    main_chat?: ChatlistUncheckedCreateNestedOneWithoutMain_branchInput
     child_branches?: BranchesUncheckedCreateNestedManyWithoutParent_branchInput
     blocks?: BlockUncheckedCreateNestedManyWithoutBranchInput
   }
@@ -6394,10 +6408,10 @@ export namespace Prisma {
     branch_id?: StringFieldUpdateOperationsInput | string
     branch_title?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
+    depth?: IntFieldUpdateOperationsInput | number
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     update_at?: DateTimeFieldUpdateOperationsInput | Date | string
     chat?: ChatlistUpdateOneRequiredWithoutBranchesNestedInput
-    main_chat?: ChatlistUpdateOneWithoutMain_branchNestedInput
     parent_branch?: BranchesUpdateOneWithoutChild_branchesNestedInput
     child_branches?: BranchesUpdateManyWithoutParent_branchNestedInput
     parent_block?: BlockUpdateOneWithoutForked_branchesNestedInput
@@ -6411,9 +6425,9 @@ export namespace Prisma {
     parent_block_id?: NullableStringFieldUpdateOperationsInput | string | null
     branch_title?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
+    depth?: IntFieldUpdateOperationsInput | number
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     update_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    main_chat?: ChatlistUncheckedUpdateOneWithoutMain_branchNestedInput
     child_branches?: BranchesUncheckedUpdateManyWithoutParent_branchNestedInput
     blocks?: BlockUncheckedUpdateManyWithoutBranchNestedInput
   }
@@ -6425,6 +6439,7 @@ export namespace Prisma {
     parent_block_id?: string | null
     branch_title: string
     status: string
+    depth?: number
     created_at?: Date | string
     update_at?: Date | string
   }
@@ -6433,6 +6448,7 @@ export namespace Prisma {
     branch_id?: StringFieldUpdateOperationsInput | string
     branch_title?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
+    depth?: IntFieldUpdateOperationsInput | number
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     update_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -6444,6 +6460,7 @@ export namespace Prisma {
     parent_block_id?: NullableStringFieldUpdateOperationsInput | string | null
     branch_title?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
+    depth?: IntFieldUpdateOperationsInput | number
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     update_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -6564,6 +6581,7 @@ export namespace Prisma {
 
   export type UsersCountOrderByAggregateInput = {
     user_id?: SortOrder
+    clerk_id?: SortOrder
     name?: SortOrder
     email?: SortOrder
     created_at?: SortOrder
@@ -6572,6 +6590,7 @@ export namespace Prisma {
 
   export type UsersMaxOrderByAggregateInput = {
     user_id?: SortOrder
+    clerk_id?: SortOrder
     name?: SortOrder
     email?: SortOrder
     created_at?: SortOrder
@@ -6580,6 +6599,7 @@ export namespace Prisma {
 
   export type UsersMinOrderByAggregateInput = {
     user_id?: SortOrder
+    clerk_id?: SortOrder
     name?: SortOrder
     email?: SortOrder
     created_at?: SortOrder
@@ -6633,6 +6653,61 @@ export namespace Prisma {
     _max?: NestedDateTimeFilter<$PrismaModel>
   }
 
+  export type BoolFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolFilter<$PrismaModel> | boolean
+  }
+
+  export type UsersScalarRelationFilter = {
+    is?: UsersWhereInput
+    isNot?: UsersWhereInput
+  }
+
+  export type BranchesListRelationFilter = {
+    every?: BranchesWhereInput
+    some?: BranchesWhereInput
+    none?: BranchesWhereInput
+  }
+
+  export type BranchesOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type ChatlistCountOrderByAggregateInput = {
+    chat_id?: SortOrder
+    user_id?: SortOrder
+    is_pinned?: SortOrder
+    chat_title?: SortOrder
+    created_at?: SortOrder
+    update_at?: SortOrder
+  }
+
+  export type ChatlistMaxOrderByAggregateInput = {
+    chat_id?: SortOrder
+    user_id?: SortOrder
+    is_pinned?: SortOrder
+    chat_title?: SortOrder
+    created_at?: SortOrder
+    update_at?: SortOrder
+  }
+
+  export type ChatlistMinOrderByAggregateInput = {
+    chat_id?: SortOrder
+    user_id?: SortOrder
+    is_pinned?: SortOrder
+    chat_title?: SortOrder
+    created_at?: SortOrder
+    update_at?: SortOrder
+  }
+
+  export type BoolWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBoolFilter<$PrismaModel>
+    _max?: NestedBoolFilter<$PrismaModel>
+  }
+
   export type UuidNullableFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel> | null
     in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
@@ -6645,14 +6720,20 @@ export namespace Prisma {
     not?: NestedUuidNullableFilter<$PrismaModel> | string | null
   }
 
-  export type BoolFilter<$PrismaModel = never> = {
-    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
-    not?: NestedBoolFilter<$PrismaModel> | boolean
+  export type IntFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[] | ListIntFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntFilter<$PrismaModel> | number
   }
 
-  export type UsersScalarRelationFilter = {
-    is?: UsersWhereInput
-    isNot?: UsersWhereInput
+  export type ChatlistScalarRelationFilter = {
+    is?: ChatlistWhereInput
+    isNot?: ChatlistWhereInput
   }
 
   export type BranchesNullableScalarRelationFilter = {
@@ -6660,10 +6741,15 @@ export namespace Prisma {
     isNot?: BranchesWhereInput | null
   }
 
-  export type BranchesListRelationFilter = {
-    every?: BranchesWhereInput
-    some?: BranchesWhereInput
-    none?: BranchesWhereInput
+  export type BlockNullableScalarRelationFilter = {
+    is?: BlockWhereInput | null
+    isNot?: BlockWhereInput | null
+  }
+
+  export type BlockListRelationFilter = {
+    every?: BlockWhereInput
+    some?: BlockWhereInput
+    none?: BlockWhereInput
   }
 
   export type SortOrderInput = {
@@ -6671,38 +6757,52 @@ export namespace Prisma {
     nulls?: NullsOrder
   }
 
-  export type BranchesOrderByRelationAggregateInput = {
+  export type BlockOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
-  export type ChatlistCountOrderByAggregateInput = {
+  export type BranchesCountOrderByAggregateInput = {
+    branch_id?: SortOrder
     chat_id?: SortOrder
-    user_id?: SortOrder
-    main_branch_id?: SortOrder
-    is_pinned?: SortOrder
-    chat_title?: SortOrder
+    parent_branch_id?: SortOrder
+    parent_block_id?: SortOrder
+    branch_title?: SortOrder
+    status?: SortOrder
+    depth?: SortOrder
     created_at?: SortOrder
     update_at?: SortOrder
   }
 
-  export type ChatlistMaxOrderByAggregateInput = {
+  export type BranchesAvgOrderByAggregateInput = {
+    depth?: SortOrder
+  }
+
+  export type BranchesMaxOrderByAggregateInput = {
+    branch_id?: SortOrder
     chat_id?: SortOrder
-    user_id?: SortOrder
-    main_branch_id?: SortOrder
-    is_pinned?: SortOrder
-    chat_title?: SortOrder
+    parent_branch_id?: SortOrder
+    parent_block_id?: SortOrder
+    branch_title?: SortOrder
+    status?: SortOrder
+    depth?: SortOrder
     created_at?: SortOrder
     update_at?: SortOrder
   }
 
-  export type ChatlistMinOrderByAggregateInput = {
+  export type BranchesMinOrderByAggregateInput = {
+    branch_id?: SortOrder
     chat_id?: SortOrder
-    user_id?: SortOrder
-    main_branch_id?: SortOrder
-    is_pinned?: SortOrder
-    chat_title?: SortOrder
+    parent_branch_id?: SortOrder
+    parent_block_id?: SortOrder
+    branch_title?: SortOrder
+    status?: SortOrder
+    depth?: SortOrder
     created_at?: SortOrder
     update_at?: SortOrder
+  }
+
+  export type BranchesSumOrderByAggregateInput = {
+    depth?: SortOrder
   }
 
   export type UuidNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -6720,70 +6820,20 @@ export namespace Prisma {
     _max?: NestedStringNullableFilter<$PrismaModel>
   }
 
-  export type BoolWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
-    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+  export type IntWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[] | ListIntFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
     _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedBoolFilter<$PrismaModel>
-    _max?: NestedBoolFilter<$PrismaModel>
-  }
-
-  export type ChatlistScalarRelationFilter = {
-    is?: ChatlistWhereInput
-    isNot?: ChatlistWhereInput
-  }
-
-  export type ChatlistNullableScalarRelationFilter = {
-    is?: ChatlistWhereInput | null
-    isNot?: ChatlistWhereInput | null
-  }
-
-  export type BlockNullableScalarRelationFilter = {
-    is?: BlockWhereInput | null
-    isNot?: BlockWhereInput | null
-  }
-
-  export type BlockListRelationFilter = {
-    every?: BlockWhereInput
-    some?: BlockWhereInput
-    none?: BlockWhereInput
-  }
-
-  export type BlockOrderByRelationAggregateInput = {
-    _count?: SortOrder
-  }
-
-  export type BranchesCountOrderByAggregateInput = {
-    branch_id?: SortOrder
-    chat_id?: SortOrder
-    parent_branch_id?: SortOrder
-    parent_block_id?: SortOrder
-    branch_title?: SortOrder
-    status?: SortOrder
-    created_at?: SortOrder
-    update_at?: SortOrder
-  }
-
-  export type BranchesMaxOrderByAggregateInput = {
-    branch_id?: SortOrder
-    chat_id?: SortOrder
-    parent_branch_id?: SortOrder
-    parent_block_id?: SortOrder
-    branch_title?: SortOrder
-    status?: SortOrder
-    created_at?: SortOrder
-    update_at?: SortOrder
-  }
-
-  export type BranchesMinOrderByAggregateInput = {
-    branch_id?: SortOrder
-    chat_id?: SortOrder
-    parent_branch_id?: SortOrder
-    parent_block_id?: SortOrder
-    branch_title?: SortOrder
-    status?: SortOrder
-    created_at?: SortOrder
-    update_at?: SortOrder
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedIntFilter<$PrismaModel>
+    _min?: NestedIntFilter<$PrismaModel>
+    _max?: NestedIntFilter<$PrismaModel>
   }
 
   export type BranchesScalarRelationFilter = {
@@ -6874,12 +6924,6 @@ export namespace Prisma {
     connect?: UsersWhereUniqueInput
   }
 
-  export type BranchesCreateNestedOneWithoutMain_chatInput = {
-    create?: XOR<BranchesCreateWithoutMain_chatInput, BranchesUncheckedCreateWithoutMain_chatInput>
-    connectOrCreate?: BranchesCreateOrConnectWithoutMain_chatInput
-    connect?: BranchesWhereUniqueInput
-  }
-
   export type BranchesCreateNestedManyWithoutChatInput = {
     create?: XOR<BranchesCreateWithoutChatInput, BranchesUncheckedCreateWithoutChatInput> | BranchesCreateWithoutChatInput[] | BranchesUncheckedCreateWithoutChatInput[]
     connectOrCreate?: BranchesCreateOrConnectWithoutChatInput | BranchesCreateOrConnectWithoutChatInput[]
@@ -6906,16 +6950,6 @@ export namespace Prisma {
     update?: XOR<XOR<UsersUpdateToOneWithWhereWithoutChatlistsInput, UsersUpdateWithoutChatlistsInput>, UsersUncheckedUpdateWithoutChatlistsInput>
   }
 
-  export type BranchesUpdateOneWithoutMain_chatNestedInput = {
-    create?: XOR<BranchesCreateWithoutMain_chatInput, BranchesUncheckedCreateWithoutMain_chatInput>
-    connectOrCreate?: BranchesCreateOrConnectWithoutMain_chatInput
-    upsert?: BranchesUpsertWithoutMain_chatInput
-    disconnect?: BranchesWhereInput | boolean
-    delete?: BranchesWhereInput | boolean
-    connect?: BranchesWhereUniqueInput
-    update?: XOR<XOR<BranchesUpdateToOneWithWhereWithoutMain_chatInput, BranchesUpdateWithoutMain_chatInput>, BranchesUncheckedUpdateWithoutMain_chatInput>
-  }
-
   export type BranchesUpdateManyWithoutChatNestedInput = {
     create?: XOR<BranchesCreateWithoutChatInput, BranchesUncheckedCreateWithoutChatInput> | BranchesCreateWithoutChatInput[] | BranchesUncheckedCreateWithoutChatInput[]
     connectOrCreate?: BranchesCreateOrConnectWithoutChatInput | BranchesCreateOrConnectWithoutChatInput[]
@@ -6928,10 +6962,6 @@ export namespace Prisma {
     update?: BranchesUpdateWithWhereUniqueWithoutChatInput | BranchesUpdateWithWhereUniqueWithoutChatInput[]
     updateMany?: BranchesUpdateManyWithWhereWithoutChatInput | BranchesUpdateManyWithWhereWithoutChatInput[]
     deleteMany?: BranchesScalarWhereInput | BranchesScalarWhereInput[]
-  }
-
-  export type NullableStringFieldUpdateOperationsInput = {
-    set?: string | null
   }
 
   export type BranchesUncheckedUpdateManyWithoutChatNestedInput = {
@@ -6951,12 +6981,6 @@ export namespace Prisma {
   export type ChatlistCreateNestedOneWithoutBranchesInput = {
     create?: XOR<ChatlistCreateWithoutBranchesInput, ChatlistUncheckedCreateWithoutBranchesInput>
     connectOrCreate?: ChatlistCreateOrConnectWithoutBranchesInput
-    connect?: ChatlistWhereUniqueInput
-  }
-
-  export type ChatlistCreateNestedOneWithoutMain_branchInput = {
-    create?: XOR<ChatlistCreateWithoutMain_branchInput, ChatlistUncheckedCreateWithoutMain_branchInput>
-    connectOrCreate?: ChatlistCreateOrConnectWithoutMain_branchInput
     connect?: ChatlistWhereUniqueInput
   }
 
@@ -6986,12 +7010,6 @@ export namespace Prisma {
     connect?: BlockWhereUniqueInput | BlockWhereUniqueInput[]
   }
 
-  export type ChatlistUncheckedCreateNestedOneWithoutMain_branchInput = {
-    create?: XOR<ChatlistCreateWithoutMain_branchInput, ChatlistUncheckedCreateWithoutMain_branchInput>
-    connectOrCreate?: ChatlistCreateOrConnectWithoutMain_branchInput
-    connect?: ChatlistWhereUniqueInput
-  }
-
   export type BranchesUncheckedCreateNestedManyWithoutParent_branchInput = {
     create?: XOR<BranchesCreateWithoutParent_branchInput, BranchesUncheckedCreateWithoutParent_branchInput> | BranchesCreateWithoutParent_branchInput[] | BranchesUncheckedCreateWithoutParent_branchInput[]
     connectOrCreate?: BranchesCreateOrConnectWithoutParent_branchInput | BranchesCreateOrConnectWithoutParent_branchInput[]
@@ -7006,22 +7024,20 @@ export namespace Prisma {
     connect?: BlockWhereUniqueInput | BlockWhereUniqueInput[]
   }
 
+  export type IntFieldUpdateOperationsInput = {
+    set?: number
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
+  }
+
   export type ChatlistUpdateOneRequiredWithoutBranchesNestedInput = {
     create?: XOR<ChatlistCreateWithoutBranchesInput, ChatlistUncheckedCreateWithoutBranchesInput>
     connectOrCreate?: ChatlistCreateOrConnectWithoutBranchesInput
     upsert?: ChatlistUpsertWithoutBranchesInput
     connect?: ChatlistWhereUniqueInput
     update?: XOR<XOR<ChatlistUpdateToOneWithWhereWithoutBranchesInput, ChatlistUpdateWithoutBranchesInput>, ChatlistUncheckedUpdateWithoutBranchesInput>
-  }
-
-  export type ChatlistUpdateOneWithoutMain_branchNestedInput = {
-    create?: XOR<ChatlistCreateWithoutMain_branchInput, ChatlistUncheckedCreateWithoutMain_branchInput>
-    connectOrCreate?: ChatlistCreateOrConnectWithoutMain_branchInput
-    upsert?: ChatlistUpsertWithoutMain_branchInput
-    disconnect?: ChatlistWhereInput | boolean
-    delete?: ChatlistWhereInput | boolean
-    connect?: ChatlistWhereUniqueInput
-    update?: XOR<XOR<ChatlistUpdateToOneWithWhereWithoutMain_branchInput, ChatlistUpdateWithoutMain_branchInput>, ChatlistUncheckedUpdateWithoutMain_branchInput>
   }
 
   export type BranchesUpdateOneWithoutChild_branchesNestedInput = {
@@ -7072,14 +7088,8 @@ export namespace Prisma {
     deleteMany?: BlockScalarWhereInput | BlockScalarWhereInput[]
   }
 
-  export type ChatlistUncheckedUpdateOneWithoutMain_branchNestedInput = {
-    create?: XOR<ChatlistCreateWithoutMain_branchInput, ChatlistUncheckedCreateWithoutMain_branchInput>
-    connectOrCreate?: ChatlistCreateOrConnectWithoutMain_branchInput
-    upsert?: ChatlistUpsertWithoutMain_branchInput
-    disconnect?: ChatlistWhereInput | boolean
-    delete?: ChatlistWhereInput | boolean
-    connect?: ChatlistWhereUniqueInput
-    update?: XOR<XOR<ChatlistUpdateToOneWithWhereWithoutMain_branchInput, ChatlistUpdateWithoutMain_branchInput>, ChatlistUncheckedUpdateWithoutMain_branchInput>
+  export type NullableStringFieldUpdateOperationsInput = {
+    set?: string | null
   }
 
   export type BranchesUncheckedUpdateManyWithoutParent_branchNestedInput = {
@@ -7258,6 +7268,19 @@ export namespace Prisma {
     _max?: NestedDateTimeFilter<$PrismaModel>
   }
 
+  export type NestedBoolFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolFilter<$PrismaModel> | boolean
+  }
+
+  export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBoolFilter<$PrismaModel>
+    _max?: NestedBoolFilter<$PrismaModel>
+  }
+
   export type NestedUuidNullableFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel> | null
     in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
@@ -7267,11 +7290,6 @@ export namespace Prisma {
     gt?: string | StringFieldRefInput<$PrismaModel>
     gte?: string | StringFieldRefInput<$PrismaModel>
     not?: NestedUuidNullableFilter<$PrismaModel> | string | null
-  }
-
-  export type NestedBoolFilter<$PrismaModel = never> = {
-    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
-    not?: NestedBoolFilter<$PrismaModel> | boolean
   }
 
   export type NestedUuidNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -7313,12 +7331,31 @@ export namespace Prisma {
     not?: NestedStringNullableFilter<$PrismaModel> | string | null
   }
 
-  export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
-    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+  export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel>
+    in?: number[] | ListIntFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel>
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntWithAggregatesFilter<$PrismaModel> | number
     _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedBoolFilter<$PrismaModel>
-    _max?: NestedBoolFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedIntFilter<$PrismaModel>
+    _min?: NestedIntFilter<$PrismaModel>
+    _max?: NestedIntFilter<$PrismaModel>
+  }
+
+  export type NestedFloatFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel>
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatFilter<$PrismaModel> | number
   }
 
   export type ChatlistCreateWithoutUserInput = {
@@ -7327,13 +7364,11 @@ export namespace Prisma {
     chat_title: string
     created_at?: Date | string
     update_at?: Date | string
-    main_branch?: BranchesCreateNestedOneWithoutMain_chatInput
     branches?: BranchesCreateNestedManyWithoutChatInput
   }
 
   export type ChatlistUncheckedCreateWithoutUserInput = {
     chat_id?: string
-    main_branch_id?: string | null
     is_pinned: boolean
     chat_title: string
     created_at?: Date | string
@@ -7373,7 +7408,6 @@ export namespace Prisma {
     NOT?: ChatlistScalarWhereInput | ChatlistScalarWhereInput[]
     chat_id?: UuidFilter<"Chatlist"> | string
     user_id?: UuidFilter<"Chatlist"> | string
-    main_branch_id?: UuidNullableFilter<"Chatlist"> | string | null
     is_pinned?: BoolFilter<"Chatlist"> | boolean
     chat_title?: StringFilter<"Chatlist"> | string
     created_at?: DateTimeFilter<"Chatlist"> | Date | string
@@ -7382,6 +7416,7 @@ export namespace Prisma {
 
   export type UsersCreateWithoutChatlistsInput = {
     user_id?: string
+    clerk_id: string
     name: string
     email: string
     created_at?: Date | string
@@ -7390,6 +7425,7 @@ export namespace Prisma {
 
   export type UsersUncheckedCreateWithoutChatlistsInput = {
     user_id?: string
+    clerk_id: string
     name: string
     email: string
     created_at?: Date | string
@@ -7401,44 +7437,13 @@ export namespace Prisma {
     create: XOR<UsersCreateWithoutChatlistsInput, UsersUncheckedCreateWithoutChatlistsInput>
   }
 
-  export type BranchesCreateWithoutMain_chatInput = {
-    branch_id?: string
-    branch_title: string
-    status: string
-    created_at?: Date | string
-    update_at?: Date | string
-    chat: ChatlistCreateNestedOneWithoutBranchesInput
-    parent_branch?: BranchesCreateNestedOneWithoutChild_branchesInput
-    child_branches?: BranchesCreateNestedManyWithoutParent_branchInput
-    parent_block?: BlockCreateNestedOneWithoutForked_branchesInput
-    blocks?: BlockCreateNestedManyWithoutBranchInput
-  }
-
-  export type BranchesUncheckedCreateWithoutMain_chatInput = {
-    branch_id?: string
-    chat_id: string
-    parent_branch_id?: string | null
-    parent_block_id?: string | null
-    branch_title: string
-    status: string
-    created_at?: Date | string
-    update_at?: Date | string
-    child_branches?: BranchesUncheckedCreateNestedManyWithoutParent_branchInput
-    blocks?: BlockUncheckedCreateNestedManyWithoutBranchInput
-  }
-
-  export type BranchesCreateOrConnectWithoutMain_chatInput = {
-    where: BranchesWhereUniqueInput
-    create: XOR<BranchesCreateWithoutMain_chatInput, BranchesUncheckedCreateWithoutMain_chatInput>
-  }
-
   export type BranchesCreateWithoutChatInput = {
     branch_id?: string
     branch_title: string
     status: string
+    depth?: number
     created_at?: Date | string
     update_at?: Date | string
-    main_chat?: ChatlistCreateNestedOneWithoutMain_branchInput
     parent_branch?: BranchesCreateNestedOneWithoutChild_branchesInput
     child_branches?: BranchesCreateNestedManyWithoutParent_branchInput
     parent_block?: BlockCreateNestedOneWithoutForked_branchesInput
@@ -7451,9 +7456,9 @@ export namespace Prisma {
     parent_block_id?: string | null
     branch_title: string
     status: string
+    depth?: number
     created_at?: Date | string
     update_at?: Date | string
-    main_chat?: ChatlistUncheckedCreateNestedOneWithoutMain_branchInput
     child_branches?: BranchesUncheckedCreateNestedManyWithoutParent_branchInput
     blocks?: BlockUncheckedCreateNestedManyWithoutBranchInput
   }
@@ -7481,6 +7486,7 @@ export namespace Prisma {
 
   export type UsersUpdateWithoutChatlistsInput = {
     user_id?: StringFieldUpdateOperationsInput | string
+    clerk_id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -7489,47 +7495,11 @@ export namespace Prisma {
 
   export type UsersUncheckedUpdateWithoutChatlistsInput = {
     user_id?: StringFieldUpdateOperationsInput | string
+    clerk_id?: StringFieldUpdateOperationsInput | string
     name?: StringFieldUpdateOperationsInput | string
     email?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     update_at?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type BranchesUpsertWithoutMain_chatInput = {
-    update: XOR<BranchesUpdateWithoutMain_chatInput, BranchesUncheckedUpdateWithoutMain_chatInput>
-    create: XOR<BranchesCreateWithoutMain_chatInput, BranchesUncheckedCreateWithoutMain_chatInput>
-    where?: BranchesWhereInput
-  }
-
-  export type BranchesUpdateToOneWithWhereWithoutMain_chatInput = {
-    where?: BranchesWhereInput
-    data: XOR<BranchesUpdateWithoutMain_chatInput, BranchesUncheckedUpdateWithoutMain_chatInput>
-  }
-
-  export type BranchesUpdateWithoutMain_chatInput = {
-    branch_id?: StringFieldUpdateOperationsInput | string
-    branch_title?: StringFieldUpdateOperationsInput | string
-    status?: StringFieldUpdateOperationsInput | string
-    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    update_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    chat?: ChatlistUpdateOneRequiredWithoutBranchesNestedInput
-    parent_branch?: BranchesUpdateOneWithoutChild_branchesNestedInput
-    child_branches?: BranchesUpdateManyWithoutParent_branchNestedInput
-    parent_block?: BlockUpdateOneWithoutForked_branchesNestedInput
-    blocks?: BlockUpdateManyWithoutBranchNestedInput
-  }
-
-  export type BranchesUncheckedUpdateWithoutMain_chatInput = {
-    branch_id?: StringFieldUpdateOperationsInput | string
-    chat_id?: StringFieldUpdateOperationsInput | string
-    parent_branch_id?: NullableStringFieldUpdateOperationsInput | string | null
-    parent_block_id?: NullableStringFieldUpdateOperationsInput | string | null
-    branch_title?: StringFieldUpdateOperationsInput | string
-    status?: StringFieldUpdateOperationsInput | string
-    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    update_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    child_branches?: BranchesUncheckedUpdateManyWithoutParent_branchNestedInput
-    blocks?: BlockUncheckedUpdateManyWithoutBranchNestedInput
   }
 
   export type BranchesUpsertWithWhereUniqueWithoutChatInput = {
@@ -7558,6 +7528,7 @@ export namespace Prisma {
     parent_block_id?: UuidNullableFilter<"Branches"> | string | null
     branch_title?: StringFilter<"Branches"> | string
     status?: StringFilter<"Branches"> | string
+    depth?: IntFilter<"Branches"> | number
     created_at?: DateTimeFilter<"Branches"> | Date | string
     update_at?: DateTimeFilter<"Branches"> | Date | string
   }
@@ -7569,13 +7540,11 @@ export namespace Prisma {
     created_at?: Date | string
     update_at?: Date | string
     user: UsersCreateNestedOneWithoutChatlistsInput
-    main_branch?: BranchesCreateNestedOneWithoutMain_chatInput
   }
 
   export type ChatlistUncheckedCreateWithoutBranchesInput = {
     chat_id?: string
     user_id: string
-    main_branch_id?: string | null
     is_pinned: boolean
     chat_title: string
     created_at?: Date | string
@@ -7587,39 +7556,14 @@ export namespace Prisma {
     create: XOR<ChatlistCreateWithoutBranchesInput, ChatlistUncheckedCreateWithoutBranchesInput>
   }
 
-  export type ChatlistCreateWithoutMain_branchInput = {
-    chat_id?: string
-    is_pinned: boolean
-    chat_title: string
-    created_at?: Date | string
-    update_at?: Date | string
-    user: UsersCreateNestedOneWithoutChatlistsInput
-    branches?: BranchesCreateNestedManyWithoutChatInput
-  }
-
-  export type ChatlistUncheckedCreateWithoutMain_branchInput = {
-    chat_id?: string
-    user_id: string
-    is_pinned: boolean
-    chat_title: string
-    created_at?: Date | string
-    update_at?: Date | string
-    branches?: BranchesUncheckedCreateNestedManyWithoutChatInput
-  }
-
-  export type ChatlistCreateOrConnectWithoutMain_branchInput = {
-    where: ChatlistWhereUniqueInput
-    create: XOR<ChatlistCreateWithoutMain_branchInput, ChatlistUncheckedCreateWithoutMain_branchInput>
-  }
-
   export type BranchesCreateWithoutChild_branchesInput = {
     branch_id?: string
     branch_title: string
     status: string
+    depth?: number
     created_at?: Date | string
     update_at?: Date | string
     chat: ChatlistCreateNestedOneWithoutBranchesInput
-    main_chat?: ChatlistCreateNestedOneWithoutMain_branchInput
     parent_branch?: BranchesCreateNestedOneWithoutChild_branchesInput
     parent_block?: BlockCreateNestedOneWithoutForked_branchesInput
     blocks?: BlockCreateNestedManyWithoutBranchInput
@@ -7632,9 +7576,9 @@ export namespace Prisma {
     parent_block_id?: string | null
     branch_title: string
     status: string
+    depth?: number
     created_at?: Date | string
     update_at?: Date | string
-    main_chat?: ChatlistUncheckedCreateNestedOneWithoutMain_branchInput
     blocks?: BlockUncheckedCreateNestedManyWithoutBranchInput
   }
 
@@ -7647,10 +7591,10 @@ export namespace Prisma {
     branch_id?: string
     branch_title: string
     status: string
+    depth?: number
     created_at?: Date | string
     update_at?: Date | string
     chat: ChatlistCreateNestedOneWithoutBranchesInput
-    main_chat?: ChatlistCreateNestedOneWithoutMain_branchInput
     child_branches?: BranchesCreateNestedManyWithoutParent_branchInput
     parent_block?: BlockCreateNestedOneWithoutForked_branchesInput
     blocks?: BlockCreateNestedManyWithoutBranchInput
@@ -7662,9 +7606,9 @@ export namespace Prisma {
     parent_block_id?: string | null
     branch_title: string
     status: string
+    depth?: number
     created_at?: Date | string
     update_at?: Date | string
-    main_chat?: ChatlistUncheckedCreateNestedOneWithoutMain_branchInput
     child_branches?: BranchesUncheckedCreateNestedManyWithoutParent_branchInput
     blocks?: BlockUncheckedCreateNestedManyWithoutBranchInput
   }
@@ -7748,48 +7692,15 @@ export namespace Prisma {
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     update_at?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UsersUpdateOneRequiredWithoutChatlistsNestedInput
-    main_branch?: BranchesUpdateOneWithoutMain_chatNestedInput
   }
 
   export type ChatlistUncheckedUpdateWithoutBranchesInput = {
     chat_id?: StringFieldUpdateOperationsInput | string
     user_id?: StringFieldUpdateOperationsInput | string
-    main_branch_id?: NullableStringFieldUpdateOperationsInput | string | null
     is_pinned?: BoolFieldUpdateOperationsInput | boolean
     chat_title?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     update_at?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type ChatlistUpsertWithoutMain_branchInput = {
-    update: XOR<ChatlistUpdateWithoutMain_branchInput, ChatlistUncheckedUpdateWithoutMain_branchInput>
-    create: XOR<ChatlistCreateWithoutMain_branchInput, ChatlistUncheckedCreateWithoutMain_branchInput>
-    where?: ChatlistWhereInput
-  }
-
-  export type ChatlistUpdateToOneWithWhereWithoutMain_branchInput = {
-    where?: ChatlistWhereInput
-    data: XOR<ChatlistUpdateWithoutMain_branchInput, ChatlistUncheckedUpdateWithoutMain_branchInput>
-  }
-
-  export type ChatlistUpdateWithoutMain_branchInput = {
-    chat_id?: StringFieldUpdateOperationsInput | string
-    is_pinned?: BoolFieldUpdateOperationsInput | boolean
-    chat_title?: StringFieldUpdateOperationsInput | string
-    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    update_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    user?: UsersUpdateOneRequiredWithoutChatlistsNestedInput
-    branches?: BranchesUpdateManyWithoutChatNestedInput
-  }
-
-  export type ChatlistUncheckedUpdateWithoutMain_branchInput = {
-    chat_id?: StringFieldUpdateOperationsInput | string
-    user_id?: StringFieldUpdateOperationsInput | string
-    is_pinned?: BoolFieldUpdateOperationsInput | boolean
-    chat_title?: StringFieldUpdateOperationsInput | string
-    created_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    update_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    branches?: BranchesUncheckedUpdateManyWithoutChatNestedInput
   }
 
   export type BranchesUpsertWithoutChild_branchesInput = {
@@ -7807,10 +7718,10 @@ export namespace Prisma {
     branch_id?: StringFieldUpdateOperationsInput | string
     branch_title?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
+    depth?: IntFieldUpdateOperationsInput | number
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     update_at?: DateTimeFieldUpdateOperationsInput | Date | string
     chat?: ChatlistUpdateOneRequiredWithoutBranchesNestedInput
-    main_chat?: ChatlistUpdateOneWithoutMain_branchNestedInput
     parent_branch?: BranchesUpdateOneWithoutChild_branchesNestedInput
     parent_block?: BlockUpdateOneWithoutForked_branchesNestedInput
     blocks?: BlockUpdateManyWithoutBranchNestedInput
@@ -7823,9 +7734,9 @@ export namespace Prisma {
     parent_block_id?: NullableStringFieldUpdateOperationsInput | string | null
     branch_title?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
+    depth?: IntFieldUpdateOperationsInput | number
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     update_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    main_chat?: ChatlistUncheckedUpdateOneWithoutMain_branchNestedInput
     blocks?: BlockUncheckedUpdateManyWithoutBranchNestedInput
   }
 
@@ -7906,10 +7817,10 @@ export namespace Prisma {
     branch_id?: string
     branch_title: string
     status: string
+    depth?: number
     created_at?: Date | string
     update_at?: Date | string
     chat: ChatlistCreateNestedOneWithoutBranchesInput
-    main_chat?: ChatlistCreateNestedOneWithoutMain_branchInput
     parent_branch?: BranchesCreateNestedOneWithoutChild_branchesInput
     child_branches?: BranchesCreateNestedManyWithoutParent_branchInput
     parent_block?: BlockCreateNestedOneWithoutForked_branchesInput
@@ -7922,9 +7833,9 @@ export namespace Prisma {
     parent_block_id?: string | null
     branch_title: string
     status: string
+    depth?: number
     created_at?: Date | string
     update_at?: Date | string
-    main_chat?: ChatlistUncheckedCreateNestedOneWithoutMain_branchInput
     child_branches?: BranchesUncheckedCreateNestedManyWithoutParent_branchInput
   }
 
@@ -7937,10 +7848,10 @@ export namespace Prisma {
     branch_id?: string
     branch_title: string
     status: string
+    depth?: number
     created_at?: Date | string
     update_at?: Date | string
     chat: ChatlistCreateNestedOneWithoutBranchesInput
-    main_chat?: ChatlistCreateNestedOneWithoutMain_branchInput
     parent_branch?: BranchesCreateNestedOneWithoutChild_branchesInput
     child_branches?: BranchesCreateNestedManyWithoutParent_branchInput
     blocks?: BlockCreateNestedManyWithoutBranchInput
@@ -7952,9 +7863,9 @@ export namespace Prisma {
     parent_branch_id?: string | null
     branch_title: string
     status: string
+    depth?: number
     created_at?: Date | string
     update_at?: Date | string
-    main_chat?: ChatlistUncheckedCreateNestedOneWithoutMain_branchInput
     child_branches?: BranchesUncheckedCreateNestedManyWithoutParent_branchInput
     blocks?: BlockUncheckedCreateNestedManyWithoutBranchInput
   }
@@ -7984,10 +7895,10 @@ export namespace Prisma {
     branch_id?: StringFieldUpdateOperationsInput | string
     branch_title?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
+    depth?: IntFieldUpdateOperationsInput | number
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     update_at?: DateTimeFieldUpdateOperationsInput | Date | string
     chat?: ChatlistUpdateOneRequiredWithoutBranchesNestedInput
-    main_chat?: ChatlistUpdateOneWithoutMain_branchNestedInput
     parent_branch?: BranchesUpdateOneWithoutChild_branchesNestedInput
     child_branches?: BranchesUpdateManyWithoutParent_branchNestedInput
     parent_block?: BlockUpdateOneWithoutForked_branchesNestedInput
@@ -8000,9 +7911,9 @@ export namespace Prisma {
     parent_block_id?: NullableStringFieldUpdateOperationsInput | string | null
     branch_title?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
+    depth?: IntFieldUpdateOperationsInput | number
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     update_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    main_chat?: ChatlistUncheckedUpdateOneWithoutMain_branchNestedInput
     child_branches?: BranchesUncheckedUpdateManyWithoutParent_branchNestedInput
   }
 
@@ -8024,7 +7935,6 @@ export namespace Prisma {
 
   export type ChatlistCreateManyUserInput = {
     chat_id?: string
-    main_branch_id?: string | null
     is_pinned: boolean
     chat_title: string
     created_at?: Date | string
@@ -8037,13 +7947,11 @@ export namespace Prisma {
     chat_title?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     update_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    main_branch?: BranchesUpdateOneWithoutMain_chatNestedInput
     branches?: BranchesUpdateManyWithoutChatNestedInput
   }
 
   export type ChatlistUncheckedUpdateWithoutUserInput = {
     chat_id?: StringFieldUpdateOperationsInput | string
-    main_branch_id?: NullableStringFieldUpdateOperationsInput | string | null
     is_pinned?: BoolFieldUpdateOperationsInput | boolean
     chat_title?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -8053,7 +7961,6 @@ export namespace Prisma {
 
   export type ChatlistUncheckedUpdateManyWithoutUserInput = {
     chat_id?: StringFieldUpdateOperationsInput | string
-    main_branch_id?: NullableStringFieldUpdateOperationsInput | string | null
     is_pinned?: BoolFieldUpdateOperationsInput | boolean
     chat_title?: StringFieldUpdateOperationsInput | string
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -8066,6 +7973,7 @@ export namespace Prisma {
     parent_block_id?: string | null
     branch_title: string
     status: string
+    depth?: number
     created_at?: Date | string
     update_at?: Date | string
   }
@@ -8074,9 +7982,9 @@ export namespace Prisma {
     branch_id?: StringFieldUpdateOperationsInput | string
     branch_title?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
+    depth?: IntFieldUpdateOperationsInput | number
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     update_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    main_chat?: ChatlistUpdateOneWithoutMain_branchNestedInput
     parent_branch?: BranchesUpdateOneWithoutChild_branchesNestedInput
     child_branches?: BranchesUpdateManyWithoutParent_branchNestedInput
     parent_block?: BlockUpdateOneWithoutForked_branchesNestedInput
@@ -8089,9 +7997,9 @@ export namespace Prisma {
     parent_block_id?: NullableStringFieldUpdateOperationsInput | string | null
     branch_title?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
+    depth?: IntFieldUpdateOperationsInput | number
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     update_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    main_chat?: ChatlistUncheckedUpdateOneWithoutMain_branchNestedInput
     child_branches?: BranchesUncheckedUpdateManyWithoutParent_branchNestedInput
     blocks?: BlockUncheckedUpdateManyWithoutBranchNestedInput
   }
@@ -8102,6 +8010,7 @@ export namespace Prisma {
     parent_block_id?: NullableStringFieldUpdateOperationsInput | string | null
     branch_title?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
+    depth?: IntFieldUpdateOperationsInput | number
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     update_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -8112,6 +8021,7 @@ export namespace Prisma {
     parent_block_id?: string | null
     branch_title: string
     status: string
+    depth?: number
     created_at?: Date | string
     update_at?: Date | string
   }
@@ -8128,10 +8038,10 @@ export namespace Prisma {
     branch_id?: StringFieldUpdateOperationsInput | string
     branch_title?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
+    depth?: IntFieldUpdateOperationsInput | number
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     update_at?: DateTimeFieldUpdateOperationsInput | Date | string
     chat?: ChatlistUpdateOneRequiredWithoutBranchesNestedInput
-    main_chat?: ChatlistUpdateOneWithoutMain_branchNestedInput
     child_branches?: BranchesUpdateManyWithoutParent_branchNestedInput
     parent_block?: BlockUpdateOneWithoutForked_branchesNestedInput
     blocks?: BlockUpdateManyWithoutBranchNestedInput
@@ -8143,9 +8053,9 @@ export namespace Prisma {
     parent_block_id?: NullableStringFieldUpdateOperationsInput | string | null
     branch_title?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
+    depth?: IntFieldUpdateOperationsInput | number
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     update_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    main_chat?: ChatlistUncheckedUpdateOneWithoutMain_branchNestedInput
     child_branches?: BranchesUncheckedUpdateManyWithoutParent_branchNestedInput
     blocks?: BlockUncheckedUpdateManyWithoutBranchNestedInput
   }
@@ -8156,6 +8066,7 @@ export namespace Prisma {
     parent_block_id?: NullableStringFieldUpdateOperationsInput | string | null
     branch_title?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
+    depth?: IntFieldUpdateOperationsInput | number
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     update_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -8192,6 +8103,7 @@ export namespace Prisma {
     parent_branch_id?: string | null
     branch_title: string
     status: string
+    depth?: number
     created_at?: Date | string
     update_at?: Date | string
   }
@@ -8200,10 +8112,10 @@ export namespace Prisma {
     branch_id?: StringFieldUpdateOperationsInput | string
     branch_title?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
+    depth?: IntFieldUpdateOperationsInput | number
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     update_at?: DateTimeFieldUpdateOperationsInput | Date | string
     chat?: ChatlistUpdateOneRequiredWithoutBranchesNestedInput
-    main_chat?: ChatlistUpdateOneWithoutMain_branchNestedInput
     parent_branch?: BranchesUpdateOneWithoutChild_branchesNestedInput
     child_branches?: BranchesUpdateManyWithoutParent_branchNestedInput
     blocks?: BlockUpdateManyWithoutBranchNestedInput
@@ -8215,9 +8127,9 @@ export namespace Prisma {
     parent_branch_id?: NullableStringFieldUpdateOperationsInput | string | null
     branch_title?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
+    depth?: IntFieldUpdateOperationsInput | number
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     update_at?: DateTimeFieldUpdateOperationsInput | Date | string
-    main_chat?: ChatlistUncheckedUpdateOneWithoutMain_branchNestedInput
     child_branches?: BranchesUncheckedUpdateManyWithoutParent_branchNestedInput
     blocks?: BlockUncheckedUpdateManyWithoutBranchNestedInput
   }
@@ -8228,6 +8140,7 @@ export namespace Prisma {
     parent_branch_id?: NullableStringFieldUpdateOperationsInput | string | null
     branch_title?: StringFieldUpdateOperationsInput | string
     status?: StringFieldUpdateOperationsInput | string
+    depth?: IntFieldUpdateOperationsInput | number
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     update_at?: DateTimeFieldUpdateOperationsInput | Date | string
   }

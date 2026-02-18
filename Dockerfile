@@ -15,5 +15,5 @@ EXPOSE 3000
 # 2. prisma generate   : DB用クライアント生成 (ファイルがある場合のみ)
 # 3. npm run dev       : Next.js 開発サーバー起動
 CMD sh -c 'npm install && \
-    if [ -f prisma/schema.prisma ]; then npx prisma generate; fi && \
+    if [ -f src/prisma/schema.prisma ]; then npx prisma generate --schema=src/prisma/schema.prisma; fi && \
     sleep infinity'
