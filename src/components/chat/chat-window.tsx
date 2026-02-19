@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ChatComposer } from "@/components/chat/chat-composer";
 import { MainBranchBlockList } from "@/components/chat/main-branch-block-list";
 import { cn } from "@/lib/utils";
+import { useChatStore } from "@/store/chat-store";
 
 type StreamingBlock = {
     block_id: string;
@@ -36,11 +37,27 @@ export function ChatWindow({
     disabled = false,
     disclaimerText,
     fixedInput = false,
-    fixedOffsetClassName = "left-[72px] right-0",
+    fixedOffsetClassName = "left-0 right-0 md:left-[72px]",
     className,
 }: ChatWindowProps) {
     const [input, setInput] = useState("");
     const [isSending, setIsSending] = useState(false);
+    const blockListRef = useRef<HTMLDivElement | null>(null);
+    const blocks = useChatStore((state) => state.chatData?.blocks ?? {});
+
+    const branchBlockCount = useMemo(
+        () => Object.values(blocks).filter((block) => block.branch_id === branchId).length,
+        [blocks, branchId]
+    );
+
+    useEffect(() => {
+        const container = blockListRef.current;
+        if (!container) return;
+
+        const blockElements = container.querySelectorAll<HTMLElement>("[data-message-block='true']");
+        const latestBlock = blockElements[blockElements.length - 1];
+        latestBlock?.scrollIntoView({ behavior: "auto", block: "start" });
+    }, [branchId, branchBlockCount, streamingBlock?.ai_content]);
 
     const send = async () => {
         const message = input.trim();
@@ -59,11 +76,13 @@ export function ChatWindow({
 
     return (
         <section className={cn("space-y-4", fixedInput ? "pb-64" : "", className)}>
-            <MainBranchBlockList
-                branchId={branchId}
-                streamingBlock={streamingBlock}
-                onBranch={onBranch}
-            />
+            <div ref={blockListRef}>
+                <MainBranchBlockList
+                    branchId={branchId}
+                    streamingBlock={streamingBlock}
+                    onBranch={onBranch}
+                />
+            </div>
 
             {fixedInput ? (
                 <div className={cn("pointer-events-none fixed bottom-0 z-20 bg-background pb-[env(safe-area-inset-bottom)]", fixedOffsetClassName)}>
