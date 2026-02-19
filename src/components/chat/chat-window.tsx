@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ChatComposer } from "@/components/chat/chat-composer";
-import { MainBranchBlockList } from "@/components/chat/main-branch-block-list";
+import { BlockList } from "@/components/chat/block-list";
 import { cn } from "@/lib/utils";
 import { useChatStore } from "@/store/chat-store";
 
@@ -77,7 +77,7 @@ export function ChatWindow({
     return (
         <section className={cn("space-y-4", fixedInput ? "pb-64" : "", className)}>
             <div ref={blockListRef}>
-                <MainBranchBlockList
+                <BlockList
                     branchId={branchId}
                     streamingBlock={streamingBlock}
                     onBranch={onBranch}
