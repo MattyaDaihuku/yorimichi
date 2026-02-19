@@ -1,6 +1,7 @@
 "use client";
 
 import { User } from "lucide-react";
+import { UserButton, useUser } from "@clerk/nextjs";
 import { cn } from "@/lib/utils";
 
 interface HeaderProps {
@@ -9,6 +10,8 @@ interface HeaderProps {
 }
 
 export function Header({ title = "", className }: HeaderProps) {
+  const { user } = useUser();
+
   return (
     <header className={cn(
       "h-16 sticky top-0 z-20 px-6 transition-colors duration-300", 
@@ -32,7 +35,18 @@ export function Header({ title = "", className }: HeaderProps) {
         {/* 右側: ユーザーアイコン */}
         <div className="flex justify-end">
           <div className="h-9 w-9 rounded-full bg-muted flex items-center justify-center border border-border cursor-pointer hover:bg-muted/80 transition-colors">
-            <User className="h-5 w-5 text-muted-foreground" />
+            {user ? (
+              <UserButton
+                appearance={{
+                  elements: {
+                    userButtonAvatarBox: "h-full w-full rounded-full object-cover", // アイコン自体のスタイル
+                    userButtonPopoverCard: "shadow-xl", // メニュー（ポップオーバー）の影
+                  }
+                }}
+              />
+            ) : (
+              <User className="h-5 w-5 text-muted-foreground" />
+            )}
           </div>
         </div>
       </div>
