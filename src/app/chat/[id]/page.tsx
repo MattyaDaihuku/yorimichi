@@ -3,6 +3,7 @@
 import { use, useEffect, useMemo } from "react";
 import { Header } from "@/components/header"; // Headerをインポート
 import { useChatStore } from "@/store/chat-store";
+import { MainBranchView } from "@/components/chat/main-branch-view";
 
 interface ChatPageProps {
   params: Promise<{ id: string }>;
@@ -16,17 +17,38 @@ export default function ChatPage({ params }: ChatPageProps) {
     void fetchChat(id);
   }, [id, fetchChat]);
 
-  const branchMap = chatData?.branches ?? {};
-  const blockList = useMemo(
+  const mainBranch = useMemo(
     () =>
-      Object.values(chatData?.blocks ?? {}).sort(
-        (first, second) =>
-          new Date(first.created_at).getTime() - new Date(second.created_at).getTime()
-      ),
+      Object.values(chatData?.branches ?? {}).find(
+        (branch) => branch.depth === 0 && !branch.parent_branch_id
+      ) ?? null,
     [chatData]
   );
 
-  const branchCount = Object.keys(branchMap).length;
+  const mainBlocks = useMemo(() => {
+    if (!chatData || !mainBranch) return [];
+
+    return Object.values(chatData.blocks)
+      .filter((block) => block.branch_id === mainBranch.branch_id)
+      .sort(
+        (first, second) =>
+          new Date(first.created_at).getTime() - new Date(second.created_at).getTime()
+      );
+  }, [chatData, mainBranch]);
+
+  const branchedBlockIds = useMemo(() => {
+    if (!chatData || !mainBranch) return new Set<string>();
+
+    return new Set(
+      Object.values(chatData.branches)
+        .filter(
+          (branch) =>
+            branch.parent_branch_id === mainBranch.branch_id &&
+            typeof branch.parent_block_id === "string"
+        )
+        .map((branch) => branch.parent_block_id as string)
+    );
+  }, [chatData, mainBranch]);
 
   return (
     <>
@@ -41,41 +63,20 @@ export default function ChatPage({ params }: ChatPageProps) {
 
           {error && <p className="text-sm text-destructive">{error}</p>}
 
-          {chatData && (
-            <>
-              <section className="rounded-xl border bg-muted/20 p-4">
-                <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Branches（会話の分岐）
-                </h2>
-                <p className="mt-1 text-sm text-muted-foreground">分岐数: {branchCount}</p>
-                <ul className="mt-3 space-y-2 text-sm">
-                  {Object.values(branchMap).map((branch) => (
-                    <li key={branch.branch_id} className="rounded-md border bg-background p-3">
-                      <p className="font-medium">{branch.branch_title}</p>
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        status: {branch.status} / depth: {branch.depth}
-                      </p>
-                    </li>
-                  ))}
-                </ul>
-              </section>
+          {chatData && mainBranch && (
+            <MainBranchView
+              chatId={chatData.chat_id}
+              branch={mainBranch}
+              blocks={mainBlocks}
+              branchedBlockIds={branchedBlockIds}
+              reload={() => fetchChat(id)}
+            />
+          )}
 
-              <section className="rounded-xl border bg-muted/20 p-4">
-                <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Blocks（ユーザー質問 + AI回答）
-                </h2>
-                <div className="mt-3 space-y-3">
-                  {blockList.map((block) => (
-                    <article key={block.block_id} className="rounded-md border bg-background p-3">
-                      <p className="text-xs font-semibold text-primary">User</p>
-                      <p className="mt-1 text-sm whitespace-pre-wrap">{block.user_content}</p>
-                      <p className="mt-3 text-xs font-semibold text-emerald-600">AI</p>
-                      <p className="mt-1 text-sm whitespace-pre-wrap">{block.ai_content}</p>
-                    </article>
-                  ))}
-                </div>
-              </section>
-            </>
+          {chatData && !mainBranch && (
+            <p className="text-sm text-muted-foreground">
+              メインブランチが見つかりませんでした。
+            </p>
           )}
         </div>
       </main>
