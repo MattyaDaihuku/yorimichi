@@ -50,7 +50,9 @@ export function MessageBlock({ block, connector, onBranch, isStreaming = false }
     const LINE_COLOR = "text-gray-300";
     const LINE_WIDTH = "2";
 
-    const aiContent = isStreaming && !block.ai_content ? "Thinking..." : block.ai_content;
+    const hasAiContent = block.ai_content.trim().length > 0;
+    const showThinking = isStreaming && !hasAiContent;
+    const aiContent = showThinking ? "Thinking..." : block.ai_content;
 
     const copyToClipboard = async (text: string, target: "user" | "ai") => {
         try {
@@ -97,7 +99,7 @@ export function MessageBlock({ block, connector, onBranch, isStreaming = false }
                         <button
                             type="button"
                             aria-label="Copy user message"
-                            className={`rounded-full p-2 transition-colors ${
+                            className={`rounded-full transition-colors ${
                                 copiedTarget === "user"
                                     ? "bg-primary/15 text-primary"
                                     : "bg-transparent text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -117,7 +119,22 @@ export function MessageBlock({ block, connector, onBranch, isStreaming = false }
 
                 <div className="flex items-start gap-4">
                     <div className="shrink-0 pt-1">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-100 bg-white shadow-sm">
+                        <div className="relative flex h-10 w-10 items-center justify-center rounded-full border border-gray-100 bg-white shadow-sm">
+                            {isStreaming && (
+                                <span className="pointer-events-none absolute -inset-1.5">
+                                    <svg className="bot-circular-loader h-full w-full" viewBox="25 25 50 50">
+                                        <circle
+                                            className="bot-loader-path"
+                                            cx="50"
+                                            cy="50"
+                                            r="20"
+                                            fill="none"
+                                            strokeWidth="2"
+                                            strokeMiterlimit="10"
+                                        />
+                                    </svg>
+                                </span>
+                            )}
                             <Bot className="h-5 w-5 text-foreground" />
                         </div>
                     </div>
@@ -166,20 +183,22 @@ export function MessageBlock({ block, connector, onBranch, isStreaming = false }
                                 </ReactMarkdown>
                             </div>
                         </div>
-                        <div className="flex justify-start">
-                            <button
-                                type="button"
-                                aria-label="Copy AI message"
-                                className={`rounded-full p-2 transition-colors ${
-                                    copiedTarget === "ai"
-                                        ? "bg-primary/15 text-primary"
-                                        : "bg-transparent text-muted-foreground hover:bg-muted hover:text-foreground"
-                                }`}
-                                onClick={() => void copyToClipboard(block.ai_content, "ai")}
-                            >
-                                <Copy className="h-4 w-4" />
-                            </button>
-                        </div>
+                        {!isStreaming && (
+                            <div className="flex justify-start">
+                                <button
+                                    type="button"
+                                    aria-label="Copy AI message"
+                                    className={`rounded-full p-2 transition-colors ${
+                                        copiedTarget === "ai"
+                                            ? "bg-primary/15 text-primary"
+                                            : "bg-transparent text-muted-foreground hover:bg-muted hover:text-foreground"
+                                    }`}
+                                    onClick={() => void copyToClipboard(block.ai_content, "ai")}
+                                >
+                                    <Copy className="h-4 w-4" />
+                                </button>
+                            </div>
+                        )}
                     </div>
                 </div>
 
