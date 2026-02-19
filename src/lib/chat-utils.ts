@@ -3,6 +3,7 @@ import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { streamText } from 'ai';
 import prisma from '@/lib/prisma';
 import { NextResponse } from 'next/server';
+import { ACTIVE_MODEL } from './ai-active-model';
 
 export type ChatMessage = {
     role: 'user' | 'assistant' | 'system';
@@ -16,17 +17,25 @@ const apiKeys = [
     ...Array.from({ length: 19 }, (_, i) => process.env[`GOOGLE_GENERATIVE_AI_API_KEY_${i + 2}`])
 ].filter(Boolean) as string[];
 
+// API Key Rotation State (Sequential)
+let currentKeyIndex = 0;
+
 /**
- * Returns a Google provider instance with a randomly selected API key
+ * Returns a Google provider instance with a sequentially selected API key
  */
 function getGoogleProvider() {
     if (apiKeys.length === 0) {
         throw new Error("No Google API keys found in environment variables.");
     }
-    const randomKey = apiKeys[Math.floor(Math.random() * apiKeys.length)];
-    // console.log(`[Chat] Using API Key: ...${randomKey.slice(-4)}`);
+
+    // Select key sequentially
+    const selectedKey = apiKeys[currentKeyIndex];
+
+    // Increment and wrap around
+    currentKeyIndex = (currentKeyIndex + 1) % apiKeys.length;
+
     return createGoogleGenerativeAI({
-        apiKey: randomKey,
+        apiKey: selectedKey,
     });
 }
 
@@ -47,12 +56,12 @@ export async function processChatInteraction(
         const google = getGoogleProvider();
 
         const result = streamText({
-            model: google('gemini-2.5-flash'), // 固定モデル名
+            model: google(ACTIVE_MODEL),
             messages,
             onFinish: async ({ text }) => {
                 // AIの応答完了後にDBに保存
                 try {
-                    console.log(`[Chat] Saving/Updating block for branch: ${branchId}`);
+                    console.log(`[Chat] Saving/Updating block for branch: ${branchId} with model: ${ACTIVE_MODEL}`);
                     if (blockId) {
                         // Update existing block
                         await prisma.block.upsert({
@@ -68,7 +77,7 @@ export async function processChatInteraction(
                             }
                         });
                     } else {
-                        // Create new block (legacy behavior if needed, or if ID not provided)
+                        // Create new block
                         await prisma.block.create({
                             data: {
                                 branch_id: branchId,

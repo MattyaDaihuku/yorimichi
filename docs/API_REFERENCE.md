@@ -12,6 +12,27 @@ AIのレートリミット対策として、バックエンドでは複数のAPI
 
 ---
 
+## 0. チャットリストの取得
+**Endpoint**: `GET /api/internal/chat/list`
+
+認証されたユーザーに紐付くチャットの一覧を取得します。
+
+### Output (JSON)
+```json
+[
+  {
+    "chat_id": "uuid-chat-1",
+    "chat_title": "チャットのタイトル",
+    "is_pinned": false,
+    "created_at": "...",
+    "main_branch_id": "uuid-root-branch-id"
+  },
+  ...
+]
+```
+
+---
+
 ## 1. 新規チャット開始
 **Endpoint**: `POST /api/internal/chat/init`
 
