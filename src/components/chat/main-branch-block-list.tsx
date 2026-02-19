@@ -33,7 +33,7 @@ export function MainBranchBlockList({
   const displayBlocks = [...blocks, ...(streamingBlock ? [streamingBlock] : [])];
 
   return (
-    <div className="space-y-3">
+    <div>
       {displayBlocks.map((block, index) => {
         const isLastBlock = index === displayBlocks.length - 1;
         const connector = {
