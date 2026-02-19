@@ -4,6 +4,7 @@ import { use, useEffect, useMemo } from "react";
 import { Header } from "@/components/header"; // Headerをインポート
 import { useChatStore } from "@/store/chat-store";
 import { MainBranchView } from "@/components/chat/main-branch-view";
+import { TopLinearLoader } from "@/components/chat/top-linear-loader";
 
 interface ChatPageProps {
   params: Promise<{ id: string }>;
@@ -11,11 +12,12 @@ interface ChatPageProps {
 
 export default function ChatPage({ params }: ChatPageProps) {
   const { id } = use(params);
-  const { chatData, isLoading, error, fetchChat } = useChatStore();
+  const { chatData, isLoading, error, fetchChat, clearChat } = useChatStore();
 
   useEffect(() => {
+    clearChat();
     void fetchChat(id);
-  }, [id, fetchChat]);
+  }, [id, fetchChat, clearChat]);
 
   const mainBranch = useMemo(
     () =>
@@ -28,14 +30,12 @@ export default function ChatPage({ params }: ChatPageProps) {
   return (
     <>
       {/* 会話タイトルと白背景を指定 */}
-      <Header title={chatData?.chat_title ?? id} className="bg-background" />
+      <Header title={chatData?.chat_title ?? ""} className="bg-background" />
+
+      {isLoading && <TopLinearLoader />}
 
       <main className="flex-1 bg-background p-6">
         <div className="mx-auto max-w-4xl space-y-6 pb-10">
-          {isLoading && (
-            <p className="text-sm text-muted-foreground">会話を読み込み中です...</p>
-          )}
-
           {error && <p className="text-sm text-destructive">{error}</p>}
 
           {chatData && mainBranch && (

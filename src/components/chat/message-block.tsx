@@ -92,7 +92,7 @@ export function MessageBlock({ block, connector, onBranch, isStreaming = false }
     };
 
     return (
-        <div className="flex w-full flex-col items-center">
+        <div data-message-block="true" className="flex w-full flex-col items-center scroll-mt-24">
             <div className="relative z-10 w-full max-w-3xl rounded-[24px] border border-gray-100 bg-white p-6 shadow-sm">
                 <div className="group mb-6 flex items-start justify-end gap-4">
                     <div className="flex flex-col gap-3 pt-3 opacity-100 transition-opacity">
