@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import type { ChatDetailResponse } from "@/store/chat-store";
-import { MainBranchBlockList } from "@/components/chat/main-branch-block-list";
-import { MainBranchChatInput } from "@/components/chat/main-branch-chat-input";
+import { ChatWindow } from "@/components/chat/chat-window";
+import { useChatStore } from "@/store/chat-store";
 
 type BranchItem = ChatDetailResponse["branches"][string];
 type BlockItem = ChatDetailResponse["blocks"][string];
@@ -11,8 +11,6 @@ type BlockItem = ChatDetailResponse["blocks"][string];
 type MainBranchViewProps = {
   chatId: string;
   branch: BranchItem;
-  blocks: BlockItem[];
-  branchedBlockIds: Set<string>;
   reload: () => Promise<void>;
 };
 
@@ -23,84 +21,94 @@ type StreamingBlock = {
   created_at: string;
 };
 
-export function MainBranchView({ chatId, branch, blocks, branchedBlockIds, reload }: MainBranchViewProps) {
-  const [streamingBlock, setStreamingBlock] = useState<StreamingBlock | null>(null);
+export function MainBranchView({ chatId, branch, reload }: MainBranchViewProps) {
+    const [streamingBlock, setStreamingBlock] = useState<StreamingBlock | null>(null);
+    const chatData = useChatStore((state) => state.chatData);
 
-  const handleSend = async (message: string) => {
-    const history = blocks.flatMap((block) => [
-      { role: "user" as const, content: block.user_content },
-      { role: "assistant" as const, content: block.ai_content },
-    ]);
+    const currentBranchBlocks = Object.values(chatData?.blocks ?? {})
+        .filter((block) => block.branch_id === branch.branch_id)
+        .sort(
+            (first, second) =>
+                new Date(first.created_at).getTime() - new Date(second.created_at).getTime()
+        );
 
-    setStreamingBlock({
-      block_id: "streaming-block",
-      user_content: message,
-      ai_content: "",
-      created_at: new Date().toISOString(),
-    });
+    const handleSend = async (message: string) => {
+        const history = currentBranchBlocks.flatMap((block) => [
+            { role: "user" as const, content: block.user_content },
+            { role: "assistant" as const, content: block.ai_content },
+        ]);
 
-    const res = await fetch("/api/internal/message/send", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        chat_id: chatId,
-        branch_id: branch.branch_id,
-        block_id: crypto.randomUUID(),
-        message,
-        history,
-      }),
-    });
+        setStreamingBlock({
+            block_id: "streaming-block",
+            user_content: message,
+            ai_content: "",
+            created_at: new Date().toISOString(),
+        });
 
-    if (!res.ok) {
-      throw new Error("Failed to send message");
-    }
+        const res = await fetch("/api/internal/message/send", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                chat_id: chatId,
+                branch_id: branch.branch_id,
+                block_id: crypto.randomUUID(),
+                message,
+                history,
+            }),
+        });
 
-    if (!res.body) {
-      throw new Error("Response stream is not available");
-    }
+        if (!res.ok) {
+            throw new Error("Failed to send message");
+        }
 
-    const reader = res.body.getReader();
-    const decoder = new TextDecoder();
-    let aiContent = "";
+        if (!res.body) {
+            throw new Error("Response stream is not available");
+        }
 
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let aiContent = "";
 
-      aiContent += decoder.decode(value, { stream: true });
-      setStreamingBlock((prev) =>
-        prev
-          ? {
-              ...prev,
-              ai_content: aiContent,
-            }
-          : prev
-      );
-    }
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
 
-    await reload();
-    setStreamingBlock(null);
-  };
+            aiContent += decoder.decode(value, { stream: true });
+            setStreamingBlock((prev) =>
+                prev
+                    ? {
+                        ...prev,
+                        ai_content: aiContent,
+                    }
+                    : prev
+            );
+        }
 
-  return (
-    <section className="space-y-4">
-      <div className="rounded-xl border bg-muted/20 p-4">
-        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          Main Branch View
-        </p>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {branch.branch_title} / status: {branch.status}
-        </p>
-      </div>
+        await reload();
+        setStreamingBlock(null);
+    };
 
-      <MainBranchBlockList
-        blocks={blocks}
-        streamingBlock={streamingBlock}
-        branchedBlockIds={branchedBlockIds}
-      />
-      <MainBranchChatInput onSend={handleSend} />
-    </section>
-  );
+    return (
+        <section className="space-y-4">
+            <div className="rounded-xl border bg-muted/20 p-4">
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    Main Branch View
+                </p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                    {branch.branch_title} / status: {branch.status}
+                </p>
+            </div>
+
+            <ChatWindow
+                branchId={branch.branch_id}
+                streamingBlock={streamingBlock}
+                onSend={handleSend}
+                fixedInput
+                fixedOffsetClassName="left-[72px] right-0"
+                disclaimerText="AI は間違えることがあります。重要な情報は確認してください。"
+            />
+        </section>
+    );
 }

@@ -25,31 +25,6 @@ export default function ChatPage({ params }: ChatPageProps) {
     [chatData]
   );
 
-  const mainBlocks = useMemo(() => {
-    if (!chatData || !mainBranch) return [];
-
-    return Object.values(chatData.blocks)
-      .filter((block) => block.branch_id === mainBranch.branch_id)
-      .sort(
-        (first, second) =>
-          new Date(first.created_at).getTime() - new Date(second.created_at).getTime()
-      );
-  }, [chatData, mainBranch]);
-
-  const branchedBlockIds = useMemo(() => {
-    if (!chatData || !mainBranch) return new Set<string>();
-
-    return new Set(
-      Object.values(chatData.branches)
-        .filter(
-          (branch) =>
-            branch.parent_branch_id === mainBranch.branch_id &&
-            typeof branch.parent_block_id === "string"
-        )
-        .map((branch) => branch.parent_block_id as string)
-    );
-  }, [chatData, mainBranch]);
-
   return (
     <>
       {/* 会話タイトルと白背景を指定 */}
@@ -67,8 +42,6 @@ export default function ChatPage({ params }: ChatPageProps) {
             <MainBranchView
               chatId={chatData.chat_id}
               branch={mainBranch}
-              blocks={mainBlocks}
-              branchedBlockIds={branchedBlockIds}
               reload={() => fetchChat(id)}
             />
           )}

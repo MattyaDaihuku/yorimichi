@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Bot, Copy, HelpCircle, Check } from "lucide-react";
+import { Bot, Copy, MessageCircleQuestionMark, Check } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
@@ -9,26 +9,26 @@ import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { toast } from "sonner";
 
 export type ConnectorConfig = {
-  style: "straight" | "branched";
-  type: "continue" | "split";
-  options?: {
-    showReturn?: boolean;
-    showBranch?: boolean;
-  };
+    style: "straight" | "branched";
+    type: "continue" | "split";
+    options?: {
+        showReturn?: boolean;
+        showBranch?: boolean;
+    };
 };
 
 type BlockViewModel = {
-  block_id: string;
-  user_content: string;
-  ai_content: string;
-  created_at: string;
+    block_id: string;
+    user_content: string;
+    ai_content: string;
+    created_at: string;
 };
 
 interface MessageBlockProps {
-  block: BlockViewModel;
-  connector: ConnectorConfig;
-  onBranch?: (blockId: string) => void;
-  isStreaming?: boolean;
+    block: BlockViewModel;
+    connector: ConnectorConfig;
+    onBranch?: (blockId: string) => void;
+    isStreaming?: boolean;
 }
 
 export function MessageBlock({ block, connector, onBranch, isStreaming = false }: MessageBlockProps) {
@@ -258,10 +258,13 @@ export function MessageBlock({ block, connector, onBranch, isStreaming = false }
                                 style={{ left: RIGHT_BTN_CX, top: BTN_CY }}
                             >
                                 <button
+                                    type="button"
                                     onClick={() => onBranch?.(block.block_id)}
                                     className="group flex h-10 w-10 items-center justify-center rounded-full border border-gray-300 bg-white shadow-sm transition-all hover:border-foreground hover:bg-foreground hover:text-white"
                                 >
-                                    <HelpCircle className="h-5 w-5 text-foreground group-hover:text-white" />
+                                    <MessageCircleQuestionMark
+                                        className="h-5 w-5 text-foreground group-hover:text-white"
+                                    />
                                 </button>
                             </div>
                         )}
