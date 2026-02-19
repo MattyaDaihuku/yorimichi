@@ -207,11 +207,12 @@ export function MessageBlock({ block, connector, onBranch, isStreaming = false }
                 </div>
             </div>
 
-            <div
-                className="relative -mt-2 z-0 w-[200px]"
-                style={{ height: isSplit ? LAST_HEIGHT : INTER_HEIGHT }}
-            >
-                <svg className="pointer-events-none absolute left-0 top-0 h-full w-full overflow-visible">
+            {!isStreaming && (
+                <div
+                    className="relative -mt-2 z-0 w-[200px]"
+                    style={{ height: isSplit ? LAST_HEIGHT : INTER_HEIGHT }}
+                >
+                    <svg className="pointer-events-none absolute left-0 top-0 h-full w-full overflow-visible">
                     <line
                         x1="100"
                         y1="0"
@@ -256,40 +257,41 @@ export function MessageBlock({ block, connector, onBranch, isStreaming = false }
                             )}
                         </>
                     )}
-                </svg>
+                    </svg>
 
-                {isSplit && (
-                    <>
-                        {options?.showReturn && (
-                            <div
-                                className="absolute -translate-x-1/2 -translate-y-1/2"
-                                style={{ left: LEFT_BTN_CX, top: BTN_CY }}
-                            >
-                                <button className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-100 bg-[#F9FAFB] shadow-sm transition-all hover:border-gray-300 hover:bg-white">
-                                    <Check className="h-4 w-4 text-foreground/60" />
-                                </button>
-                            </div>
-                        )}
-
-                        {options?.showBranch && (
-                            <div
-                                className="absolute -translate-x-1/2 -translate-y-1/2"
-                                style={{ left: RIGHT_BTN_CX, top: BTN_CY }}
-                            >
-                                <button
-                                    type="button"
-                                    onClick={() => onBranch?.(block.block_id)}
-                                    className="group flex h-10 w-10 items-center justify-center rounded-full border border-gray-300 bg-white shadow-sm transition-all hover:border-foreground hover:bg-foreground hover:text-white"
+                    {isSplit && (
+                        <>
+                            {options?.showReturn && (
+                                <div
+                                    className="absolute -translate-x-1/2 -translate-y-1/2"
+                                    style={{ left: LEFT_BTN_CX, top: BTN_CY }}
                                 >
-                                    <MessageCircleQuestionMark
-                                        className="h-5 w-5 text-foreground group-hover:text-white"
-                                    />
-                                </button>
-                            </div>
-                        )}
-                    </>
-                )}
-            </div>
+                                    <button className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-100 bg-[#F9FAFB] shadow-sm transition-all hover:border-gray-300 hover:bg-white">
+                                        <Check className="h-4 w-4 text-foreground/60" />
+                                    </button>
+                                </div>
+                            )}
+
+                            {options?.showBranch && (
+                                <div
+                                    className="absolute -translate-x-1/2 -translate-y-1/2"
+                                    style={{ left: RIGHT_BTN_CX, top: BTN_CY }}
+                                >
+                                    <button
+                                        type="button"
+                                        onClick={() => onBranch?.(block.block_id)}
+                                        className="group flex h-10 w-10 items-center justify-center rounded-full border border-gray-300 bg-white shadow-sm transition-all hover:border-foreground hover:bg-foreground hover:text-white"
+                                    >
+                                        <MessageCircleQuestionMark
+                                            className="h-5 w-5 text-foreground group-hover:text-white"
+                                        />
+                                    </button>
+                                </div>
+                            )}
+                        </>
+                    )}
+                </div>
+            )}
         </div>
     );
 }
