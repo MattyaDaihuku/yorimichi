@@ -1,12 +1,12 @@
 import { cn } from "@/lib/utils";
 
-interface ChatWindowProps {
+interface SplitWindowProps {
   chatId: string;
   className?: string; // 外部から幅や高さを調整できるようにする
   mockData?: any; // デモ用のモックデータ
 }
 
-export function ChatWindow({ chatId: _chatId, className, mockData: _mockData }: ChatWindowProps) {
+export function SplitWindow({ chatId: _chatId, className, mockData: _mockData }: SplitWindowProps) {
   // 最小限の状態管理やデータ取得ロジックは残しても良いが、表示は空にする要望
   // データフェッチのeffect等はデモ用として残しておいても害はないが、
   // 表示要素は徹底的に削除する。

@@ -3,7 +3,7 @@
 import { useState, Fragment } from "react";
 import { Plus, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ChatWindow } from "@/components/chat/chat-window";
+import { SplitWindow } from "@/components/chat/split-window";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 import {
   AlertDialog,
@@ -105,7 +105,7 @@ const ChatPaneHelper = ({ pane, index, onRemove, className }: ChatPaneHelperProp
 
       {/* Chat Window Content */}
       <div className="h-full w-full overflow-hidden">
-        <ChatWindow
+        <SplitWindow
           chatId="demo-chat-id"
           mockData={createMockChatData(pane.branchId, index)}
           className="h-full w-full border-none shadow-none rounded-none bg-transparent"
