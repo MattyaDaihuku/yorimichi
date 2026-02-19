@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import useSWR from "swr";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Clock, Pin } from "lucide-react";
 import { Chatlist } from "@/generated/prisma"; // 型だけインポート
 import { cn } from "@/lib/utils";
@@ -43,11 +42,14 @@ export function ChatHistory({ onClickItem }: { onClickItem?: () => void }) {
   };
 
   return (
-    <ScrollArea className="flex-1 w-full min-w-0 box-border px-4 py-4 overflow-hidden">
-      <div className="px-2 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-        Conversation History
-      </div>
-      <div className="flex w-full min-w-0 flex-col gap-1">
+    <div className="relative h-full w-full min-w-0">
+      <div className="pointer-events-none absolute top-0 left-0 right-0 z-10 h-8 bg-gradient-to-b from-[#E9EEF6] to-transparent" />
+
+      <div className="h-full w-full min-w-0 box-border overflow-y-auto overscroll-contain hide-scrollbar px-4 pt-1 pb-4">
+        <div className="px-2 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+          Conversation History
+        </div>
+        <div className="flex w-full min-w-0 flex-col gap-1">
         {chats.map((chat) => (
           <div
             key={chat.chat_id}
@@ -97,8 +99,9 @@ export function ChatHistory({ onClickItem }: { onClickItem?: () => void }) {
               />
             </button>
           </div>
-        ))}
+          ))}
+        </div>
       </div>
-    </ScrollArea>
+    </div>
   );
 }
