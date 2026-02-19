@@ -29,13 +29,13 @@ export async function GET() {
   try {
     // Supabaseに保存 (Upsert: なければ作成、あれば更新)
     const savedUser = await prisma.users.upsert({
-      where: { clerk_id: userId },
+      where: { user_id: userId },
       update: {
         name,
         email,
       },
       create: {
-        clerk_id: userId,
+        user_id: userId,
         name,
         email,
       },

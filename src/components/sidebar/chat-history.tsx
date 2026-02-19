@@ -4,16 +4,16 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { MessageSquare, Clock } from "lucide-react";
-import { ChatList } from "@/types/db"; // 型だけインポート
+import { Chatlist } from "@/generated/prisma"; // 型だけインポート
 
 export function ChatHistory({ onClickItem }: { onClickItem?: () => void }) {
-  const [chats, setChats] = useState<ChatList[]>([]);
+  const [chats, setChats] = useState<Chatlist[]>([]);
 
   useEffect(() => {
     // APIルートから直接取得
     const fetchChats = async () => {
       try {
-        const res = await fetch("/api/chats");
+        const res = await fetch("/api/internal/chat/list");
         if (!res.ok) throw new Error("Failed to fetch");
         const data = await res.json();
         setChats(data);
