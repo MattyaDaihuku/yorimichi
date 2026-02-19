@@ -3,6 +3,7 @@ import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { streamText } from 'ai';
 import prisma from '@/lib/prisma';
 import { NextResponse } from 'next/server';
+import { ACTIVE_MODEL } from './ai-active-model';
 
 export type ChatMessage = {
     role: 'user' | 'assistant' | 'system';
@@ -30,9 +31,6 @@ function getGoogleProvider() {
     // Select key sequentially
     const selectedKey = apiKeys[currentKeyIndex];
 
-    // Log selected key index (for debugging)
-    // console.log(`[Chat] Using API Key #${currentKeyIndex + 1}: ...${selectedKey.slice(-4)}`);
-
     // Increment and wrap around
     currentKeyIndex = (currentKeyIndex + 1) % apiKeys.length;
 
@@ -58,12 +56,12 @@ export async function processChatInteraction(
         const google = getGoogleProvider();
 
         const result = streamText({
-            model: google('gemma-3-27b-it'), // 固定モデル名
+            model: google(ACTIVE_MODEL),
             messages,
             onFinish: async ({ text }) => {
                 // AIの応答完了後にDBに保存
                 try {
-                    console.log(`[Chat] Saving/Updating block for branch: ${branchId}`);
+                    console.log(`[Chat] Saving/Updating block for branch: ${branchId} with model: ${ACTIVE_MODEL}`);
                     if (blockId) {
                         // Update existing block
                         await prisma.block.upsert({
@@ -79,7 +77,7 @@ export async function processChatInteraction(
                             }
                         });
                     } else {
-                        // Create new block (legacy behavior if needed, or if ID not provided)
+                        // Create new block
                         await prisma.block.create({
                             data: {
                                 branch_id: branchId,
