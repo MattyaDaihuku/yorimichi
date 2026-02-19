@@ -1,6 +1,10 @@
 "use client";
 
 import { Bot, Copy, Pencil, HelpCircle, Check } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 
 export type ConnectorConfig = {
   style: "straight" | "branched";
@@ -97,7 +101,47 @@ export function MessageBlock({ block, connector, onBranch, isStreaming = false }
 
                     <div className="flex flex-1 flex-col">
                         <div className="mb-2 w-full rounded-2xl rounded-tl-sm bg-white px-1 py-2 text-foreground/90">
-                            <p className="whitespace-pre-wrap text-sm leading-relaxed md:text-base">{aiContent}</p>
+                            <div className="prose prose-sm max-w-none text-foreground md:prose-base">
+                                <ReactMarkdown
+                                    remarkPlugins={[remarkGfm]}
+                                    components={{
+                                        pre({ children }) {
+                                            return <>{children}</>;
+                                        },
+                                        code({ className, children, node, ...props }) {
+                                            const match = /language-(\w+)/.exec(className || "");
+                                            const codeText = String(children).replace(/\n$/, "");
+                                            const isInline = node?.position?.start.line === node?.position?.end.line;
+
+                                            if (isInline) {
+                                                return (
+                                                    <code className={className} {...props}>
+                                                        {children}
+                                                    </code>
+                                                );
+                                            }
+
+                                            return (
+                                                <SyntaxHighlighter
+                                                    language={match?.[1] ?? "text"}
+                                                    style={oneDark}
+                                                    customStyle={{
+                                                        margin: 0,
+                                                        borderRadius: "0.5rem",
+                                                        padding: "1rem",
+                                                        fontSize: "0.95rem",
+                                                        lineHeight: "1.6",
+                                                    }}
+                                                >
+                                                    {codeText}
+                                                </SyntaxHighlighter>
+                                            );
+                                        },
+                                    }}
+                                >
+                                    {aiContent}
+                                </ReactMarkdown>
+                            </div>
                         </div>
                         <div className="flex justify-start">
                             <button className="p-1 text-muted-foreground transition-colors hover:text-foreground">
