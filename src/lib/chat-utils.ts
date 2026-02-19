@@ -16,17 +16,28 @@ const apiKeys = [
     ...Array.from({ length: 19 }, (_, i) => process.env[`GOOGLE_GENERATIVE_AI_API_KEY_${i + 2}`])
 ].filter(Boolean) as string[];
 
+// API Key Rotation State (Sequential)
+let currentKeyIndex = 0;
+
 /**
- * Returns a Google provider instance with a randomly selected API key
+ * Returns a Google provider instance with a sequentially selected API key
  */
 function getGoogleProvider() {
     if (apiKeys.length === 0) {
         throw new Error("No Google API keys found in environment variables.");
     }
-    const randomKey = apiKeys[Math.floor(Math.random() * apiKeys.length)];
-    // console.log(`[Chat] Using API Key: ...${randomKey.slice(-4)}`);
+
+    // Select key sequentially
+    const selectedKey = apiKeys[currentKeyIndex];
+
+    // Log selected key index (for debugging)
+    // console.log(`[Chat] Using API Key #${currentKeyIndex + 1}: ...${selectedKey.slice(-4)}`);
+
+    // Increment and wrap around
+    currentKeyIndex = (currentKeyIndex + 1) % apiKeys.length;
+
     return createGoogleGenerativeAI({
-        apiKey: randomKey,
+        apiKey: selectedKey,
     });
 }
 
@@ -47,7 +58,7 @@ export async function processChatInteraction(
         const google = getGoogleProvider();
 
         const result = streamText({
-            model: google('gemini-2.5-flash'), // 固定モデル名
+            model: google('gemma-3-27b-it'), // 固定モデル名
             messages,
             onFinish: async ({ text }) => {
                 // AIの応答完了後にDBに保存
