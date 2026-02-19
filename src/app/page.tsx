@@ -81,7 +81,7 @@ export default function Home() {
               <Textarea
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="質問を入力するか、Gitブランチを作成..."
+                placeholder="質問を入力する"
                 className="w-full resize-none border-none outline-none text-lg bg-transparent min-h-[56px] max-h-[200px] placeholder:text-gray-400 focus-visible:ring-0 shadow-none"
                 rows={1}
                 onKeyDown={(e) => {
@@ -142,7 +142,7 @@ export default function Home() {
 
           {/* サジェストチップ */}
           <div className="flex flex-wrap gap-2 animate-in fade-in slide-in-from-bottom-7 duration-700 delay-300">
-            {["画像を生成", "コードのデバッグ", "ブランチ戦略の相談", "JPHACKSのアイデア"].map((suggestion) => (
+            {["一日を盛り上げる", "知識をサクッと吸収", "やる気を引き出す", "アイデアの壁打ち"].map((suggestion) => (
               <Button
                 key={suggestion}
                 type="button"
