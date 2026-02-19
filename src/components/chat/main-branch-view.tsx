@@ -106,7 +106,7 @@ export function MainBranchView({ chatId, branch, reload }: MainBranchViewProps) 
                 streamingBlock={streamingBlock}
                 onSend={handleSend}
                 fixedInput
-                fixedOffsetClassName="left-[72px] right-0"
+                fixedOffsetClassName="left-0 right-0 md:left-[72px]"
                 disclaimerText="AI は間違えることがあります。重要な情報は確認してください。"
             />
         </section>

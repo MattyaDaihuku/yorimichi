@@ -45,7 +45,7 @@ export function ChatHistory({ onClickItem }: { onClickItem?: () => void }) {
     <div className="relative h-full w-full min-w-0">
       <div className="pointer-events-none absolute top-0 left-0 right-0 z-10 h-8 bg-gradient-to-b from-[#E9EEF6] to-transparent" />
 
-      <div className="h-full w-full min-w-0 box-border overflow-y-auto overscroll-contain hide-scrollbar px-4 pt-1 pb-4">
+      <div className="h-full w-full min-w-0 box-border overflow-y-auto overscroll-contain hide-scrollbar px-4 pt-6 pb-4">
         <div className="px-2 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
           Conversation History
         </div>

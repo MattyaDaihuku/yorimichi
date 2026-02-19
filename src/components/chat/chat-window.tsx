@@ -36,7 +36,7 @@ export function ChatWindow({
     disabled = false,
     disclaimerText,
     fixedInput = false,
-    fixedOffsetClassName = "left-[72px] right-0",
+    fixedOffsetClassName = "left-0 right-0 md:left-[72px]",
     className,
 }: ChatWindowProps) {
     const [input, setInput] = useState("");

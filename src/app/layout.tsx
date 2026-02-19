@@ -36,7 +36,7 @@ export default function RootLayout({
             <UserSync />
             <div className="flex min-h-screen">
               <Sidebar />
-              <main className="flex-1 flex h-screen flex-col overflow-y-auto hide-scrollbar pl-[72px]">
+              <main className="flex-1 flex h-screen flex-col overflow-y-auto hide-scrollbar md:pl-[72px]">
                 {children}
               </main>
             </div>
