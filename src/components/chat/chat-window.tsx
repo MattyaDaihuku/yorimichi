@@ -64,9 +64,9 @@ export function ChatWindow({
         if (!message || isSending || disabled) return;
 
         setIsSending(true);
+        setInput("");
         try {
             await onSend(message);
-            setInput("");
         } catch (error) {
             console.error(error);
         } finally {

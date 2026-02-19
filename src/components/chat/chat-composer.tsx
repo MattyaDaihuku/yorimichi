@@ -109,7 +109,7 @@ export function ChatComposer({
                                 : "bg-gray-100 text-gray-400 hover:bg-gray-100 cursor-default"
                         }`}
                     >
-                        <Send className="h-4 w-4" />
+                        <Send className="h-4 w-4 rotate-45 -translate-x-[1px]" />
                     </Button>
                 </div>
             </div>
