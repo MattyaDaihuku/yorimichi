@@ -58,7 +58,7 @@ export async function processChatInteraction(
         const google = getGoogleProvider();
 
         const result = streamText({
-            model: google('gemini-2.5-flash'), // 固定モデル名
+            model: google('gemma-3-27b-it'), // 固定モデル名
             messages,
             onFinish: async ({ text }) => {
                 // AIの応答完了後にDBに保存
