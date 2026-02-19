@@ -4,6 +4,7 @@ import "./globals.css";
 import { ClerkProvider, SignedIn, SignedOut } from "@clerk/nextjs";
 import { UserSync } from "@/components/auth/user-sync";
 import { Sidebar } from "@/components/sidebar";
+import { Toaster } from "@/components/ui/sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -42,6 +43,7 @@ export default function RootLayout({
           </SignedIn>
 
           <SignedOut>{children}</SignedOut>
+          <Toaster position="bottom-right" />
         </body>
       </html>
     </ClerkProvider>

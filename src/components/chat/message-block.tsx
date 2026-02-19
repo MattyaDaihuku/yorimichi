@@ -1,10 +1,12 @@
 "use client";
 
-import { Bot, Copy, Pencil, HelpCircle, Check } from "lucide-react";
+import { useState } from "react";
+import { Bot, Copy, HelpCircle, Check } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
+import { toast } from "sonner";
 
 export type ConnectorConfig = {
   style: "straight" | "branched";
@@ -30,6 +32,7 @@ interface MessageBlockProps {
 }
 
 export function MessageBlock({ block, connector, onBranch, isStreaming = false }: MessageBlockProps) {
+    const [copiedTarget, setCopiedTarget] = useState<"user" | "ai" | null>(null);
     const { style, type, options } = connector;
     const isSplit = type === "split";
     const isBranched = style === "branched";
@@ -48,6 +51,20 @@ export function MessageBlock({ block, connector, onBranch, isStreaming = false }
     const LINE_WIDTH = "2";
 
     const aiContent = isStreaming && !block.ai_content ? "Thinking..." : block.ai_content;
+
+    const copyToClipboard = async (text: string, target: "user" | "ai") => {
+        try {
+            await navigator.clipboard.writeText(text);
+            setCopiedTarget(target);
+            toast.success("クリップボードにコピーしました");
+            setTimeout(() => {
+                setCopiedTarget((current) => (current === target ? null : current));
+            }, 500);
+        } catch (error) {
+            console.error("Failed to copy text:", error);
+            toast.error("コピーに失敗しました");
+        }
+    };
 
     const BranchNode = ({ cy }: { cy: number }) => {
         const spikes = 10;
@@ -77,11 +94,17 @@ export function MessageBlock({ block, connector, onBranch, isStreaming = false }
             <div className="relative z-10 w-full max-w-3xl rounded-[24px] border border-gray-100 bg-white p-6 shadow-sm">
                 <div className="group mb-6 flex items-start justify-end gap-4">
                     <div className="flex flex-col gap-3 pt-3 opacity-100 transition-opacity">
-                        <button className="text-muted-foreground transition-colors hover:text-foreground">
+                        <button
+                            type="button"
+                            aria-label="Copy user message"
+                            className={`rounded-full p-2 transition-colors ${
+                                copiedTarget === "user"
+                                    ? "bg-primary/15 text-primary"
+                                    : "bg-transparent text-muted-foreground hover:bg-muted hover:text-foreground"
+                            }`}
+                            onClick={() => void copyToClipboard(block.user_content, "user")}
+                        >
                             <Copy className="h-4 w-4" />
-                        </button>
-                        <button className="text-muted-foreground transition-colors hover:text-foreground">
-                            <Pencil className="h-4 w-4" />
                         </button>
                     </div>
 
@@ -144,7 +167,16 @@ export function MessageBlock({ block, connector, onBranch, isStreaming = false }
                             </div>
                         </div>
                         <div className="flex justify-start">
-                            <button className="p-1 text-muted-foreground transition-colors hover:text-foreground">
+                            <button
+                                type="button"
+                                aria-label="Copy AI message"
+                                className={`rounded-full p-2 transition-colors ${
+                                    copiedTarget === "ai"
+                                        ? "bg-primary/15 text-primary"
+                                        : "bg-transparent text-muted-foreground hover:bg-muted hover:text-foreground"
+                                }`}
+                                onClick={() => void copyToClipboard(block.ai_content, "ai")}
+                            >
                                 <Copy className="h-4 w-4" />
                             </button>
                         </div>
