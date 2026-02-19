@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Sparkles, Image as ImageIcon, Mic, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import { Header } from "@/components/header"; // Headerをインポート
 
 export default function Home() {
@@ -35,11 +36,11 @@ export default function Home() {
           {/* 入力エリア */}
           <div className="relative w-full group animate-in fade-in slide-in-from-bottom-6 duration-700 delay-200">
             <div className="bg-white rounded-[28px] shadow-sm border border-transparent focus-within:shadow-md focus-within:border-gray-200 transition-all p-4">
-              <textarea
+              <Textarea
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder="質問を入力するか、Gitブランチを作成..."
-                className="w-full resize-none border-none outline-none text-lg bg-transparent min-h-[56px] max-h-[200px] placeholder:text-gray-400"
+                className="w-full resize-none border-none outline-none text-lg bg-transparent min-h-[56px] max-h-[200px] placeholder:text-gray-400 focus-visible:ring-0 shadow-none"
                 rows={1}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && !e.shiftKey) {
