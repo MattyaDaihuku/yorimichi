@@ -1,13 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { Sparkles, Image as ImageIcon, Mic, Send } from "lucide-react";
+import { Image as ImageIcon, Mic, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Header } from "@/components/header"; // Headerをインポート
+import { useUser } from "@clerk/nextjs";
 
 export default function Home() {
   const [input, setInput] = useState("");
+  const { user } = useUser();
 
   const handleSend = () => {
     if (!input.trim()) return;
@@ -26,7 +28,7 @@ export default function Home() {
           <div className="space-y-2">
             <div className="flex items-center gap-2 text-4xl md:text-5xl font-medium tracking-tight bg-gradient-to-r from-blue-600 via-purple-500 to-red-500 bg-clip-text text-transparent w-fit animate-in fade-in slide-in-from-bottom-4 duration-700">
               <span className="text-[#c4c7c5]">こんにちは,</span>
-              <span className="bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">User</span>
+              <span className="bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">{user?.fullName || "User"}</span>
             </div>
             <h1 className="text-4xl md:text-5xl font-medium text-[#c4c7c5] tracking-tight animate-in fade-in slide-in-from-bottom-5 duration-700 delay-100">
               何から始めますか？
@@ -73,13 +75,15 @@ export default function Home() {
           {/* サジェストチップ */}
           <div className="flex flex-wrap gap-2 animate-in fade-in slide-in-from-bottom-7 duration-700 delay-300">
             {["画像を生成", "コードのデバッグ", "ブランチ戦略の相談", "JPHACKSのアイデア"].map((suggestion) => (
-              <button
+              <Button
                 key={suggestion}
+                type="button"
+                variant="ghost"
                 className="px-4 py-2 bg-white rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50 border border-transparent hover:border-gray-200 transition-all text-left"
                 onClick={() => setInput(suggestion)}
               >
                 {suggestion}
-              </button>
+              </Button>
             ))}
           </div>
 
