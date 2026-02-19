@@ -10,7 +10,10 @@ export async function GET(req: Request) {
 
         const chats = await prisma.chatlist.findMany({
             where: { user_id: userId },
-            orderBy: { update_at: 'desc' },
+            orderBy: [
+                { is_pinned: 'desc' },
+                { update_at: 'desc' }
+            ],
             include: {
                 branches: {
                     where: { parent_branch_id: null }, // Fetch root branches (Main)
