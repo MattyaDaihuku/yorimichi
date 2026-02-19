@@ -117,7 +117,7 @@ export function MessageBlock({ block, connector, onBranch, isStreaming = false }
                     </div>
                 </div>
 
-                <div className="flex items-start gap-4">
+                <div className="flex w-full min-w-0 items-start gap-4">
                     <div className="shrink-0 pt-1">
                         <div className="relative flex h-10 w-10 items-center justify-center rounded-full border border-gray-100 bg-white shadow-sm">
                             {isStreaming && (
@@ -139,9 +139,9 @@ export function MessageBlock({ block, connector, onBranch, isStreaming = false }
                         </div>
                     </div>
 
-                    <div className="flex flex-1 flex-col">
-                        <div className="mb-2 w-full rounded-2xl rounded-tl-sm bg-white px-1 py-2 text-foreground/90">
-                            <div className="prose prose-sm max-w-none text-foreground md:prose-base">
+                    <div className="flex min-w-0 flex-1 flex-col">
+                        <div className="mb-2 w-full min-w-0 rounded-2xl rounded-tl-sm bg-white px-1 py-2 text-foreground/90">
+                            <div className="prose prose-sm max-w-none break-words text-foreground md:prose-base">
                                 <ReactMarkdown
                                     remarkPlugins={[remarkGfm]}
                                     components={{
@@ -167,6 +167,8 @@ export function MessageBlock({ block, connector, onBranch, isStreaming = false }
                                                     style={oneDark}
                                                     customStyle={{
                                                         margin: 0,
+                                                        maxWidth: "100%",
+                                                        overflowX: "auto",
                                                         borderRadius: "0.5rem",
                                                         padding: "1rem",
                                                         fontSize: "0.95rem",
