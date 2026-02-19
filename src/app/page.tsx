@@ -1,20 +1,60 @@
 "use client";
 
 import { useState } from "react";
-import { Image as ImageIcon, Mic, Send } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Image as ImageIcon, Mic, Paperclip, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Header } from "@/components/header"; // Headerをインポート
 import { useUser } from "@clerk/nextjs";
+import { mutate } from "swr";
 
 export default function Home() {
   const [input, setInput] = useState("");
+  const [isSending, setIsSending] = useState(false);
   const { user } = useUser();
+  const router = useRouter();
 
-  const handleSend = () => {
-    if (!input.trim()) return;
-    console.log("New chat with:", input);
-    setInput("");
+  const handleSend = async () => {
+    const message = input.trim();
+    if (!message || isSending) return;
+
+    const chatId = crypto.randomUUID();
+    const branchId = crypto.randomUUID();
+    const blockId = crypto.randomUUID();
+
+    setIsSending(true);
+
+    try {
+      const res = await fetch("/api/internal/chat/init", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          chat_id: chatId,
+          branch_id: branchId,
+          block_id: blockId,
+          message,
+        }),
+      });
+
+      if (!res.ok) throw new Error("Failed to create chat");
+
+      setInput("");
+      await mutate("/api/internal/chat/list");
+      router.push(`/chat/${chatId}`);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsSending(false);
+    }
   };
 
   return (
@@ -47,24 +87,52 @@ export default function Home() {
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
-                    handleSend();
+                    void handleSend();
                   }
                 }}
               />
               
               <div className="flex justify-between items-center mt-2">
-                <div className="flex gap-1">
-                  <Button variant="ghost" size="icon" className="rounded-full text-gray-500 hover:bg-gray-100">
-                    <ImageIcon className="h-5 w-5" />
-                  </Button>
-                  <Button variant="ghost" size="icon" className="rounded-full text-gray-500 hover:bg-gray-100">
-                    <Mic className="h-5 w-5" />
-                  </Button>
-                </div>
+                <TooltipProvider>
+                  <div className="flex gap-1">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button variant="ghost" size="icon" className="rounded-full text-gray-500 hover:bg-gray-100">
+                          <Paperclip className="h-5 w-5 -rotate-45" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent className="bg-black text-white border-transparent">
+                        <p>現在準備中です</p>
+                      </TooltipContent>
+                    </Tooltip>
+
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button variant="ghost" size="icon" className="rounded-full text-gray-500 hover:bg-gray-100">
+                          <ImageIcon className="h-5 w-5" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent className="bg-black text-white border-transparent">
+                        <p>現在準備中です</p>
+                      </TooltipContent>
+                    </Tooltip>
+
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button variant="ghost" size="icon" className="rounded-full text-gray-500 hover:bg-gray-100">
+                          <Mic className="h-5 w-5" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent className="bg-black text-white border-transparent">
+                        <p>現在準備中です</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
+                </TooltipProvider>
                 <Button 
-                  onClick={handleSend}
+                  onClick={() => void handleSend()}
                   size="icon" 
-                  className={`rounded-full transition-all ${input.trim() ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-gray-100 text-gray-400 hover:bg-gray-100 cursor-default'}`}
+                  className={`rounded-full transition-all ${input.trim() && !isSending ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-gray-100 text-gray-400 hover:bg-gray-100 cursor-default'}`}
                 >
                   <Send className="h-4 w-4" />
                 </Button>

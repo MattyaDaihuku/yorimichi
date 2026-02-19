@@ -3,9 +3,14 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getAuthUserId } from '@/lib/auth-utils';
 import { Branches, Block } from '@/generated/prisma';
+import { z } from 'zod';
 
 // Type definitions to help with the recursive structure (internally)
 type BranchWithBlocks = Branches & { blocks: Block[] };
+
+const patchSchema = z.object({
+    is_pinned: z.boolean(),
+});
 
 export async function GET(
     req: Request,
@@ -140,6 +145,46 @@ export async function GET(
 
     } catch (error) {
         console.error("[CHAT_GET]", error);
+        return new NextResponse("Internal Error", { status: 500 });
+    }
+}
+
+export async function PATCH(
+    req: Request,
+    { params }: { params: Promise<{ chatId: string }> }
+) {
+    try {
+        const userId = await getAuthUserId(req);
+        if (!userId) return new NextResponse("Unauthorized", { status: 401 });
+
+        const { chatId } = await params;
+        const body = await req.json();
+        const validation = patchSchema.safeParse(body);
+
+        if (!validation.success) {
+            return new NextResponse(JSON.stringify(validation.error), { status: 400 });
+        }
+
+        const updated = await prisma.chatlist.updateMany({
+            where: {
+                chat_id: chatId,
+                user_id: userId,
+            },
+            data: {
+                is_pinned: validation.data.is_pinned,
+            },
+        });
+
+        if (updated.count === 0) {
+            return new NextResponse("Chat not found", { status: 404 });
+        }
+
+        return NextResponse.json({
+            chat_id: chatId,
+            is_pinned: validation.data.is_pinned,
+        });
+    } catch (error) {
+        console.error("[CHAT_PATCH]", error);
         return new NextResponse("Internal Error", { status: 500 });
     }
 }
