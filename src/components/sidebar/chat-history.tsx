@@ -2,12 +2,15 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { MessageSquare, Clock } from "lucide-react";
 import { Chatlist } from "@/generated/prisma"; // 型だけインポート
+import { cn } from "@/lib/utils";
 
 export function ChatHistory({ onClickItem }: { onClickItem?: () => void }) {
   const [chats, setChats] = useState<Chatlist[]>([]);
+  const pathname = usePathname();
 
   useEffect(() => {
     // APIルートから直接取得
@@ -36,9 +39,17 @@ export function ChatHistory({ onClickItem }: { onClickItem?: () => void }) {
             key={chat.chat_id}
             href={`/chat/${chat.chat_id}`}
             onClick={onClickItem}
-            className="flex items-center gap-3 py-3 px-3 rounded-md hover:bg-accent group transition-colors"
+            className={cn(
+              "flex items-center gap-3 py-3 px-3 rounded-md hover:bg-accent group transition-colors",
+              pathname === `/chat/${chat.chat_id}` && "bg-accent"
+            )}
           >
-            <MessageSquare className="h-4 w-4 text-muted-foreground group-hover:text-primary" />
+            <MessageSquare
+              className={cn(
+                "h-4 w-4 text-muted-foreground group-hover:text-primary",
+                pathname === `/chat/${chat.chat_id}` && "text-primary"
+              )}
+            />
             <div className="flex flex-col items-start gap-1 overflow-hidden w-full">
               <span className="truncate w-full text-left text-sm font-medium">
                 {chat.chat_title}
