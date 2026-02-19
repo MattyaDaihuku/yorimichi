@@ -141,7 +141,7 @@ export function MessageBlock({ block, connector, onBranch, isStreaming = false }
 
                     <div className="flex min-w-0 flex-1 flex-col">
                         <div className="mb-2 w-full min-w-0 rounded-2xl rounded-tl-sm bg-white px-1 py-2 text-foreground/90">
-                            <div className="prose prose-sm max-w-none break-words text-foreground md:prose-base">
+                            <div className={`prose prose-sm max-w-none break-words md:prose-base ${showThinking ? "text-muted-foreground" : "text-foreground"}`}>
                                 <ReactMarkdown
                                     remarkPlugins={[remarkGfm]}
                                     components={{
