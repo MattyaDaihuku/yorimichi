@@ -12,11 +12,21 @@ export type ChatMessage = {
 
 // Error Types
 export class RateLimitError extends Error {
+    public isRateLimitError = true;
     constructor(public limitType: 'DAILY' | 'MINUTE') {
         super(`Rate limit exceeded: ${limitType}`);
         this.name = 'RateLimitError';
     }
 }
+
+// ... (apiKeys, MODEL_PRIORITY, state, getGoogleProvider, rotateApiKey, rotateModel) ...
+// The tool works best with contiguous blocks. I will replace the class and then edit the function separately if needed,
+// or I can replace the whole file if I'm careful.
+// Let's replace the class definition first.
+
+// Wait, replace_file_content needs contiguous block. I cannot replace scattered parts.
+// I'll update the class definition first.
+
 
 // API Key Rotation Logic (Supports up to 20 keys)
 const apiKeys = [
@@ -106,6 +116,8 @@ export async function processChatInteraction(
         // The calling route should catch it and return 429
 
         try {
+
+
             const result = streamText({
                 model: google(currentModel), // Use current dynamic model
                 messages,
@@ -178,8 +190,8 @@ export async function processChatInteraction(
             throw streamError;
         }
 
-    } catch (error) {
-        if (error instanceof RateLimitError) {
+    } catch (error: any) {
+        if (error instanceof RateLimitError || error?.isRateLimitError) {
             throw error; // Re-throw for route handler
         }
         console.error("[ProcessChatInteraction]", error);
