@@ -27,7 +27,19 @@ export function BranchTree({
   // );
   const [selectedBranchId, setSelectedBranchId] = useState<string | null>(null);
   const [panelState, setPanelState] = useState<"hidden-left" | "visible">("hidden-left");
+  const [windowHeight, setWindowHeight] = useState(typeof window !== "undefined" ? window.innerHeight : 800);
   const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    const handleResize = () => setWindowHeight(window.innerHeight);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const availableHeight = useMemo(() => {
+    // 画面全体の高さから、ヘッダーやパディング分を考慮した「表示可能領域」を計算
+    return windowHeight * 0.85;
+  }, [windowHeight]);
 
   const branchesMap = chatData?.branches ?? {};
   const blocksMap = chatData?.blocks ?? {};
@@ -174,6 +186,7 @@ export function BranchTree({
                 onSelect={handleSelectBranch}
                 maxDepth={maxDepth}
                 isPanelVisible={panelState === "visible"}
+                availableHeight={availableHeight}
               />
             ))}
           </div>
@@ -193,7 +206,11 @@ export function BranchTree({
                     : "opacity-0 -translate-x-5 pointer-events-none"
                 )}
               >
-                <BranchConversationPanel selectedBranch={selectedBranch} blocks={selectedBlocks} />
+                <BranchConversationPanel
+                  selectedBranch={selectedBranch}
+                  blocks={selectedBlocks}
+                  containerHeight={availableHeight}
+                />
               </div>
             </div>
           </div>

@@ -9,6 +9,7 @@ type BranchNodeProps = {
   onSelect: (branchId: string) => void;
   maxDepth: number;
   isPanelVisible: boolean;
+  availableHeight: number;
 };
 
 export function BranchNode({
@@ -18,6 +19,7 @@ export function BranchNode({
   onSelect,
   maxDepth,
   isPanelVisible,
+  availableHeight,
 }: BranchNodeProps) {
   const titleChars = Array.from(node.branch_title ?? "");
   const displayTitle =
@@ -27,17 +29,13 @@ export function BranchNode({
   const isFloating = isSelected && isPanelVisible;
   const isBottomNode = node.children.length === 0;
 
-  const nodeHeightByMaxDepth: Record<number, number> = {
-    0: 800,
-    1: 362,
-    2: 220
-  };
-
-  const nodeHeight = nodeHeightByMaxDepth[maxDepth] ?? 220;
+  // 各PCの実際の高さ（availableHeight）からノードの高さをピクセル計算
+  const CONNECTOR_HEIGHT_PX = 64;
+  const nodeHeight = (availableHeight - (maxDepth * CONNECTOR_HEIGHT_PX)) / (maxDepth + 1);
 
   return (
     <div className="flex flex-col items-center min-w-min ml-1">
-      
+
       {/* ノードをつなぐ線と中点 */}
       {!isRoot && (
         <div className="flex flex-col items-center">
@@ -82,6 +80,7 @@ export function BranchNode({
               onSelect={onSelect}
               maxDepth={maxDepth}
               isPanelVisible={isPanelVisible}
+              availableHeight={availableHeight}
             />
           ))}
         </div>
