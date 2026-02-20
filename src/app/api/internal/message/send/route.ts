@@ -4,12 +4,14 @@ import prisma from '@/lib/prisma';
 import { getAuthUserId } from '@/lib/auth-utils';
 import { processChatInteraction, ChatMessage, RateLimitError } from '@/lib/chat-utils';
 import { z } from 'zod';
+import { AVAILABLE_MODELS } from '@/lib/ai-active-model';
 
 const requestSchema = z.object({
     branch_id: z.string().uuid(),
     chat_id: z.string().uuid(),
     block_id: z.string().uuid(),
     message: z.string().min(1),
+    model: z.enum(AVAILABLE_MODELS),
     history: z.array(z.object({
         role: z.enum(['user', 'assistant', 'system']),
         content: z.string(),
@@ -35,7 +37,7 @@ export async function POST(req: Request) {
             );
         }
 
-        const { branch_id, block_id, message, history } = validation.data;
+        const { branch_id, block_id, message, model, history } = validation.data;
         blockIdForCleanup = block_id;
 
         // 1. Transactionでブロックを作成 (AI応答前)
@@ -63,7 +65,7 @@ export async function POST(req: Request) {
             { role: 'user', content: message }
         ];
 
-        return await processChatInteraction(branch_id, messages, block_id);
+        return await processChatInteraction(branch_id, messages, block_id, model);
 
     } catch (error: any) {
         if (error instanceof RateLimitError || error?.isRateLimitError) {
