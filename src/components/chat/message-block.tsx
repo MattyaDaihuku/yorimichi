@@ -302,35 +302,64 @@ export function MessageBlock({ block, connector, onBranch, isStreaming = false }
                             )}
 
                             {hoveredConnectorAction && (
-                                <line
-                                    x1="100"
-                                    y1="0"
-                                    x2="100"
-                                    y2={SPLIT_START_Y}
-                                    stroke="currentColor"
-                                    strokeWidth={LINE_WIDTH}
-                                    className="text-foreground"
-                                />
+                                <>
+                                    <line
+                                        x1="100"
+                                        y1="0"
+                                        x2="100"
+                                        y2={SPLIT_START_Y}
+                                        stroke="currentColor"
+                                        strokeWidth={LINE_WIDTH}
+                                        className="text-gray-400/40 connector-comet-tail connector-comet-shared"
+                                    />
+                                    <line
+                                        x1="100"
+                                        y1="0"
+                                        x2="100"
+                                        y2={SPLIT_START_Y}
+                                        stroke="currentColor"
+                                        strokeWidth={LINE_WIDTH}
+                                        className="text-gray-500/80 connector-comet-head connector-comet-shared"
+                                    />
+                                </>
                             )}
 
                             {hoveredConnectorAction === "return" && options?.showReturn && (
-                                <path
-                                    d={`M 100 ${SPLIT_START_Y} C 100 ${BTN_CY} 80 ${BTN_CY} ${LEFT_BTN_CX + 20} ${BTN_CY}`}
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth={LINE_WIDTH}
-                                    className="text-foreground"
-                                />
+                                <>
+                                    <path
+                                        d={`M 100 ${SPLIT_START_Y} C 100 ${BTN_CY} 80 ${BTN_CY} ${LEFT_BTN_CX + 20} ${BTN_CY}`}
+                                        fill="none"
+                                        stroke="currentColor"
+                                        strokeWidth={LINE_WIDTH}
+                                        className="text-gray-400/40 connector-comet-tail connector-comet-branch"
+                                    />
+                                    <path
+                                        d={`M 100 ${SPLIT_START_Y} C 100 ${BTN_CY} 80 ${BTN_CY} ${LEFT_BTN_CX + 20} ${BTN_CY}`}
+                                        fill="none"
+                                        stroke="currentColor"
+                                        strokeWidth={LINE_WIDTH}
+                                        className="text-gray-500/80 connector-comet-head connector-comet-branch"
+                                    />
+                                </>
                             )}
 
                             {hoveredConnectorAction === "branch" && options?.showBranch && (
-                                <path
-                                    d={`M 100 ${SPLIT_START_Y} C 100 35 ${RIGHT_BTN_CX} 25 ${RIGHT_BTN_CX} ${BTN_CY - 20}`}
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth={LINE_WIDTH}
-                                    className="text-foreground"
-                                />
+                                <>
+                                    <path
+                                        d={`M 100 ${SPLIT_START_Y} C 100 35 ${RIGHT_BTN_CX} 25 ${RIGHT_BTN_CX} ${BTN_CY - 20}`}
+                                        fill="none"
+                                        stroke="currentColor"
+                                        strokeWidth={LINE_WIDTH}
+                                        className="text-gray-400/40 connector-comet-tail connector-comet-branch"
+                                    />
+                                    <path
+                                        d={`M 100 ${SPLIT_START_Y} C 100 35 ${RIGHT_BTN_CX} 25 ${RIGHT_BTN_CX} ${BTN_CY - 20}`}
+                                        fill="none"
+                                        stroke="currentColor"
+                                        strokeWidth={LINE_WIDTH}
+                                        className="text-gray-500/80 connector-comet-head connector-comet-branch"
+                                    />
+                                </>
                             )}
                         </>
                     )}
