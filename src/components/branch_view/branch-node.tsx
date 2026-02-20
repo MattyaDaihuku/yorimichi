@@ -30,7 +30,7 @@ export function BranchNode({
   const isBottomNode = node.children.length === 0;
 
   // 各PCの実際の高さ（availableHeight）からノードの高さをピクセル計算
-  const CONNECTOR_HEIGHT_PX = 64;
+  const CONNECTOR_HEIGHT_PX = 76;
   const nodeHeight = (availableHeight - (maxDepth * CONNECTOR_HEIGHT_PX)) / (maxDepth + 1);
 
   return (
