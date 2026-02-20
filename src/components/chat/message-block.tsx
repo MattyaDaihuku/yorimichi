@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import { Bot, Copy, MessageCircleQuestionMark, Check } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { toast } from "sonner";
+
+const CodeHighlighter = lazy(() => import("./code-highlighter"));
 
 export type ConnectorConfig = {
     style: "straight" | "branched";
@@ -199,21 +199,15 @@ export function MessageBlock({ block, connector, onBranch, isStreaming = false }
                                                     </div>
 
                                                     <div className="w-full overflow-x-auto text-sm">
-                                                        <SyntaxHighlighter
-                                                            language={language}
-                                                            style={oneDark}
-                                                            customStyle={{
-                                                                margin: 0,
-                                                                maxWidth: "100%",
-                                                                overflowX: "auto",
-                                                                borderRadius: "0.5rem",
-                                                                padding: "1rem",
-                                                                fontSize: "0.95rem",
-                                                                lineHeight: "1.6",
-                                                            }}
+                                                        <Suspense
+                                                            fallback={
+                                                                <pre className="m-0 overflow-x-auto rounded-lg p-4 font-mono text-[0.95rem] leading-[1.6] text-gray-200">
+                                                                    <code>{codeText}</code>
+                                                                </pre>
+                                                            }
                                                         >
-                                                            {codeText}
-                                                        </SyntaxHighlighter>
+                                                            <CodeHighlighter language={language} codeText={codeText} />
+                                                        </Suspense>
                                                     </div>
                                                 </div>
                                             );
