@@ -28,9 +28,9 @@ export function BranchNode({
   const isBottomNode = node.depth === maxDepth-1;
 
   const nodeHeightByMaxDepth: Record<number, number> = {
-    1: 812,
-    2: 368,
-    3: 220
+    0: 800,
+    1: 362,
+    2: 220
   };
 
   const nodeHeight = nodeHeightByMaxDepth[maxDepth] ?? 220;

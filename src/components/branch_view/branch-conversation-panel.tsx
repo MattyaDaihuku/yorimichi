@@ -9,7 +9,7 @@ type BranchConversationPanelProps = {
 
 export function BranchConversationPanel({ selectedBranch, blocks }: BranchConversationPanelProps) {
   return (
-    <aside className="w-[340px] shrink-0 rounded-xl border bg-white p-4 h-full overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+    <aside className="w-[250px] h-[800px] shrink-0 rounded-xl border bg-white p-4 overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
       <div className="mb-3 pb-3 border-b">
         <p className="text-xs text-muted-foreground">選択中のブランチ</p>
         <p className="text-sm font-semibold truncate">{selectedBranch?.branch_title ?? "未選択"}</p>

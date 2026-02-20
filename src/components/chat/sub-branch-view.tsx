@@ -3,6 +3,8 @@
 import { ChatUIContainer } from "@/components/chat/chat-ui-container";
 import { BranchTree } from "@/components/branch_view/parent_track";
 import type { ChatDetailResponse } from "@/store/chat-store";
+import { useState } from "react";
+import { cn } from "@/lib/utils";
 
 type BranchItem = ChatDetailResponse["branches"][string];
 
@@ -27,11 +29,21 @@ export function SubBranchView({
     onCloseAll,
     onBranch
 }: SubBranchViewProps) {
+    const [panelState, setPanelState] = useState<"hidden-left" | "visible">("hidden-left");
+
     return (
         <div className="flex h-full w-full overflow-hidden">
-            <div className="hidden md:block h-full border-r bg-background shrink-0 w-[420px]">
-                <BranchTree chatId={chatId} />
+            <div
+                className={cn(
+                    "hidden md:block h-full bg-background overflow-hidden transition-all duration-150",
+                    panelState === "visible"
+                        ? "shrink-0 basis-[280px] lg:basis-[320px] xl:basis-[360px] max-w-[38vw] min-w-[240px]"
+                        : "shrink-0 w-auto basis-auto min-w-0 max-w-none"
+                )}
+            >
+                <BranchTree chatId={chatId} onPanelStateChange={setPanelState} />
             </div>
+
             <div className="flex-1 min-w-0 h-full">
                 <ChatUIContainer
                     chatId={chatId}
