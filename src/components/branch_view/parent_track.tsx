@@ -1,4 +1,3 @@
-// src/components/chat/branch-tree.tsx
 "use client";
 
 import useSWR from "swr";
@@ -124,14 +123,6 @@ export function BranchTree({ chatId }: { chatId: string }) {
   const selectedBlocks = selectedBranchId ? blocksByBranch[selectedBranchId] ?? [] : [];
   const selectedBranch = selectedBranchId ? nodesMap[selectedBranchId] ?? null : null;
 
-  // maxDepthごとの上padding
-  const treePaddingTopByMaxDepth: Record<number, number> = {
-    1: 325,
-    2: 80,
-    3: 24,
-  };
-  const treePaddingTop = treePaddingTopByMaxDepth[maxDepth] ?? 8;
-
   if (isLoading) return <div className="p-4 text-center text-muted-foreground">読み込み中...</div>;
   if (error) return <div className="p-4 text-center text-red-500">エラーが発生しました</div>;
   if (!data?.branches) return null;
@@ -140,10 +131,9 @@ export function BranchTree({ chatId }: { chatId: string }) {
     <div className="p-3 mt-0 min-h-full">
       <div className="overflow-auto">
         <div
-          className="inline-flex items-start gap-6"
-          style={{ paddingTop: `${treePaddingTop}px` }}
+          className="inline-flex items-start gap-6 pt-2.5"
         >
-          <div className="flex flex-col items-start justify-start gap-6">
+          <div className="flex flex-col items-start justify-start">
             {roots.map((rootNode) => (
               <BranchNode
                 key={rootNode.branch_id}
@@ -152,19 +142,20 @@ export function BranchTree({ chatId }: { chatId: string }) {
                 selectedBranchId={selectedBranchId}
                 onSelect={handleSelectBranch}
                 maxDepth={maxDepth}
+                isPanelVisible={panelState === "visible"}
               />
             ))}
           </div>
 
           <div
             className={cn(
-              "overflow-hidden transition-all duration-150 ease-out",
+              "h-full overflow-hidden transition-all duration-150 ease-out",
               panelState === "visible" && "w-[340px] opacity-100 translate-x-0",
               panelState === "hidden-left" && "opacity-0 translate-x-8",
               panelState === "hidden-left" && "opacity-0 -translate-x-8"
             )}
           >
-            <div className="w-[340px] shrink-0 overflow-hidden">
+            <div className="h-full w-[340px] shrink-0 overflow-hidden">
               <div
                 className={cn(
                   "transition-all duration-150 ease-out",
