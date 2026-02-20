@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Header } from "@/components/header"; // Headerをインポート
@@ -44,54 +44,25 @@ export default function Home() {
     return { parsedCode, parsedMessage };
   };
 
-  const readInitStreamAndValidate = async (res: Response) => {
-    if (!res.body) {
-      throw new Error("[500] AI応答の取得に失敗しました。しばらく時間をおいて再度お試しください。");
-    }
+  useEffect(() => {
+    const raw = sessionStorage.getItem("chat-init-error");
+    if (!raw) return;
 
-    const reader = res.body.getReader();
-    const decoder = new TextDecoder();
-    let aiContent = "";
-    let markerStatus: number | null = null;
-    const markerRegex = /\[\[ERROR:(\d+)\]\]/g;
+    sessionStorage.removeItem("chat-init-error");
 
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-
-      const chunk = decoder.decode(value, { stream: true });
-      let match: RegExpExecArray | null;
-      while ((match = markerRegex.exec(chunk)) !== null) {
-        markerStatus = Number(match[1]);
-      }
-
-      aiContent += chunk.replace(markerRegex, "");
-    }
-
-    if (markerStatus) {
-      const markerMessage =
-        markerStatus === 429
-          ? "利用が集中しています。しばらく時間をおいて再度お試しください。"
-          : "AI応答の取得に失敗しました。しばらく時間をおいて再度お試しください。";
-      throw new Error(`[${markerStatus}] ${markerMessage}`);
-    }
-
-    if (aiContent.trim().length === 0) {
-      throw new Error("[500] AI応答の取得に失敗しました。しばらく時間をおいて再度お試しください。");
-    }
-  };
-
-  const revertInitializedChat = async (chatId: string) => {
     try {
-      await fetch("/api/internal/chat/revert", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ chat_id: chatId }),
-      });
-    } catch (revertError) {
-      console.error("[ChatInitRevertFailed]", revertError);
+      const parsed = JSON.parse(raw) as { code?: unknown; message?: unknown };
+      setErrorCode(typeof parsed.code === "number" ? parsed.code : null);
+      setErrorMessage(
+        typeof parsed.message === "string" && parsed.message.trim().length > 0
+          ? parsed.message
+          : "会話の開始に失敗しました。"
+      );
+      setErrorOpen(true);
+    } catch (parseError) {
+      console.error("[ChatInitErrorParseFailed]", parseError);
     }
-  };
+  }, []);
 
   const handleSend = async () => {
     const message = input.trim();
@@ -99,8 +70,6 @@ export default function Home() {
 
     const chatId = crypto.randomUUID();
     const branchId = crypto.randomUUID();
-    const blockId = crypto.randomUUID();
-
     setIsSending(true);
 
     try {
@@ -112,7 +81,6 @@ export default function Home() {
         body: JSON.stringify({
           chat_id: chatId,
           branch_id: branchId,
-          block_id: blockId,
           message,
         }),
       });
@@ -130,13 +98,15 @@ export default function Home() {
         throw new Error(`[${res.status}] ${messageText}`);
       }
 
-      await readInitStreamAndValidate(res);
+      sessionStorage.setItem(
+        `pending-init:${chatId}`,
+        JSON.stringify({ message })
+      );
 
       setInput("");
-      await mutate("/api/internal/chat/list");
       router.push(`/chat/${chatId}`);
+      void mutate("/api/internal/chat/list");
     } catch (error) {
-      await revertInitializedChat(chatId);
       const { parsedCode, parsedMessage } = parseError(error);
       setErrorCode(parsedCode);
       setErrorMessage(parsedMessage);
