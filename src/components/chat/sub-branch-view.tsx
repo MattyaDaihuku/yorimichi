@@ -1,6 +1,7 @@
 "use client";
 
 import { ChatUIContainer } from "@/components/chat/chat-ui-container";
+import { BranchTree } from "@/components/branch_view/parent_track";
 import type { ChatDetailResponse } from "@/store/chat-store";
 
 type BranchItem = ChatDetailResponse["branches"][string];
@@ -27,16 +28,21 @@ export function SubBranchView({
     onBranch
 }: SubBranchViewProps) {
     return (
-        <div className="h-full w-full">
-            <ChatUIContainer
-                chatId={chatId}
-                mainBranchId={mainBranch.branch_id}
-                initialActiveBranchId={initialActiveBranchId}
-                initialCreationContext={initialCreationContext}
-                reload={reload}
-                onCloseAll={onCloseAll}
-                onBranch={onBranch}
-            />
+        <div className="flex h-full w-full overflow-hidden">
+            <div className="hidden md:block h-full border-r bg-background shrink-0 w-[420px]">
+                <BranchTree chatId={chatId} />
+            </div>
+            <div className="flex-1 min-w-0 h-full">
+                <ChatUIContainer
+                    chatId={chatId}
+                    mainBranchId={mainBranch.branch_id}
+                    initialActiveBranchId={initialActiveBranchId}
+                    initialCreationContext={initialCreationContext}
+                    reload={reload}
+                    onCloseAll={onCloseAll}
+                    onBranch={onBranch}
+                />
+            </div>
         </div>
     );
 }

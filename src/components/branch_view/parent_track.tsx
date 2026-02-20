@@ -128,8 +128,8 @@ export function BranchTree({ chatId }: { chatId: string }) {
   if (!data?.branches) return null;
 
   return (
-    <div className="p-3 mt-0 min-h-full">
-      <div className="overflow-auto">
+    <div className="p-3 mt-0 h-full flex flex-col min-h-0 bg-transparent">
+      <div className="overflow-auto flex-1 min-h-0">
         <div
           className="inline-flex items-start gap-6 pt-2.5"
         >

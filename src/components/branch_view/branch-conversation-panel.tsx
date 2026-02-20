@@ -9,7 +9,7 @@ type BranchConversationPanelProps = {
 
 export function BranchConversationPanel({ selectedBranch, blocks }: BranchConversationPanelProps) {
   return (
-    <aside className="w-[340px] shrink-0 rounded-xl border bg-white p-4 h-[calc(100vh-100px)] overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+    <aside className="w-[340px] shrink-0 rounded-xl border bg-white p-4 h-full overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
       <div className="mb-3 pb-3 border-b">
         <p className="text-xs text-muted-foreground">選択中のブランチ</p>
         <p className="text-sm font-semibold truncate">{selectedBranch?.branch_title ?? "未選択"}</p>
@@ -18,7 +18,7 @@ export function BranchConversationPanel({ selectedBranch, blocks }: BranchConver
       {blocks.length === 0 ? (
         <p className="text-sm text-muted-foreground">このブランチの会話はまだありません。</p>
       ) : (
-          <div className="space-y-3">
+        <div className="space-y-3">
           {blocks.map((block) => (
             // ブロックコンポーネントに置き換える
             <div key={block.block_id} className="space-y-2">
