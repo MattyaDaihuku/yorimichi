@@ -66,12 +66,15 @@ export function Header({ title = "", className }: HeaderProps) {
 
           {/* 右側: ユーザーアイコン */}
           <div className="flex justify-end">
-            <div className="h-8 w-8 md:h-9 md:w-9 rounded-full bg-muted flex items-center justify-center border border-border cursor-pointer hover:bg-muted/80 transition-colors">
+            <div className="h-9 w-9 md:h-9 md:w-9 rounded-full flex items-center justify-center cursor-pointer transition-colors">
               {user ? (
                 <UserButton
                   appearance={{
                     elements: {
-                      userButtonAvatarBox: "h-full w-full rounded-full object-cover", // アイコン自体のスタイル
+                      userButtonBox: "block !h-full !w-full",
+                      userButtonTrigger: "!h-full !w-full rounded-full",
+                      userButtonAvatarBox: "!no-shimmer !h-full !w-full rounded-full overflow-hidden",
+                      userButtonAvatarImage: "!h-full !w-full object-cover",
                       userButtonPopoverCard: "shadow-xl", // メニュー（ポップオーバー）の影
                     }
                   }}
