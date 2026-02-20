@@ -12,6 +12,33 @@ const requestSchema = z.object({
     message: z.string().min(1),
 });
 
+async function cleanupInitializedChat(chatId: string) {
+    const branchIds = await prisma.branches.findMany({
+        where: { chat_id: chatId },
+        select: { branch_id: true },
+    });
+
+    const ids = branchIds.map((item) => item.branch_id);
+
+    if (ids.length > 0) {
+        await prisma.block.deleteMany({
+            where: {
+                branch_id: { in: ids },
+            },
+        });
+
+        await prisma.branches.deleteMany({
+            where: {
+                branch_id: { in: ids },
+            },
+        });
+    }
+
+    await prisma.chatlist.deleteMany({
+        where: { chat_id: chatId },
+    });
+}
+
 export async function POST(req: Request) {
     let chatId: string | undefined;
     let branchId: string | undefined;
@@ -79,7 +106,14 @@ export async function POST(req: Request) {
 
         // 4. Call Gemini and Stream Response
         const messages: ChatMessage[] = [{ role: 'user', content: message }];
-        return await processChatInteraction(branch_id, messages, block_id);
+
+        const aiResponse = await processChatInteraction(branch_id, messages, block_id);
+
+        if (!aiResponse.ok) {
+            await cleanupInitializedChat(chat_id);
+        }
+
+        return aiResponse;
 
     } catch (error: any) {
         console.error("[CHAT_INIT]", JSON.stringify(error, null, 2));

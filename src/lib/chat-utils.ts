@@ -154,48 +154,43 @@ export async function processChatInteraction(
 
         const google = getGoogleProvider();
 
-        // Attempt to call the API
-        // If it fails with Rate Limit, we throw RateLimitError
-        // The calling route should catch it and return 429
-
-        try {
-
-
-            const result = streamText({
-                model: google(currentModel), // Use current dynamic model
-                messages,
-                maxRetries: 0,
-                onFinish: async ({ text }) => {
-                    // AIの応答完了後にDBに保存
-                    try {
-                        console.log(`[Chat] Saving block for branch: ${branchId} with model: ${currentModel}`);
-
+        const result = streamText({
+            model: google(ACTIVE_MODEL),
+            messages,
+            onFinish: async ({ text, finishReason }) => {
+                // AIの応答完了後にDBに保存
+                try {
+                    if (!text.trim().length || finishReason === "error") {
                         if (blockId) {
-                            // Update existing block or insert if missing (upsert)
-                            await prisma.block.upsert({
-                                where: { block_id: blockId },
-                                update: {
-                                    ai_content: text,
-                                },
-                                create: {
-                                    block_id: blockId,
-                                    branch_id: branchId,
-                                    user_content: lastUserMessage.content,
-                                    ai_content: text
-                                }
-                            });
-                        } else {
-                            // Fallback create
-                            await prisma.block.create({
-                                data: {
-                                    branch_id: branchId,
-                                    user_content: lastUserMessage.content,
-                                    ai_content: text,
-                                }
-                            });
+                            await prisma.block.deleteMany({ where: { block_id: blockId } });
                         }
-                    } catch (dbError) {
-                        console.error("Failed to save block:", dbError);
+                        return;
+                    }
+
+                    console.log(`[Chat] Saving/Updating block for branch: ${branchId} with model: ${ACTIVE_MODEL}`);
+                    if (blockId) {
+                        // Update existing block
+                        await prisma.block.upsert({
+                            where: { block_id: blockId },
+                            update: {
+                                ai_content: text,
+                            },
+                            create: {
+                                block_id: blockId,
+                                branch_id: branchId,
+                                user_content: lastUserMessage.content,
+                                ai_content: text
+                            }
+                        });
+                    } else {
+                        // Create new block
+                        await prisma.block.create({
+                            data: {
+                                branch_id: branchId,
+                                user_content: lastUserMessage.content,
+                                ai_content: text,
+                            }
+                        });
                     }
                 },
             });
@@ -223,12 +218,40 @@ export async function processChatInteraction(
                     rotateModel();
                 }
 
-                // Identify if it's Daily or Minute
-                const isDaily = errorMessage.toLowerCase().includes('quota') || errorMessage.toLowerCase().includes('daily');
-                const limitType = isDaily ? 'DAILY' : 'MINUTE';
+        const encoder = new TextEncoder();
 
-                throw new RateLimitError(limitType);
-            }
+        const stream = new ReadableStream<Uint8Array>({
+            async start(controller) {
+                try {
+                    for await (const part of result.fullStream) {
+                        if (part.type === "text-delta") {
+                            controller.enqueue(encoder.encode(part.text));
+                            continue;
+                        }
+
+                        if (part.type === "error") {
+                            const normalized = normalizeAiError(part.error);
+                            const marker = `[[ERROR:${normalized.status}]]`;
+                            controller.enqueue(encoder.encode(marker));
+                        }
+                    }
+                } catch (streamError) {
+                    const normalized = normalizeAiError(streamError);
+                    const marker = `[[ERROR:${normalized.status}]]`;
+                    controller.enqueue(encoder.encode(marker));
+                } finally {
+                    controller.close();
+                }
+            },
+        });
+
+        return new Response(stream, {
+            status: 200,
+            headers: {
+                "Content-Type": "text/plain; charset=utf-8",
+                "Cache-Control": "no-cache",
+            },
+        });
 
             throw streamError;
         }
