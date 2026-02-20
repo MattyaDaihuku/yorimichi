@@ -33,6 +33,7 @@ interface MessageBlockProps {
 
 export function MessageBlock({ block, connector, onBranch, isStreaming = false }: MessageBlockProps) {
     const [copiedTarget, setCopiedTarget] = useState<string | null>(null);
+    const [hoveredConnectorAction, setHoveredConnectorAction] = useState<"return" | "branch" | null>(null);
     const { style, type, options } = connector;
     const isSplit = type === "split";
     const isBranched = style === "branched";
@@ -299,6 +300,38 @@ export function MessageBlock({ block, connector, onBranch, isStreaming = false }
                                     className={LINE_COLOR}
                                 />
                             )}
+
+                            {hoveredConnectorAction && (
+                                <line
+                                    x1="100"
+                                    y1="0"
+                                    x2="100"
+                                    y2={SPLIT_START_Y}
+                                    stroke="currentColor"
+                                    strokeWidth={LINE_WIDTH}
+                                    className="text-foreground"
+                                />
+                            )}
+
+                            {hoveredConnectorAction === "return" && options?.showReturn && (
+                                <path
+                                    d={`M 100 ${SPLIT_START_Y} C 100 ${BTN_CY} 80 ${BTN_CY} ${LEFT_BTN_CX + 20} ${BTN_CY}`}
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth={LINE_WIDTH}
+                                    className="text-foreground"
+                                />
+                            )}
+
+                            {hoveredConnectorAction === "branch" && options?.showBranch && (
+                                <path
+                                    d={`M 100 ${SPLIT_START_Y} C 100 35 ${RIGHT_BTN_CX} 25 ${RIGHT_BTN_CX} ${BTN_CY - 20}`}
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth={LINE_WIDTH}
+                                    className="text-foreground"
+                                />
+                            )}
                         </>
                     )}
                     </svg>
@@ -310,8 +343,12 @@ export function MessageBlock({ block, connector, onBranch, isStreaming = false }
                                     className="absolute -translate-x-1/2 -translate-y-1/2"
                                     style={{ left: LEFT_BTN_CX, top: BTN_CY }}
                                 >
-                                    <button className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-100 bg-[#F9FAFB] shadow-sm transition-all hover:border-gray-300 hover:bg-white">
-                                        <Check className="h-4 w-4 text-foreground/60" />
+                                    <button
+                                        className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-100 bg-white shadow-sm transition-all hover:border-gray-300 hover:bg-[#F9FAFB]"
+                                        onMouseEnter={() => setHoveredConnectorAction("return")}
+                                        onMouseLeave={() => setHoveredConnectorAction(null)}
+                                    >
+                                        <Check className="h-5 w-5 text-black" />
                                     </button>
                                 </div>
                             )}
@@ -324,10 +361,12 @@ export function MessageBlock({ block, connector, onBranch, isStreaming = false }
                                     <button
                                         type="button"
                                         onClick={() => onBranch?.(block.block_id)}
-                                        className="group flex h-10 w-10 items-center justify-center rounded-full border border-gray-300 bg-white shadow-sm transition-all hover:border-foreground hover:bg-foreground hover:text-white"
+                                        className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-100 bg-white shadow-sm transition-all hover:border-gray-300 hover:bg-[#F9FAFB]"
+                                        onMouseEnter={() => setHoveredConnectorAction("branch")}
+                                        onMouseLeave={() => setHoveredConnectorAction(null)}
                                     >
                                         <MessageCircleQuestionMark
-                                            className="h-5 w-5 text-foreground group-hover:text-white"
+                                            className="h-5 w-5 text-black"
                                         />
                                     </button>
                                 </div>
