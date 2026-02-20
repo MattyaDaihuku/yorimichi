@@ -29,9 +29,13 @@ export function BranchNode({
   const isFloating = isSelected && isPanelVisible;
   const isBottomNode = node.children.length === 0;
 
-  // 各PCの実際の高さ（availableHeight）からノードの高さをピクセル計算
-  const CONNECTOR_HEIGHT_PX = 76;
-  const nodeHeight = (availableHeight - (maxDepth * CONNECTOR_HEIGHT_PX)) / (maxDepth + 1);
+  // 比率に基づいた高さの計算 (ノード:コネクタ = 3:1)
+  const totalUnits = (maxDepth + 1) * 3 + maxDepth * 1;
+  const unitHeight = availableHeight / totalUnits;
+
+  const nodeHeight = unitHeight * 3;
+  const connectorHeight = unitHeight;
+  const lineHeight = Math.max(0, (connectorHeight - 12) / 2); // 12pxは中央の丸の高さ
 
   return (
     <div className="flex flex-col items-center min-w-min ml-1">
@@ -39,9 +43,9 @@ export function BranchNode({
       {/* ノードをつなぐ線と中点 */}
       {!isRoot && (
         <div className="flex flex-col items-center">
-          <div className="w-[2px] bg-gray-300 h-8" />
+          <div className="w-[2px] bg-gray-300" style={{ height: `${lineHeight}px` }} />
           <div className="w-3 h-3 bg-gray-400 rounded-full" />
-          <div className="w-[2px] bg-gray-300 h-8" />
+          <div className="w-[2px] bg-gray-300" style={{ height: `${lineHeight}px` }} />
         </div>
       )}
 
