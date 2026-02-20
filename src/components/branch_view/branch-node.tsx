@@ -25,7 +25,7 @@ export function BranchNode({
 
   const isSelected = selectedBranchId === node.branch_id;
   const isFloating = isSelected && isPanelVisible;
-  const isBottomNode = node.depth === maxDepth-1;
+  const isBottomNode = node.children.length === 0;
 
   const nodeHeightByMaxDepth: Record<number, number> = {
     0: 800,

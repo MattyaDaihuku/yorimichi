@@ -5,27 +5,32 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { BranchConversationPanel } from "./branch-conversation-panel";
 import { BranchNode } from "./branch-node";
-import { Block, BranchNodeData, ChatDetailResponse } from "./types";
+import { Block, BranchNodeData } from "./types";
+import type { ChatDetailResponse } from "@/store/chat-store"; // 追加
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export function BranchTree({
   chatId,
+  chatData,
+  isLoading,
   onPanelStateChange,
 }: {
   chatId: string;
+  chatData: ChatDetailResponse | null;
+  isLoading?: boolean;
   onPanelStateChange?: (state: "hidden-left" | "visible") => void;
 }) {
-  const { data, error, isLoading } = useSWR<ChatDetailResponse>(
-    `/api/internal/chat/${chatId}`,
-    fetcher
-  );
+  // const { data, error, isLoading } = useSWR<ChatDetailResponse>(
+  //   `/api/internal/chat/${chatId}`,
+  //   fetcher
+  // );
   const [selectedBranchId, setSelectedBranchId] = useState<string | null>(null);
   const [panelState, setPanelState] = useState<"hidden-left" | "visible">("hidden-left");
   const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const branchesMap = data?.branches ?? {};
-  const blocksMap = data?.blocks ?? {};
+  const branchesMap = chatData?.branches ?? {};
+  const blocksMap = chatData?.blocks ?? {};
 
   const { roots, nodesMap, maxDepth } = useMemo(() => {
     const allBranches = Object.values(branchesMap);
@@ -152,8 +157,8 @@ export function BranchTree({
   const selectedBranch = selectedBranchId ? nodesMap[selectedBranchId] ?? null : null;
 
   if (isLoading) return <div className="p-4 text-center text-muted-foreground">読み込み中...</div>;
-  if (error) return <div className="p-4 text-center text-red-500">エラーが発生しました</div>;
-  if (!data?.branches) return null;
+  if (isLoading) return <div className="p-4 text-center text-red-500">エラーが発生しました</div>;
+  if (!chatData?.branches) return null;
 
   return (
     <div className="p-3 mt-0 h-full flex flex-col min-h-0 bg-transparent">
