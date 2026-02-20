@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import useSWR from "swr";
+import useSWR, { useSWRConfig } from "swr";
 import { Clock, Pin } from "lucide-react";
 import { Chatlist } from "@/generated/prisma"; // 型だけインポート
 import { cn } from "@/lib/utils";
@@ -22,8 +22,12 @@ const fetcher = async (
 
 export function ChatHistory({ onClickItem }: { onClickItem?: () => void }) {
   const pathname = usePathname();
-  const { data: chats = [], mutate } = useSWR("/api/internal/chat/list", fetcher, {
-    revalidateOnMount: false,
+  const { cache } = useSWRConfig();
+  const key = "/api/internal/chat/list";
+  const hasCachedChats = cache.get(key) !== undefined;
+
+  const { data: chats = [], mutate } = useSWR(key, fetcher, {
+    revalidateOnMount: !hasCachedChats,
     revalidateIfStale: false,
   });
 
