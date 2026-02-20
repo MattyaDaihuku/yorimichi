@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import useSWR, { useSWRConfig } from "swr";
@@ -22,6 +23,7 @@ const fetcher = async (
 
 export function ChatHistory({ onClickItem }: { onClickItem?: () => void }) {
   const pathname = usePathname();
+  const previousPathname = useRef(pathname);
   const { cache } = useSWRConfig();
   const key = "/api/internal/chat/list";
   const hasCachedChats = cache.get(key) !== undefined;
@@ -30,6 +32,13 @@ export function ChatHistory({ onClickItem }: { onClickItem?: () => void }) {
     revalidateOnMount: !hasCachedChats,
     revalidateIfStale: false,
   });
+
+  useEffect(() => {
+    if (previousPathname.current !== pathname) {
+      previousPathname.current = pathname;
+      void mutate();
+    }
+  }, [pathname, mutate]);
 
   const togglePin = async (chatId: string, isPinned: boolean) => {
     try {
