@@ -4,6 +4,11 @@ import prisma from '@/lib/prisma';
 import { getAuthUserId } from '@/lib/auth-utils';
 import { ChatMessage } from '@/lib/chat-utils';
 
+type HistoryBlock = {
+    user_content: string;
+    ai_content: string;
+};
+
 export async function GET(
     req: Request,
     { params }: { params: Promise<{ branchId: string }> }
@@ -25,14 +30,22 @@ export async function GET(
         }
 
         // 2. 履歴を遡って全てのブロックを収集する
-        const allBlocks = [];
+        const allBlocks: HistoryBlock[] = [];
         let currentBranchId: string | null = branchId;
 
         while (currentBranchId) {
-            const currentBranch = await prisma.branches.findUnique({
+            const currentBranch: {
+                parent_branch_id: string | null;
+                blocks: HistoryBlock[];
+            } | null = await prisma.branches.findUnique({
                 where: { branch_id: currentBranchId },
-                include: {
+                select: {
+                    parent_branch_id: true,
                     blocks: {
+                        select: {
+                            user_content: true,
+                            ai_content: true,
+                        },
                         orderBy: { created_at: 'asc' }
                     }
                 }
@@ -48,7 +61,7 @@ export async function GET(
         }
 
         // 3. AI SDK形式の履歴に変換
-        const history: ChatMessage[] = allBlocks.map(block => {
+        const history: ChatMessage[] = allBlocks.map((block) => {
             const msgs: ChatMessage[] = [];
             if (block.user_content) msgs.push({ role: 'user', content: block.user_content });
             if (block.ai_content) msgs.push({ role: 'assistant', content: block.ai_content });

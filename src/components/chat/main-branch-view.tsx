@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ChatDetailResponse } from "@/store/chat-store";
 import { ChatWindow } from "@/components/chat/chat-window";
 import { useChatStore } from "@/store/chat-store";
@@ -12,10 +12,22 @@ type MainBranchViewProps = {
     chatId: string;
     branch: BranchItem;
     reload: () => Promise<void>;
+    initialMessage?: string | null;
+    onInitialMessageHandled?: () => void;
+    onInitialSendError?: (error: unknown) => void;
 };
 
-export function MainBranchView({ chatId, branch, reload }: MainBranchViewProps) {
+export function MainBranchView({
+    chatId,
+    branch,
+    reload,
+    initialMessage,
+    onInitialMessageHandled,
+    onInitialSendError,
+}: MainBranchViewProps) {
     const [streamingBlock, setStreamingBlock] = useState<StreamingBlock | null>(null);
+    const [isInitialSending, setIsInitialSending] = useState(false);
+    const autoSentRef = useRef(false);
     const chatData = useChatStore((state) => state.chatData);
 
     const currentBranchBlocks = Object.values(chatData?.blocks ?? {})
@@ -41,6 +53,22 @@ export function MainBranchView({ chatId, branch, reload }: MainBranchViewProps) 
         });
     };
 
+    useEffect(() => {
+        if (!initialMessage || autoSentRef.current) return;
+
+        autoSentRef.current = true;
+        onInitialMessageHandled?.();
+        setIsInitialSending(true);
+
+        void handleSend(initialMessage)
+            .catch((error) => {
+                onInitialSendError?.(error);
+            })
+            .finally(() => {
+                setIsInitialSending(false);
+            });
+    }, [initialMessage]);
+
     return (
         <section className="space-y-4">
             <div className="rounded-xl border bg-muted/20 p-4">
@@ -56,6 +84,7 @@ export function MainBranchView({ chatId, branch, reload }: MainBranchViewProps) 
                 branchId={branch.branch_id}
                 streamingBlock={streamingBlock}
                 onSend={handleSend}
+                disabled={isInitialSending}
                 fixedInput
                 fixedOffsetClassName="left-0 right-0 md:left-[72px]"
                 disclaimerText="AI は間違えることがあります。重要な情報は確認してください。"
