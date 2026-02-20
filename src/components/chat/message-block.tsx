@@ -99,11 +99,10 @@ export function MessageBlock({ block, connector, onBranch, isStreaming = false }
                         <button
                             type="button"
                             aria-label="Copy user message"
-                            className={`rounded-full p-2 transition-colors ${
-                                copiedTarget === "user"
+                            className={`rounded-full p-2 transition-colors ${copiedTarget === "user"
                                     ? "bg-transparent text-green-500" // チェック時: 背景なし
                                     : "bg-transparent text-muted-foreground hover:bg-muted hover:text-foreground"
-                            }`}
+                                }`}
                             onClick={() => void copyToClipboard(block.user_content, "user")}
                         >
                             {copiedTarget === "user" ? (
@@ -182,11 +181,10 @@ export function MessageBlock({ block, connector, onBranch, isStreaming = false }
                                                         <button
                                                             type="button"
                                                             onClick={() => void copyToClipboard(codeText, targetId)}
-                                                            className={`rounded-full p-2 transition-colors ${
-                                                                copiedTarget === targetId
+                                                            className={`rounded-full p-2 transition-colors ${copiedTarget === targetId
                                                                     ? "bg-primary/15 text-primary"// チェック時: ホバー影なし
                                                                     : "text-gray-400 hover:bg-gray-700 hover:text-gray-200"
-                                                            }`}
+                                                                }`}
                                                             aria-label="Copy code"
                                                         >
                                                             {copiedTarget === targetId ? (
@@ -228,11 +226,10 @@ export function MessageBlock({ block, connector, onBranch, isStreaming = false }
                                 <button
                                     type="button"
                                     aria-label="Copy AI message"
-                                    className={`rounded-full p-2 transition-colors ${
-                                        copiedTarget === "ai"
+                                    className={`rounded-full p-2 transition-colors ${copiedTarget === "ai"
                                             ? "bg-transparent text-green-500" // チェック時: 背景なし
                                             : "bg-transparent text-muted-foreground hover:bg-muted hover:text-foreground"
-                                    }`}
+                                        }`}
                                     onClick={() => void copyToClipboard(block.ai_content, "ai")}
                                 >
                                     {copiedTarget === "ai" ? (
@@ -257,50 +254,50 @@ export function MessageBlock({ block, connector, onBranch, isStreaming = false }
                     style={{ height: isSplit ? LAST_HEIGHT : INTER_HEIGHT }}
                 >
                     <svg className="pointer-events-none absolute left-0 top-0 h-full w-full overflow-visible">
-                    <line
-                        x1="100"
-                        y1="0"
-                        x2="100"
-                        y2={isSplit ? MAIN_NODE_Y : INTER_HEIGHT}
-                        stroke="currentColor"
-                        strokeWidth={LINE_WIDTH}
-                        className={LINE_COLOR}
-                    />
+                        <line
+                            x1="100"
+                            y1="0"
+                            x2="100"
+                            y2={isSplit ? MAIN_NODE_Y : INTER_HEIGHT}
+                            stroke="currentColor"
+                            strokeWidth={LINE_WIDTH}
+                            className={LINE_COLOR}
+                        />
 
-                    {!isSplit &&
-                        (isBranched ? (
-                            <BranchNode cy={INTER_DOT_Y} />
-                        ) : (
-                            <circle cx="100" cy={INTER_DOT_Y} r="4" fill="currentColor" className={LINE_COLOR} />
-                        ))}
+                        {!isSplit &&
+                            (isBranched ? (
+                                <BranchNode cy={INTER_DOT_Y} />
+                            ) : (
+                                <circle cx="100" cy={INTER_DOT_Y} r="4" fill="currentColor" className={LINE_COLOR} />
+                            ))}
 
-                    {isSplit && (
-                        <>
-                            {isBranched && <BranchNode cy={SPLIT_START_Y + 25} />}
+                        {isSplit && (
+                            <>
+                                {isBranched && <BranchNode cy={SPLIT_START_Y + 25} />}
 
-                            <circle cx="100" cy={MAIN_NODE_Y} r="5" fill="currentColor" className="text-black" />
+                                <circle cx="100" cy={MAIN_NODE_Y} r="5" fill="currentColor" className="text-black" />
 
-                            {options?.showReturn && (
-                                <path
-                                    d={`M 100 ${SPLIT_START_Y} C 100 ${BTN_CY} 80 ${BTN_CY} ${LEFT_BTN_CX + 20} ${BTN_CY}`}
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth={LINE_WIDTH}
-                                    className={LINE_COLOR}
-                                />
-                            )}
+                                {options?.showReturn && (
+                                    <path
+                                        d={`M 100 ${SPLIT_START_Y} C 100 ${BTN_CY} 80 ${BTN_CY} ${LEFT_BTN_CX + 20} ${BTN_CY}`}
+                                        fill="none"
+                                        stroke="currentColor"
+                                        strokeWidth={LINE_WIDTH}
+                                        className={LINE_COLOR}
+                                    />
+                                )}
 
-                            {options?.showBranch && (
-                                <path
-                                    d={`M 100 ${SPLIT_START_Y} C 100 35 ${RIGHT_BTN_CX} 25 ${RIGHT_BTN_CX} ${BTN_CY - 20}`}
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth={LINE_WIDTH}
-                                    className={LINE_COLOR}
-                                />
-                            )}
-                        </>
-                    )}
+                                {options?.showBranch && (
+                                    <path
+                                        d={`M 100 ${SPLIT_START_Y} C 100 35 ${RIGHT_BTN_CX} 25 ${RIGHT_BTN_CX} ${BTN_CY - 20}`}
+                                        fill="none"
+                                        stroke="currentColor"
+                                        strokeWidth={LINE_WIDTH}
+                                        className={LINE_COLOR}
+                                    />
+                                )}
+                            </>
+                        )}
                     </svg>
 
                     {isSplit && (

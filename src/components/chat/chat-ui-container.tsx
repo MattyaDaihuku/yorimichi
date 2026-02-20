@@ -123,7 +123,7 @@ const CreationPane = ({ chatId, parentBlockId, reload, onCreated }: CreationPane
             <MessageBlock
               block={parentBlock}
               connector={{
-                style: "straight",
+                style: "branched",
                 type: "continue"
               }}
             />
@@ -234,7 +234,7 @@ const ChatPaneHelper = ({ pane, onRemove, chatId, reload, onPaneConfigUpdate, on
           </AlertDialogTrigger>
           <AlertDialogContent className="min-w-0 w-[400px] sm:max-w-[400px]">
             <AlertDialogHeader>
-              <AlertDialogTitle>表示の確認</AlertDialogTitle>
+              <AlertDialogTitle>ブランチ削除の確認</AlertDialogTitle>
               <AlertDialogDescription>
                 {pane.branchId ? "本当にこのブランチを削除しますか？" : "このウィンドウを閉じますか？"}
               </AlertDialogDescription>
