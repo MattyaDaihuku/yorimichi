@@ -22,7 +22,10 @@ const fetcher = async (
 
 export function ChatHistory({ onClickItem }: { onClickItem?: () => void }) {
   const pathname = usePathname();
-  const { data: chats = [], mutate } = useSWR("/api/internal/chat/list", fetcher);
+  const { data: chats = [], mutate } = useSWR("/api/internal/chat/list", fetcher, {
+    revalidateOnMount: false,
+    revalidateIfStale: false,
+  });
 
   const togglePin = async (chatId: string, isPinned: boolean) => {
     try {
