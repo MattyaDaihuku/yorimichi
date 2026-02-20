@@ -10,6 +10,14 @@ export type ChatMessage = {
     content: string;
 };
 
+// Error Types
+export class RateLimitError extends Error {
+    constructor(public limitType: 'DAILY' | 'MINUTE') {
+        super(`Rate limit exceeded: ${limitType}`);
+        this.name = 'RateLimitError';
+    }
+}
+
 // API Key Rotation Logic (Supports up to 20 keys)
 const apiKeys = [
     process.env.GOOGLE_GENERATIVE_AI_API_KEY,
@@ -17,26 +25,64 @@ const apiKeys = [
     ...Array.from({ length: 19 }, (_, i) => process.env[`GOOGLE_GENERATIVE_AI_API_KEY_${i + 2}`])
 ].filter(Boolean) as string[];
 
-// API Key Rotation State (Sequential)
+// Model Priority List (Fallback order)
+const MODEL_PRIORITY = [
+    "gemini-2.5-flash",
+    "gemini-2.5-flash-lite",
+    "gemini-3-flash-preview",
+    "gemma-3-27b-it"
+];
+
+// State (Module-level, persists in memory for server instance)
 let currentKeyIndex = 0;
+// Initialize with ACTIVE_MODEL, fallback to first in priority if not found
+let currentModel = ACTIVE_MODEL;
 
 /**
- * Returns a Google provider instance with a sequentially selected API key
+ * Returns a Google provider instance with the current API key
  */
 function getGoogleProvider() {
     if (apiKeys.length === 0) {
         throw new Error("No Google API keys found in environment variables.");
     }
-
-    // Select key sequentially
     const selectedKey = apiKeys[currentKeyIndex];
-
-    // Increment and wrap around
-    currentKeyIndex = (currentKeyIndex + 1) % apiKeys.length;
-
     return createGoogleGenerativeAI({
         apiKey: selectedKey,
     });
+}
+
+/**
+ * Rotate the API Key to the next available one.
+ */
+function rotateApiKey() {
+    const previousIndex = currentKeyIndex;
+    currentKeyIndex = (currentKeyIndex + 1) % apiKeys.length;
+    console.log(`[Chat] Rotated API Key from index ${previousIndex} to ${currentKeyIndex}`);
+}
+
+/**
+ * Rotate the Model to the next priority.
+ */
+function rotateModel() {
+    let currentIndex = MODEL_PRIORITY.indexOf(currentModel);
+    if (currentIndex === -1) {
+        // Current model not in priority list, fallback to first
+        currentModel = MODEL_PRIORITY[0];
+        console.log(`[Chat] Unknown model ${ACTIVE_MODEL}, falling back to ${currentModel}`);
+        return;
+    }
+
+    if (currentIndex < MODEL_PRIORITY.length - 1) {
+        const previousModel = currentModel;
+        currentModel = MODEL_PRIORITY[currentIndex + 1];
+        console.log(`[Chat] Rotated Model from ${previousModel} to ${currentModel}`);
+    } else {
+        // Wrap back to first model? Or stay on last?
+        // User asked to prioritize from top to bottom. If all fail, maybe wrap to top?
+        // Let's wrap to top to allow continuous retry if quota resets.
+        currentModel = MODEL_PRIORITY[0];
+        console.log(`[Chat] Rotated Model back to start: ${currentModel}`);
+    }
 }
 
 /**
@@ -55,47 +101,87 @@ export async function processChatInteraction(
 
         const google = getGoogleProvider();
 
-        const result = streamText({
-            model: google(ACTIVE_MODEL),
-            messages,
-            onFinish: async ({ text }) => {
-                // AIの応答完了後にDBに保存
-                try {
-                    console.log(`[Chat] Saving/Updating block for branch: ${branchId} with model: ${ACTIVE_MODEL}`);
-                    if (blockId) {
-                        // Update existing block
-                        await prisma.block.upsert({
-                            where: { block_id: blockId },
-                            update: {
-                                ai_content: text,
-                            },
-                            create: {
-                                block_id: blockId,
-                                branch_id: branchId,
-                                user_content: lastUserMessage.content,
-                                ai_content: text
-                            }
-                        });
-                    } else {
-                        // Create new block
-                        await prisma.block.create({
-                            data: {
-                                branch_id: branchId,
-                                user_content: lastUserMessage.content,
-                                ai_content: text,
-                            }
-                        });
-                    }
-                } catch (dbError) {
-                    console.error("Failed to save block:", dbError);
-                }
-            },
-        });
+        // Attempt to call the API
+        // If it fails with Rate Limit, we throw RateLimitError
+        // The calling route should catch it and return 429
 
-        // @ts-ignore
-        return result.toTextStreamResponse();
+        try {
+            const result = streamText({
+                model: google(currentModel), // Use current dynamic model
+                messages,
+                maxRetries: 0,
+                onFinish: async ({ text }) => {
+                    // AIの応答完了後にDBに保存
+                    try {
+                        console.log(`[Chat] Saving block for branch: ${branchId} with model: ${currentModel}`);
+
+                        if (blockId) {
+                            // Update existing block or insert if missing (upsert)
+                            await prisma.block.upsert({
+                                where: { block_id: blockId },
+                                update: {
+                                    ai_content: text,
+                                },
+                                create: {
+                                    block_id: blockId,
+                                    branch_id: branchId,
+                                    user_content: lastUserMessage.content,
+                                    ai_content: text
+                                }
+                            });
+                        } else {
+                            // Fallback create
+                            await prisma.block.create({
+                                data: {
+                                    branch_id: branchId,
+                                    user_content: lastUserMessage.content,
+                                    ai_content: text,
+                                }
+                            });
+                        }
+                    } catch (dbError) {
+                        console.error("Failed to save block:", dbError);
+                    }
+                },
+            });
+
+            // @ts-ignore
+            return result.toTextStreamResponse();
+
+        } catch (streamError: any) {
+            const errorMessage = streamError?.message || JSON.stringify(streamError);
+            const isRateLimit = errorMessage.includes('429') || errorMessage.includes('Resource has been exhausted');
+
+            if (isRateLimit) {
+                console.warn(`[Chat] Rate Limit Encountered. Key Index: ${currentKeyIndex}, Model: ${currentModel}`);
+
+                // Determine logic for rotation
+                // Always rotate key first
+                const oldKeyIndex = currentKeyIndex;
+                rotateApiKey();
+
+                // If we wrapped around keys (index went from N to 0), consider rotating model
+                if (currentKeyIndex === 0 && oldKeyIndex === apiKeys.length - 1) {
+                    rotateModel();
+                } else if (apiKeys.length === 1) {
+                    // Only 1 key available, so must rotate model immediately
+                    rotateModel();
+                }
+
+                // Identify if it's Daily or Minute
+                const isDaily = errorMessage.toLowerCase().includes('quota') || errorMessage.toLowerCase().includes('daily');
+                const limitType = isDaily ? 'DAILY' : 'MINUTE';
+
+                throw new RateLimitError(limitType);
+            }
+
+            throw streamError;
+        }
 
     } catch (error) {
+        if (error instanceof RateLimitError) {
+            throw error; // Re-throw for route handler
+        }
         console.error("[ProcessChatInteraction]", error);
         return new NextResponse("Internal AI Error", { status: 500 });
     }
