@@ -8,17 +8,17 @@ type StreamingBlock = {
     created_at: string;
 };
 
-type MainBranchBlockListProps = {
+type BlockListProps = {
     branchId: string;
     streamingBlock?: StreamingBlock | null;
     onBranch?: (blockId: string) => void;
 };
 
-export function MainBranchBlockList({
+export function BlockList({
     branchId,
     streamingBlock,
     onBranch,
-}: MainBranchBlockListProps) {
+}: BlockListProps) {
     const chatData = useChatStore((state) => state.chatData);
 
     const targetBranch = chatData?.branches?.[branchId];

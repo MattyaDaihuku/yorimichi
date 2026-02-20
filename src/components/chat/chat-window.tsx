@@ -2,9 +2,18 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ChatComposer } from "@/components/chat/chat-composer";
-import { MainBranchBlockList } from "@/components/chat/main-branch-block-list";
+import { BlockList } from "@/components/chat/block-list";
 import { cn } from "@/lib/utils";
 import { useChatStore } from "@/store/chat-store";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 type StreamingBlock = {
     block_id: string;
@@ -42,6 +51,9 @@ export function ChatWindow({
 }: ChatWindowProps) {
     const [input, setInput] = useState("");
     const [isSending, setIsSending] = useState(false);
+    const [errorOpen, setErrorOpen] = useState(false);
+    const [errorCode, setErrorCode] = useState<number | null>(null);
+    const [errorMessage, setErrorMessage] = useState("");
     const blockListRef = useRef<HTMLDivElement | null>(null);
     const blocks = useChatStore((state) => state.chatData?.blocks ?? {});
 
@@ -64,25 +76,70 @@ export function ChatWindow({
         if (!message || isSending || disabled) return;
 
         setIsSending(true);
+        setInput("");
         try {
             await onSend(message);
-            setInput("");
         } catch (error) {
             console.error(error);
+            const fallbackMessage = "送信中にエラーが発生しました。";
+
+            let parsedCode: number | null = null;
+            let parsedMessage = fallbackMessage;
+
+            if (error instanceof Error && error.message) {
+                const match = error.message.match(/^\[(\d+)\]\s*(.*)$/);
+                if (match) {
+                    parsedCode = Number(match[1]);
+                    parsedMessage = match[2] || fallbackMessage;
+                } else {
+                    parsedMessage = error.message;
+                }
+            }
+
+            setInput(message);
+            setErrorCode(parsedCode);
+            setErrorMessage(parsedMessage);
+            setErrorOpen(true);
         } finally {
             setIsSending(false);
         }
     };
 
+    const retryMessage = "しばらく時間をおいて再度お試しください。";
+    const shouldShowRetryMessage = !errorMessage.includes(retryMessage);
+
     return (
-        <section className={cn("space-y-4", fixedInput ? "pb-64" : "", className)}>
-            <div ref={blockListRef}>
-                <MainBranchBlockList
-                    branchId={branchId}
-                    streamingBlock={streamingBlock}
-                    onBranch={onBranch}
-                />
-            </div>
+        <>
+            <AlertDialog open={errorOpen} onOpenChange={setErrorOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>
+                            エラーが発生しました{errorCode ? ` (${errorCode})` : ""}
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                            {errorMessage}
+                            {shouldShowRetryMessage && (
+                                <>
+                                    <br />
+                                    {retryMessage}
+                                </>
+                            )}
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogAction>閉じる</AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+
+            <section className={cn("space-y-4", fixedInput ? "pb-64" : "", className)}>
+                <div ref={blockListRef}>
+                    <BlockList
+                        branchId={branchId}
+                        streamingBlock={streamingBlock}
+                        onBranch={onBranch}
+                    />
+                </div>
 
             {fixedInput ? (
                 <div className={cn("pointer-events-none fixed bottom-0 z-20 bg-background pb-[env(safe-area-inset-bottom)]", fixedOffsetClassName)}>
@@ -123,6 +180,7 @@ export function ChatWindow({
                     )}
                 </>
             )}
-        </section>
+            </section>
+        </>
     );
 }

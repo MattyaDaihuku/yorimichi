@@ -4,21 +4,14 @@ import { useState } from "react";
 import type { ChatDetailResponse } from "@/store/chat-store";
 import { ChatWindow } from "@/components/chat/chat-window";
 import { useChatStore } from "@/store/chat-store";
+import { sendMessageWithStreaming, type StreamingBlock } from "@/lib/chat-send";
 
 type BranchItem = ChatDetailResponse["branches"][string];
-type BlockItem = ChatDetailResponse["blocks"][string];
 
 type MainBranchViewProps = {
-  chatId: string;
-  branch: BranchItem;
-  reload: () => Promise<void>;
-};
-
-type StreamingBlock = {
-  block_id: string;
-  user_content: string;
-  ai_content: string;
-  created_at: string;
+    chatId: string;
+    branch: BranchItem;
+    reload: () => Promise<void>;
 };
 
 export function MainBranchView({ chatId, branch, reload }: MainBranchViewProps) {
@@ -38,56 +31,14 @@ export function MainBranchView({ chatId, branch, reload }: MainBranchViewProps) 
             { role: "assistant" as const, content: block.ai_content },
         ]);
 
-        setStreamingBlock({
-            block_id: "streaming-block",
-            user_content: message,
-            ai_content: "",
-            created_at: new Date().toISOString(),
+        await sendMessageWithStreaming({
+            chatId,
+            branchId: branch.branch_id,
+            message,
+            history,
+            reload,
+            setStreamingBlock,
         });
-
-        const res = await fetch("/api/internal/message/send", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                chat_id: chatId,
-                branch_id: branch.branch_id,
-                block_id: crypto.randomUUID(),
-                message,
-                history,
-            }),
-        });
-
-        if (!res.ok) {
-            throw new Error("Failed to send message");
-        }
-
-        if (!res.body) {
-            throw new Error("Response stream is not available");
-        }
-
-        const reader = res.body.getReader();
-        const decoder = new TextDecoder();
-        let aiContent = "";
-
-        while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
-
-            aiContent += decoder.decode(value, { stream: true });
-            setStreamingBlock((prev) =>
-                prev
-                    ? {
-                        ...prev,
-                        ai_content: aiContent,
-                    }
-                    : prev
-            );
-        }
-
-        await reload();
-        setStreamingBlock(null);
     };
 
     return (

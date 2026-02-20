@@ -22,14 +22,14 @@ export function Sidebar() {
       {/* デスクトップ用 */}
       {!isCollapsed && (
         <div 
-          className="hidden md:block fixed inset-0 z-30 bg-black/40 backdrop-blur-sm animate-in fade-in duration-300"
+          className="hidden md:block fixed inset-0 z-30 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200"
           onClick={() => setIsCollapsed(true)}
         />
       )}
 
       <aside
         className={cn(
-          "hidden md:flex flex-col h-full fixed top-0 left-0 z-40 transition-all duration-300 ease-in-out shadow-xl border-none",
+          "hidden md:flex flex-col h-full fixed top-0 left-0 z-40 transition-all duration-200 ease-out shadow-xl border-none",
           "bg-[#E9EEF6]",
           isCollapsed ? "w-[72px] shadow-none" : "w-[280px]"
         )}

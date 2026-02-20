@@ -19,14 +19,20 @@ const requestSchema = z.object({
 export async function POST(req: Request) {
     let blockIdForCleanup: string | undefined;
 
+
     try {
         const userId = await getAuthUserId(req);
-        if (!userId) return new NextResponse("Unauthorized", { status: 401 });
+        if (!userId) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
 
         const body = await req.json();
         const validation = requestSchema.safeParse(body);
         if (!validation.success) {
-            return new NextResponse(JSON.stringify(validation.error), { status: 400 });
+            return NextResponse.json(
+                { error: "Invalid request", details: validation.error.flatten() },
+                { status: 400 }
+            );
         }
 
         const { branch_id, block_id, message, history } = validation.data;
@@ -50,6 +56,7 @@ export async function POST(req: Request) {
                 }
             });
         });
+        createdBlockId = block_id;
 
         // 2. Call Gemini and Stream Response
         const messages: ChatMessage[] = [
@@ -99,6 +106,22 @@ export async function POST(req: Request) {
         }
 
         console.error("[MESSAGE_Send]", error);
-        return new NextResponse("Internal Error", { status: 500 });
+
+        if (createdBlockId) {
+            try {
+                await prisma.block.deleteMany({
+                    where: { block_id: createdBlockId },
+                });
+            } catch (deleteError) {
+                console.error("[MESSAGE_Send][CleanupFailed]", deleteError);
+            }
+        }
+
+        return NextResponse.json(
+            {
+                error: "メッセージ送信中にエラーが発生しました。しばらく時間をおいて再度お試しください。",
+            },
+            { status: 500 }
+        );
     }
 }
