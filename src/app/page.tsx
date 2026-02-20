@@ -7,12 +7,91 @@ import { Header } from "@/components/header"; // Headerをインポート
 import { useUser } from "@clerk/nextjs";
 import { mutate } from "swr";
 import { ChatComposer } from "@/components/chat/chat-composer";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export default function Home() {
   const [input, setInput] = useState("");
   const [isSending, setIsSending] = useState(false);
+  const [errorOpen, setErrorOpen] = useState(false);
+  const [errorCode, setErrorCode] = useState<number | null>(null);
+  const [errorMessage, setErrorMessage] = useState("");
   const { user } = useUser();
   const router = useRouter();
+
+  const parseError = (error: unknown) => {
+    const fallbackMessage = "会話の開始に失敗しました。";
+    let parsedCode: number | null = null;
+    let parsedMessage = fallbackMessage;
+
+    if (error instanceof Error && error.message) {
+      const match = error.message.match(/^\[(\d+)\]\s*(.*)$/);
+      if (match) {
+        parsedCode = Number(match[1]);
+        parsedMessage = match[2] || fallbackMessage;
+      } else {
+        parsedMessage = error.message;
+      }
+    }
+
+    return { parsedCode, parsedMessage };
+  };
+
+  const readInitStreamAndValidate = async (res: Response) => {
+    if (!res.body) {
+      throw new Error("[500] AI応答の取得に失敗しました。しばらく時間をおいて再度お試しください。");
+    }
+
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let aiContent = "";
+    let markerStatus: number | null = null;
+    const markerRegex = /\[\[ERROR:(\d+)\]\]/g;
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      const chunk = decoder.decode(value, { stream: true });
+      let match: RegExpExecArray | null;
+      while ((match = markerRegex.exec(chunk)) !== null) {
+        markerStatus = Number(match[1]);
+      }
+
+      aiContent += chunk.replace(markerRegex, "");
+    }
+
+    if (markerStatus) {
+      const markerMessage =
+        markerStatus === 429
+          ? "利用が集中しています。しばらく時間をおいて再度お試しください。"
+          : "AI応答の取得に失敗しました。しばらく時間をおいて再度お試しください。";
+      throw new Error(`[${markerStatus}] ${markerMessage}`);
+    }
+
+    if (aiContent.trim().length === 0) {
+      throw new Error("[500] AI応答の取得に失敗しました。しばらく時間をおいて再度お試しください。");
+    }
+  };
+
+  const revertInitializedChat = async (chatId: string) => {
+    try {
+      await fetch("/api/internal/chat/revert", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ chat_id: chatId }),
+      });
+    } catch (revertError) {
+      console.error("[ChatInitRevertFailed]", revertError);
+    }
+  };
 
   const handleSend = async () => {
     const message = input.trim();
@@ -38,20 +117,62 @@ export default function Home() {
         }),
       });
 
-      if (!res.ok) throw new Error("Failed to create chat");
+      if (!res.ok) {
+        const payload = await res
+          .json()
+          .catch(() => ({ error: "会話の開始に失敗しました。" }));
+
+        const messageText =
+          typeof payload?.error === "string"
+            ? payload.error
+            : "会話の開始に失敗しました。";
+
+        throw new Error(`[${res.status}] ${messageText}`);
+      }
+
+      await readInitStreamAndValidate(res);
 
       setInput("");
       await mutate("/api/internal/chat/list");
       router.push(`/chat/${chatId}`);
     } catch (error) {
-      console.error(error);
+      await revertInitializedChat(chatId);
+      const { parsedCode, parsedMessage } = parseError(error);
+      setErrorCode(parsedCode);
+      setErrorMessage(parsedMessage);
+      setErrorOpen(true);
     } finally {
       setIsSending(false);
     }
   };
 
+  const retryMessage = "しばらく時間をおいて再度お試しください。";
+  const shouldShowRetryMessage = !errorMessage.includes(retryMessage);
+
   return (
     <>
+      <AlertDialog open={errorOpen} onOpenChange={setErrorOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              エラーが発生しました{errorCode ? ` (${errorCode})` : ""}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {errorMessage}
+              {shouldShowRetryMessage && (
+                <>
+                  <br />
+                  {retryMessage}
+                </>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction>閉じる</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <Header className="bg-[#F0F4F8]" />
 
       <main className="flex-1 flex flex-col items-center justify-center min-h-[calc(100vh-4rem)] bg-[#F0F4F8] text-[#1F1F1F]">

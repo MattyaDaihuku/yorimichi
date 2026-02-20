@@ -101,9 +101,16 @@ export async function processChatInteraction(
         const result = streamText({
             model: google(ACTIVE_MODEL),
             messages,
-            onFinish: async ({ text }) => {
+            onFinish: async ({ text, finishReason }) => {
                 // AIの応答完了後にDBに保存
                 try {
+                    if (!text.trim().length || finishReason === "error") {
+                        if (blockId) {
+                            await prisma.block.deleteMany({ where: { block_id: blockId } });
+                        }
+                        return;
+                    }
+
                     console.log(`[Chat] Saving/Updating block for branch: ${branchId} with model: ${ACTIVE_MODEL}`);
                     if (blockId) {
                         // Update existing block
@@ -135,8 +142,40 @@ export async function processChatInteraction(
             },
         });
 
-        // @ts-ignore
-        return result.toTextStreamResponse();
+        const encoder = new TextEncoder();
+
+        const stream = new ReadableStream<Uint8Array>({
+            async start(controller) {
+                try {
+                    for await (const part of result.fullStream) {
+                        if (part.type === "text-delta") {
+                            controller.enqueue(encoder.encode(part.text));
+                            continue;
+                        }
+
+                        if (part.type === "error") {
+                            const normalized = normalizeAiError(part.error);
+                            const marker = `[[ERROR:${normalized.status}]]`;
+                            controller.enqueue(encoder.encode(marker));
+                        }
+                    }
+                } catch (streamError) {
+                    const normalized = normalizeAiError(streamError);
+                    const marker = `[[ERROR:${normalized.status}]]`;
+                    controller.enqueue(encoder.encode(marker));
+                } finally {
+                    controller.close();
+                }
+            },
+        });
+
+        return new Response(stream, {
+            status: 200,
+            headers: {
+                "Content-Type": "text/plain; charset=utf-8",
+                "Cache-Control": "no-cache",
+            },
+        });
 
     } catch (error) {
         console.error("[ProcessChatInteraction]", error);

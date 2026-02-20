@@ -72,12 +72,25 @@ export async function sendMessageWithStreaming({
         const reader = res.body.getReader();
         const decoder = new TextDecoder();
         let aiContent = "";
+        let markerStatus: number | null = null;
+
+        const markerRegex = /\[\[ERROR:(\d+)\]\]/g;
 
         while (true) {
             const { done, value } = await reader.read();
             if (done) break;
 
-            aiContent += decoder.decode(value, { stream: true });
+            const chunk = decoder.decode(value, { stream: true });
+            let sanitizedChunk = chunk;
+            let match: RegExpExecArray | null;
+
+            while ((match = markerRegex.exec(chunk)) !== null) {
+                markerStatus = Number(match[1]);
+            }
+
+            sanitizedChunk = sanitizedChunk.replace(markerRegex, "");
+
+            aiContent += sanitizedChunk;
             setStreamingBlock((prev) =>
                 prev
                     ? {
@@ -86,6 +99,14 @@ export async function sendMessageWithStreaming({
                     }
                     : prev
             );
+        }
+
+        if (markerStatus) {
+            const markerMessage =
+                markerStatus === 429
+                    ? "利用が集中しています。しばらく時間をおいて再度お試しください。"
+                    : "AI応答の取得に失敗しました。しばらく時間をおいて再度お試しください。";
+            throw new Error(`[${markerStatus}] ${markerMessage}`);
         }
 
         if (aiContent.trim().length === 0) {
