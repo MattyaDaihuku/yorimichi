@@ -7,6 +7,7 @@ import { Header } from "@/components/header"; // Headerをインポート
 import { useUser } from "@clerk/nextjs";
 import { mutate } from "swr";
 import { ChatComposer } from "@/components/chat/chat-composer";
+import { useChatStore } from "@/store/chat-store";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,6 +26,7 @@ export default function Home() {
   const [errorMessage, setErrorMessage] = useState("");
   const { user } = useUser();
   const router = useRouter();
+  const setCurrentIds = useChatStore((state) => state.setCurrentIds);
 
   const parseError = (error: unknown) => {
     const fallbackMessage = "会話の開始に失敗しました。";
@@ -70,6 +72,10 @@ export default function Home() {
 
     const chatId = crypto.randomUUID();
     const branchId = crypto.randomUUID();
+    const blockId = crypto.randomUUID();
+
+    setCurrentIds({ chatId, branchId, blockId });
+
     setIsSending(true);
 
     try {
@@ -147,7 +153,7 @@ export default function Home() {
 
       <main className="flex-1 flex flex-col items-center justify-center min-h-[calc(100vh-4rem)] bg-[#F0F4F8] text-[#1F1F1F]">
         <div className="w-full max-w-3xl px-4 flex flex-col gap-8">
-          
+
           {/* 挨拶エリア */}
           <div className="space-y-2">
             <div className="flex items-center gap-2 text-4xl md:text-5xl font-medium tracking-tight bg-gradient-to-r from-blue-600 via-purple-500 to-red-500 bg-clip-text text-transparent w-fit animate-in fade-in slide-in-from-bottom-4 duration-700">

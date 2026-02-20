@@ -1,3 +1,4 @@
+import { useChatStore } from "@/store/chat-store";
 import type { AiModel } from "@/lib/ai-active-model";
 
 export type ChatHistoryItem = {
@@ -32,6 +33,7 @@ export async function sendMessageWithStreaming({
     setStreamingBlock,
 }: SendMessageParams): Promise<void> {
     const blockId = crypto.randomUUID();
+    useChatStore.getState().setCurrentIds({ blockId });
 
     setStreamingBlock({
         block_id: "streaming-block",

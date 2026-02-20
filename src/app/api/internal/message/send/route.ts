@@ -58,6 +58,7 @@ export async function POST(req: Request) {
                 }
             });
         });
+        blockIdForCleanup = block_id;
 
         // 2. Call Gemini and Stream Response
         const messages: ChatMessage[] = [
