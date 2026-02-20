@@ -96,11 +96,11 @@ export function MessageBlock({ block, connector, onBranch, isStreaming = false }
         <div data-message-block="true" className="flex w-full flex-col items-center scroll-mt-24">
             <div className="relative z-10 w-full max-w-3xl rounded-[24px] border border-gray-100 bg-white p-6 shadow-sm">
                 <div className="group mb-6 flex items-start justify-end gap-4">
-                    <div className="flex flex-col gap-3 pt-3 opacity-100 transition-opacity">
+                    <div className="flex translate-x-2 flex-col gap-3 opacity-100 transition-opacity">
                         <button
                             type="button"
                             aria-label="Copy user message"
-                            className={`rounded-full p-2 transition-colors ${
+                            className={`flex h-10 w-10 items-center justify-center rounded-full p-0 transition-colors ${
                                 copiedTarget === "user"
                                     ? "bg-transparent text-green-500" // チェック時: 背景なし
                                     : "bg-transparent text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -115,7 +115,7 @@ export function MessageBlock({ block, connector, onBranch, isStreaming = false }
                         </button>
                     </div>
 
-                    <div className="w-fit max-w-[75%] min-w-[120px] rounded-2xl rounded-tr-sm bg-[#E6F0FF] px-6 py-4 text-foreground/90">
+                    <div className="w-fit max-w-[75%] rounded-4xl rounded-tr-sm bg-[#E6F0FF] px-6 py-4 text-foreground/90">
                         <p className="whitespace-pre-wrap break-words text-sm leading-relaxed md:text-base">
                             {block.user_content}
                         </p>
@@ -183,9 +183,9 @@ export function MessageBlock({ block, connector, onBranch, isStreaming = false }
                                                         <button
                                                             type="button"
                                                             onClick={() => void copyToClipboard(codeText, targetId)}
-                                                            className={`rounded-full p-2 transition-colors ${
+                                                            className={`flex h-9 w-9 items-center justify-center rounded-full p-0 transition-colors ${
                                                                 copiedTarget === targetId
-                                                                    ? "bg-primary/15 text-primary"// チェック時: ホバー影なし
+                                                                    ? "text-primary"// チェック時: ホバー影なし
                                                                     : "text-gray-400 hover:bg-gray-700 hover:text-gray-200"
                                                             }`}
                                                             aria-label="Copy code"
@@ -229,7 +229,7 @@ export function MessageBlock({ block, connector, onBranch, isStreaming = false }
                                 <button
                                     type="button"
                                     aria-label="Copy AI message"
-                                    className={`rounded-full p-2 transition-colors ${
+                                    className={`flex h-10 w-10 items-center justify-center rounded-full p-0 transition-colors ${
                                         copiedTarget === "ai"
                                             ? "bg-transparent text-green-500" // チェック時: 背景なし
                                             : "bg-transparent text-muted-foreground hover:bg-muted hover:text-foreground"
