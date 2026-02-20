@@ -94,13 +94,6 @@ export default function ChatPage({ params }: ChatPageProps) {
   );
 
   return (
-    // <>
-    //   {/* 会話タイトルと白背景を指定 */}
-    //   <Header title={id} className="bg-background" />
-
-    //   <p>a</p>
-    // </>
-
     <div className="flex flex-col h-screen w-full bg-gray-50/50">
       {/* 会話タイトルと白背景を指定 */}
 
@@ -130,6 +123,6 @@ export default function ChatPage({ params }: ChatPageProps) {
           )}
         </div>
       </main>
-    </>
+    </div>
   );
 }
