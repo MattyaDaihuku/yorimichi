@@ -1,66 +1,15 @@
 "use client";
 
-import { useState, Fragment } from "react";
-import { Plus, Trash2, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { useState, Fragment, useEffect } from "react";
 import { SplitWindow } from "@/components/chat/split-window";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
 
+import { DeleteBranchButton } from "@/components/chat/delete-branch-button";
+import { AddBranchButton } from "@/components/chat/add-branch-button";
+import { useChatStore } from "@/store/chat-store";
 
-// Mock data generator for demo purposes
-const createMockChatData = (branchId: string, index: number) => ({
-  chat_id: "demo-chat-id",
-  user_id: "user-1",
-  main_branch_id: "main",
-  is_pinned: false,
-  chat_title: "Demo Chat",
-  created_at: new Date().toISOString(),
-  update_at: new Date().toISOString(),
-  branches: [
-    {
-      branch_id: branchId,
-      chat_id: "demo-chat-id",
-      parent_branch_id: branchId === "main" ? null : "main",
-      parent_block_id: null,
-      branch_title: branchId === "main" ? "Main" : `Branch ${branchId}`,
-      status: 'active' as const,
-      created_at: new Date().toISOString(),
-      update_at: new Date().toISOString(),
-    }
-  ],
-  blocks: [
-    {
-      block_id: `block-${index}-1`,
-      branch_id: branchId,
-      user_content: `Hello from ${branchId}`,
-      ai_content: `This is a conversation in **${branchId}**.`,
-      created_at: new Date().toISOString(),
-      update_at: new Date().toISOString(),
-    },
-    {
-      block_id: `block-${index}-2`,
-      branch_id: branchId,
-      user_content: "Reviewing layout...",
-      ai_content: "The split view layout allows comparing branches side-by-side.",
-      created_at: new Date().toISOString(),
-      update_at: new Date().toISOString(),
-    }
-  ]
-});
-
-// --- Helper Components (Defined locally to avoid file clutter) ---
+// --- Helper Components ---
 
 interface ChatPaneHelperProps {
   pane: { id: string; branchId: string };
@@ -73,66 +22,19 @@ const ChatPaneHelper = ({ pane, index, onRemove, className }: ChatPaneHelperProp
   return (
     <div className={cn("h-full w-full bg-background border rounded-xl shadow-sm overflow-hidden relative", className)}>
       {/* Header Area (Minimal: only Delete button) */}
-      <AlertDialog>
-        <AlertDialogTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="absolute top-2 right-2 h-8 w-8 rounded-full hover:bg-destructive/10 backdrop-blur-sm border shadow-sm transition-colors z-20 opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
-            title="Delete window"
-          >
-            <Trash2 className="h-4 w-4 text-destructive" />
-          </Button>
-        </AlertDialogTrigger>
-        <AlertDialogContent className="min-w-0 w-[400px] sm:max-w-[400px]">
-          <AlertDialogHeader>
-            <AlertDialogTitle>ブランチ削除の確認</AlertDialogTitle>
-            <AlertDialogDescription>
-              本当にこのブランチを削除しますか？
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter className="!flex-row justify-end gap-2">
-            <AlertDialogCancel className="mt-0">キャンセル</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => onRemove(pane.id)}
-              variant="destructive"
-            >
-              削除
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <DeleteBranchButton
+        onRemove={() => onRemove(pane.id)}
+        className="absolute top-2 right-2 z-20 opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
+      />
 
       {/* Chat Window Content */}
       <div className="h-full w-full overflow-hidden">
         <SplitWindow
           chatId="demo-chat-id"
-          mockData={createMockChatData(pane.branchId, index)}
+          mockData={{ branches: [{ branch_id: pane.branchId }] }}
           className="h-full w-full border-none shadow-none rounded-none bg-transparent"
         />
       </div>
-    </div>
-  );
-};
-
-interface AddWindowButtonHelperProps {
-  onClick: () => void;
-  isFullWidth?: boolean;
-  className?: string;
-}
-
-const AddWindowButtonHelper = ({ onClick, isFullWidth, className }: AddWindowButtonHelperProps) => {
-  return (
-    <div
-      className={cn(
-        "flex flex-col items-center justify-center bg-muted/30 border-2 border-dashed border-muted-foreground/40 rounded-4xl shadow-sm hover:bg-muted/80 transition-colors cursor-pointer group",
-        isFullWidth ? "flex-1 w-full h-full" : "w-12 shrink-0",
-        className
-      )}
-      onClick={onClick}
-      title="Add window"
-    >
-      <Plus className="w-6 h-6 text-muted-foreground/60" />
     </div>
   );
 };
@@ -146,12 +48,84 @@ export function ChatUIContainer() {
     { id: "pane-1", branchId: "main" }
   ]);
 
+  // モックデータをZustandのStoreに注入（デモ用）
+  useEffect(() => {
+    const branches: Record<string, any> = {
+      main: {
+        branch_id: "main",
+        chat_id: "demo-chat-id",
+        parent_branch_id: null,
+        parent_block_id: null,
+        branch_title: "Main Branch",
+        status: "active",
+        created_at: new Date(Date.now() - 100000).toISOString(),
+        update_at: new Date().toISOString(),
+      }
+    };
+
+    const blocks: Record<string, any> = {
+      "block-main-1": {
+        block_id: "block-main-1",
+        branch_id: "main",
+        user_content: "チャットAIの分岐（ブランチ機能）について教えてください。",
+        ai_content: "はい。チャットAIのブランチ機能は、ある特定のメッセージから別の会話ルートを派生させる機能です。サブブランチでは、文脈を保ったまま別の話題を深掘りできます。",
+        created_at: new Date(Date.now() - 90000).toISOString(),
+        update_at: new Date().toISOString(),
+      },
+      "block-main-2": {
+        block_id: "block-main-2",
+        branch_id: "main",
+        user_content: "サブブランチを切った後、メインブランチでそのまま会話を続けることはできますか？",
+        ai_content: "いいえ、ブランチを切った後は、元のメインブランチで直接会話を続けることはできません。以降の会話は作成した新しいサブブランチ内でのみ進行します。メインブランチはあくまでも「過去の会話の記録（本筋）」として読み取り専用の状態で残ります。",
+        created_at: new Date(Date.now() - 80000).toISOString(),
+        update_at: new Date().toISOString(),
+      }
+    };
+
+    activePanes.forEach((pane) => {
+      if (pane.branchId === "main") return;
+
+      const bId = pane.branchId;
+      branches[bId] = {
+        branch_id: bId,
+        chat_id: "demo-chat-id",
+        parent_branch_id: "main",
+        parent_block_id: "block-main-1",
+        branch_title: `Branch ${bId}`,
+        status: "active",
+        created_at: new Date().toISOString(),
+        update_at: new Date().toISOString(),
+      };
+
+      blocks[`block-${bId}-1`] = {
+        block_id: `block-${bId}-1`,
+        branch_id: bId,
+        user_content: `サブブランチからこんにちは！（ブランチID: ${bId}）`,
+        ai_content: `こんにちは！こちらは**${bId}**のサブブランチです。「block-main-1」からフォークしているため、上のメッセージがその起点として表示されています。`,
+        created_at: new Date().toISOString(),
+        update_at: new Date().toISOString(),
+      };
+    });
+
+    useChatStore.setState({
+      chatData: {
+        chat_id: "demo-chat-id",
+        chat_title: "Demo Chat",
+        created_at: new Date().toISOString(),
+        branches,
+        blocks,
+      },
+      isLoading: false,
+      error: null,
+    });
+  }, [activePanes]);
+
   const addPane = () => {
     // Add a new pane
     const newId = `pane-${Date.now()}`;
-    // For demo purposes, we just assign a branch ID to show *some* content, even without navigation.
-    // We can cycle or random, or just static. Let's keep it simple.
-    setActivePanes([...activePanes, { id: newId, branchId: "main" }]);
+    // デモ用に一意のブランチIDを発行して、別々の会話内容モックを表示させる
+    const newBranchId = `sub-${activePanes.length}`;
+    setActivePanes([...activePanes, { id: newId, branchId: newBranchId }]);
   };
 
   const removePane = (paneId: string) => {
@@ -173,7 +147,7 @@ export function ChatUIContainer() {
         {/* Mobile Add Button */}
         {activePanes.length < 3 && (
           <div className="min-w-[60px] h-full flex items-center justify-center snap-center flex-shrink-0">
-            <AddWindowButtonHelper onClick={addPane} className="w-12 h-12 rounded-full" />
+            <AddBranchButton onClick={addPane} className="w-12 h-12 rounded-full" />
           </div>
         )}
       </div>
@@ -202,7 +176,7 @@ export function ChatUIContainer() {
             {/* Spacer between windows and add button */}
             {activePanes.length > 0 && <div className="w-2 bg-transparent shrink-0" />}
 
-            <AddWindowButtonHelper
+            <AddBranchButton
               onClick={addPane}
               isFullWidth={activePanes.length === 0}
               className={activePanes.length === 0 ? "" : "w-12 shrink-0"}
