@@ -143,7 +143,7 @@ export function ChatComposer({
                                     <ChevronDown className="ml-0 h-3.5 w-3.5 shrink-0" />
                                 </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-[170px] bg-white z-50 rounded-xl shadow-lg border border-gray-200 p-1">
+                            <DropdownMenuContent align="end" className="w-[170px] bg-white z-50 rounded-xl shadow-lg border border-gray-200 p-1.5 flex flex-col gap-1">
                                 {AVAILABLE_MODELS.map((model) => {
                                     const isSelected = model === selectedModel;
 
