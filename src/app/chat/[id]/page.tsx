@@ -2,7 +2,6 @@
 
 import { use } from "react";
 import { Header } from "@/components/header";
-import { BranchTree } from "@/components/branch_view/parent_track";
 
 interface ChatPageProps {
   params: Promise<{ id: string }>;
@@ -23,10 +22,6 @@ export default function ChatPage({ params }: ChatPageProps) {
       {/* 会話タイトルと白背景を指定 */}
       <Header title={id} className="bg-background shrink-0" />
 
-      {/* ツリーUIを表示するメインエリア */}
-      <main className="flex-1 overflow-auto">
-        <BranchTree chatId={id} />
-      </main>
     </div>
   );
 }
