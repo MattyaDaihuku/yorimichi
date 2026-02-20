@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Header } from "@/components/header"; // Headerをインポート
+import { Header } from "@/components/header";
 import { useUser } from "@clerk/nextjs";
 import { mutate } from "swr";
 import { ChatComposer } from "@/components/chat/chat-composer";
@@ -24,7 +24,7 @@ export default function Home() {
   const [errorOpen, setErrorOpen] = useState(false);
   const [errorCode, setErrorCode] = useState<number | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
-  const { user } = useUser();
+  const { user, isLoaded } = useUser();
   const router = useRouter();
   const setCurrentIds = useChatStore((state) => state.setCurrentIds);
 
@@ -125,6 +125,15 @@ export default function Home() {
   const retryMessage = "しばらく時間をおいて再度お試しください。";
   const shouldShowRetryMessage = !errorMessage.includes(retryMessage);
 
+  function Spinner({ className = "" }: { className?: string }) {
+    return (
+      <span
+        aria-label="loading"
+        className={`inline-block h-8 w-8 animate-spin rounded-full border-4 border-[#c4c7c5]/35 border-t-[#c4c7c5] ${className}`}
+      />
+    );
+  }
+
   return (
     <>
       <AlertDialog open={errorOpen} onOpenChange={setErrorOpen}>
@@ -155,12 +164,20 @@ export default function Home() {
         <div className="w-full max-w-3xl px-4 flex flex-col gap-8">
 
           {/* 挨拶エリア */}
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 text-4xl md:text-5xl font-medium tracking-tight bg-gradient-to-r from-blue-600 via-purple-500 to-red-500 bg-clip-text text-transparent w-fit animate-in fade-in slide-in-from-bottom-4 duration-700">
-              <span className="text-[#c4c7c5]">こんにちは,</span>
-              <span className="bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">{user?.fullName || "User"}</span>
-            </div>
-            <h1 className="text-4xl md:text-5xl font-medium text-[#c4c7c5] tracking-tight animate-in fade-in slide-in-from-bottom-5 duration-700 delay-100">
+          <div className="space-y-0">
+            <h1 className="text-3xl md:text-4xl leading-[1.2] font-medium tracking-tight">
+              {!isLoaded ? (
+                <span className="inline-flex h-[1.2em] items-center">
+                  <Spinner className="block h-8 w-8" />
+                </span>
+              ) : (
+                <span className="bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">
+                  {user?.fullName || "User"}
+                </span>
+              )}
+              <span className="ml-1 text-[#c4c7c5]">さん</span>
+            </h1>
+            <h1 className="text-4xl md:text-5xl leading-[1.2] font-medium text-[#c4c7c5] tracking-tight animate-in fade-in slide-in-from-bottom-5 duration-700 delay-100">
               何から始めますか？
             </h1>
           </div>

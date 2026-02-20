@@ -12,8 +12,12 @@ interface HeaderProps {
   className?: string; // 背景色などを指定するためのProps
 }
 
+export function Skeleton({ className }: { className?: string }) {
+  return <div className={cn("animate-pulse rounded-md bg-muted", className)} />;
+}
+
 export function Header({ title = "", className }: HeaderProps) {
-  const { user } = useUser();
+  const { user, isLoaded } = useUser(); // 変更
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
   return (
@@ -26,7 +30,7 @@ export function Header({ title = "", className }: HeaderProps) {
 
       <header
         className={cn(
-          "fixed inset-x-0 top-0 md:left-[72px] z-50 px-6 pt-[env(safe-area-inset-top)] h-[calc(4rem+env(safe-area-inset-top))] transition-colors duration-300",
+          "fixed inset-x-0 top-0 md:left-[72px] z-20 px-6 pt-[env(safe-area-inset-top)] h-[calc(4rem+env(safe-area-inset-top))] transition-colors duration-300",
           className || "bg-background"
         )}
       >
@@ -67,7 +71,9 @@ export function Header({ title = "", className }: HeaderProps) {
           {/* 右側: ユーザーアイコン */}
           <div className="flex justify-end">
             <div className="h-9 w-9 md:h-9 md:w-9 rounded-full flex items-center justify-center cursor-pointer transition-colors">
-              {user ? (
+              {!isLoaded ? (
+                <Skeleton className="h-9 w-9 rounded-full skeleton-breathe" />
+              ) : user ? (
                 <UserButton
                   appearance={{
                     elements: {
@@ -75,7 +81,7 @@ export function Header({ title = "", className }: HeaderProps) {
                       userButtonTrigger: "!h-full !w-full rounded-full",
                       userButtonAvatarBox: "!no-shimmer !h-full !w-full rounded-full overflow-hidden",
                       userButtonAvatarImage: "!h-full !w-full object-cover",
-                      userButtonPopoverCard: "shadow-xl", // メニュー（ポップオーバー）の影
+                      userButtonPopoverCard: "shadow-xl",
                     }
                   }}
                 />

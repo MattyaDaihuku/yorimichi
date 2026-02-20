@@ -179,3 +179,16 @@
     bot-loader-dash 1.5s ease-in-out infinite,
     bot-loader-color 6s ease-in-out infinite;
 }
+
+@keyframes skeleton-breathe {
+  0%, 100% {
+    background-color: rgb(196 199 197 / 0.28); /* 暗め */
+  }
+  50% {
+    background-color: rgb(196 199 197 / 0.55); /* 明るめ */
+  }
+}
+
+.skeleton-breathe {
+  animation: skeleton-breathe 1.8s ease-in-out infinite;
+}
