@@ -39,28 +39,40 @@ export async function POST(req: Request) {
         const parentBlockId = branch.parent_block_id;
 
         await prisma.$transaction(async (tx) => {
-            // Logic from verification_v3.py:
-            // 1. Drop Siblings (same parent_branch_id, same parent_block_id)
-            if (parentBlockId) {
-                await tx.branches.updateMany({
-                    where: {
-                        parent_branch_id: parentBranchId,
-                        parent_block_id: parentBlockId,
-                        branch_id: { not: branch_id },
-                        status: 'active'
-                    },
+            // Helper to drop descendants recursively
+            const dropDescendants = async (bid: string) => {
+                const children = await tx.branches.findMany({
+                    where: { parent_branch_id: bid, status: { in: ['active', 'locked'] } }
+                });
+                for (const child of children) {
+                    await tx.branches.update({
+                        where: { branch_id: child.branch_id },
+                        data: { status: 'dropped' }
+                    });
+                    await dropDescendants(child.branch_id);
+                }
+            };
+
+            // 1. Drop Siblings and their descendants
+            const siblings = await tx.branches.findMany({
+                where: {
+                    parent_branch_id: parentBranchId,
+                    parent_block_id: parentBlockId,
+                    branch_id: { not: branch_id },
+                    status: { in: ['active', 'locked'] }
+                }
+            });
+
+            for (const sibling of siblings) {
+                await tx.branches.update({
+                    where: { branch_id: sibling.branch_id },
                     data: { status: 'dropped' }
                 });
-            } else {
-                await tx.branches.updateMany({
-                    where: {
-                        parent_branch_id: parentBranchId,
-                        branch_id: { not: branch_id },
-                        status: 'active'
-                    },
-                    data: { status: 'dropped' }
-                });
+                await dropDescendants(sibling.branch_id);
             }
+
+            // Also drop descendants of the branch being merged
+            await dropDescendants(branch_id);
 
             // 2. Copy Blocks to Parent Branch (Restored)
             const blocks = await tx.block.findMany({
@@ -79,7 +91,6 @@ export async function POST(req: Request) {
             }
 
             // 3. Update Source Branch Status -> Merged
-            // merged_into_id unused
             await tx.branches.update({
                 where: { branch_id: branch_id },
                 data: { status: "merged" }
