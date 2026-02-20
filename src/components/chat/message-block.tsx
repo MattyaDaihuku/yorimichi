@@ -122,8 +122,8 @@ export function MessageBlock({ block, connector, onBranch, isStreaming = false }
                     </div>
                 </div>
 
-                <div className="flex w-full min-w-0 items-start gap-4">
-                    <div className="shrink-0 pt-1">
+                <div className="flex w-full min-w-0 flex-col items-stretch gap-3 md:flex-row md:items-start md:gap-4">
+                    <div className="shrink-0 self-start pt-0 md:pt-1">
                         <div className="relative flex h-10 w-10 items-center justify-center rounded-full border border-gray-100 bg-white shadow-sm">
                             {isStreaming && (
                                 <span className="pointer-events-none absolute -inset-1.5">
@@ -144,7 +144,7 @@ export function MessageBlock({ block, connector, onBranch, isStreaming = false }
                         </div>
                     </div>
 
-                    <div className="flex min-w-0 flex-1 flex-col">
+                    <div className="flex w-full min-w-0 flex-1 flex-col">
                         <div className="mb-2 w-full min-w-0 rounded-2xl rounded-tl-sm bg-white px-1 py-2 text-foreground/90">
                             <div className={`prose prose-sm max-w-none break-words md:prose-base 
                             prose-code:before:content-none prose-code:after:content-none 
