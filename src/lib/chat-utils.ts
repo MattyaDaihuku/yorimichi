@@ -20,6 +20,49 @@ const apiKeys = [
 // API Key Rotation State (Sequential)
 let currentKeyIndex = 0;
 
+function normalizeAiError(error: unknown): { status: number; message: string } {
+    const defaultMessage = "AI応答の取得に失敗しました。しばらく時間をおいて再度お試しください。";
+
+    if (!error || typeof error !== "object") {
+        return { status: 500, message: defaultMessage };
+    }
+
+    const maybe = error as {
+        status?: number;
+        statusCode?: number;
+        message?: string;
+        cause?: unknown;
+    };
+
+    const status =
+        maybe.status ??
+        maybe.statusCode ??
+        (typeof maybe.cause === "object" && maybe.cause
+            ? (maybe.cause as { status?: number; statusCode?: number }).status ??
+              (maybe.cause as { status?: number; statusCode?: number }).statusCode
+            : undefined);
+
+    const message = String(maybe.message ?? "").toLowerCase();
+    const isRateLimited =
+        status === 429 ||
+        message.includes("429") ||
+        message.includes("rate limit") ||
+        message.includes("quota") ||
+        message.includes("resource exhausted");
+
+    if (isRateLimited) {
+        return {
+            status: 429,
+            message: "利用が集中しています。しばらく時間をおいて再度お試しください。",
+        };
+    }
+
+    return {
+        status: typeof status === "number" ? status : 500,
+        message: defaultMessage,
+    };
+}
+
 /**
  * Returns a Google provider instance with a sequentially selected API key
  */
@@ -97,6 +140,16 @@ export async function processChatInteraction(
 
     } catch (error) {
         console.error("[ProcessChatInteraction]", error);
-        return new NextResponse("Internal AI Error", { status: 500 });
+
+        if (blockId) {
+            try {
+                await prisma.block.deleteMany({ where: { block_id: blockId } });
+            } catch (deleteError) {
+                console.error("[ProcessChatInteraction][CleanupFailed]", deleteError);
+            }
+        }
+
+        const normalized = normalizeAiError(error);
+        return NextResponse.json({ error: normalized.message }, { status: normalized.status });
     }
 }
