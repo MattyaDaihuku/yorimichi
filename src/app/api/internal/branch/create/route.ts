@@ -2,7 +2,7 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getAuthUserId } from '@/lib/auth-utils';
-import { processChatInteraction, ChatMessage } from '@/lib/chat-utils';
+import { processChatInteraction, ChatMessage, RateLimitError } from '@/lib/chat-utils';
 import { z } from 'zod';
 
 const requestSchema = z.object({
@@ -20,6 +20,11 @@ const requestSchema = z.object({
 });
 
 export async function POST(req: Request) {
+    let branchId: string | undefined;
+    let parentBranchId: string | undefined;
+    let blockId: string | undefined;
+    let messagesToRetry: ChatMessage[] | undefined;
+
     try {
         const userId = await getAuthUserId(req);
         if (!userId) return new NextResponse("Unauthorized", { status: 401 });
@@ -31,6 +36,15 @@ export async function POST(req: Request) {
         }
 
         const { branch_id, chat_id, parent_branch_id, parent_block_id, block_id, depth, message, history } = validation.data;
+        branchId = branch_id;
+        parentBranchId = parent_branch_id;
+        blockId = block_id;
+
+        const messages: ChatMessage[] = [
+            ...(history || []),
+            { role: 'user', content: message }
+        ];
+        messagesToRetry = messages;
 
         // 1. Transactionでブランチを作成 (AI応答前)
         await prisma.$transaction(async (tx) => {
@@ -46,8 +60,6 @@ export async function POST(req: Request) {
                     if (parent_block_id && parent_block_id !== latestBlock.block_id) {
                         throw new Error(`Usage Violation: Cannot branch from old block ${parent_block_id}. Latest is ${latestBlock.block_id}`);
                     }
-                    // If parent_block_id was null/undefined, technically we could auto-set it, but our Zod schema expects it as UUID.
-                    // The input validation ensures parent_block_id is provided.
                 }
 
                 // Lock the parent branch
@@ -64,8 +76,11 @@ export async function POST(req: Request) {
             }
 
             // ブランチ作成
-            await tx.branches.create({
-                data: {
+            // Use upsert to check existence first for idempotency and prevent P2002
+            await tx.branches.upsert({
+                where: { branch_id: branch_id },
+                update: {}, // No-op if exists
+                create: {
                     branch_id: branch_id,
                     chat_id: chat_id,
                     parent_branch_id: parent_branch_id,
@@ -77,8 +92,10 @@ export async function POST(req: Request) {
             });
 
             // ブロック作成 (AI応答保存用に空文字列で一旦作成)
-            await tx.block.create({
-                data: {
+            await tx.block.upsert({
+                where: { block_id: block_id },
+                update: {}, // No-op if exists
+                create: {
                     block_id: block_id,
                     branch_id: branch_id,
                     user_content: message,
@@ -88,15 +105,64 @@ export async function POST(req: Request) {
         });
 
         // 2. Call Gemini and Stream Response
-        const messages: ChatMessage[] = [
-            ...(history || []),
-            { role: 'user', content: message }
-        ];
-
         return await processChatInteraction(branch_id, messages, block_id);
 
-    } catch (error) {
+    } catch (error: any) {
         console.error("[BRANCH_Create]", error);
+
+        // Cleanup on RateLimit or other errors
+        if (error instanceof RateLimitError || error?.name === 'RateLimitError' || error?.isRateLimitError) {
+            if (branchId) {
+                try {
+                    console.log(`[BRANCH_Create] Cleaning up branch ${branchId} due to error`);
+                    await prisma.block.deleteMany({ where: { branch_id: branchId } });
+                    await prisma.branches.delete({ where: { branch_id: branchId } });
+
+                    if (parentBranchId) {
+                        await prisma.branches.update({
+                            where: { branch_id: parentBranchId },
+                            data: { status: 'active' } // Revert to active
+                        });
+                    }
+                } catch (cleanupError) {
+                    console.error("[BRANCH_Create] Cleanup failed:", cleanupError);
+                }
+            }
+
+            return NextResponse.json(
+                {
+                    error: "Rate limit exceeded",
+                    code: error.limitType === 'DAILY' ? 'RATE_LIMIT_DAILY' : 'RATE_LIMIT_MINUTE',
+                    retryable: true
+                },
+                { status: 429 }
+            );
+        }
+
+        // Check for Prisma Unique Constraint (UUID Conflict) just in case
+        if (error.code === 'P2002') {
+            console.warn("[BRANCH_Create] P2002 Conflict ignored, proceeding conceptually as idempotent retry.", error.meta);
+
+            try {
+                if (branchId && messagesToRetry && blockId) {
+                    return await processChatInteraction(branchId, messagesToRetry, blockId);
+                }
+            } catch (retryError: any) {
+                if (retryError instanceof RateLimitError || retryError?.isRateLimitError) {
+                    return NextResponse.json(
+                        {
+                            error: "Rate limit exceeded",
+                            code: retryError.limitType === 'DAILY' ? 'RATE_LIMIT_DAILY' : 'RATE_LIMIT_MINUTE',
+                            retryable: true
+                        },
+                        { status: 429 }
+                    );
+                }
+                console.error("[BRANCH_Create] Retry failed:", retryError);
+                return new NextResponse("Internal Error during Retry", { status: 500 });
+            }
+        }
+
         return new NextResponse("Internal Error", { status: 500 });
     }
 }
