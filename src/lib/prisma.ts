@@ -3,7 +3,6 @@ import { PrismaClient } from '@/generated/prisma';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
 import { PrismaNeon } from '@prisma/adapter-neon';
-import { Pool as NeonPool } from '@neondatabase/serverless';
 
 const connectionString = `${process.env.DATABASE_URL}`;
 
@@ -13,8 +12,7 @@ const globalForPrisma = globalThis as unknown as { prisma: PrismaClient };
 let prisma: PrismaClient;
 
 if (process.env.NODE_ENV === 'production') {
-    const pool = new NeonPool({ connectionString });
-    const adapter = new PrismaNeon(pool);
+    const adapter = new PrismaNeon({ connectionString });
     prisma = new PrismaClient({ adapter });
 } else {
     if (!globalForPrisma.prisma) {

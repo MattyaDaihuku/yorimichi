@@ -32,7 +32,7 @@ interface MessageBlockProps {
 }
 
 export function MessageBlock({ block, connector, onBranch, isStreaming = false }: MessageBlockProps) {
-    const [copiedTarget, setCopiedTarget] = useState<"user" | "ai" | null>(null);
+    const [copiedTarget, setCopiedTarget] = useState<string | null>(null);
     const { style, type, options } = connector;
     const isSplit = type === "split";
     const isBranched = style === "branched";
@@ -54,7 +54,7 @@ export function MessageBlock({ block, connector, onBranch, isStreaming = false }
     const showThinking = isStreaming && !hasAiContent;
     const aiContent = showThinking ? "Thinking..." : block.ai_content;
 
-    const copyToClipboard = async (text: string, target: "user" | "ai") => {
+    const copyToClipboard = async (text: string, target: string) => {
         try {
             await navigator.clipboard.writeText(text);
             setCopiedTarget(target);
@@ -99,14 +99,18 @@ export function MessageBlock({ block, connector, onBranch, isStreaming = false }
                         <button
                             type="button"
                             aria-label="Copy user message"
-                            className={`rounded-full transition-colors ${
+                            className={`rounded-full p-2 transition-colors ${
                                 copiedTarget === "user"
-                                    ? "bg-primary/15 text-primary"
+                                    ? "bg-transparent text-green-500" // チェック時: 背景なし
                                     : "bg-transparent text-muted-foreground hover:bg-muted hover:text-foreground"
                             }`}
                             onClick={() => void copyToClipboard(block.user_content, "user")}
                         >
-                            <Copy className="h-4 w-4" />
+                            {copiedTarget === "user" ? (
+                                <Check className="h-4 w-4 text-green-500" />
+                            ) : (
+                                <Copy className="h-4 w-4" />
+                            )}
                         </button>
                     </div>
 
@@ -141,7 +145,9 @@ export function MessageBlock({ block, connector, onBranch, isStreaming = false }
 
                     <div className="flex min-w-0 flex-1 flex-col">
                         <div className="mb-2 w-full min-w-0 rounded-2xl rounded-tl-sm bg-white px-1 py-2 text-foreground/90">
-                            <div className={`prose prose-sm max-w-none break-words md:prose-base ${showThinking ? "text-muted-foreground" : "text-foreground"}`}>
+                            <div className={`prose prose-sm max-w-none break-words md:prose-base 
+                            prose-code:before:content-none prose-code:after:content-none 
+                            ${showThinking ? "text-muted-foreground" : "text-foreground"}`}>
                                 <ReactMarkdown
                                     remarkPlugins={[remarkGfm]}
                                     components={{
@@ -151,32 +157,64 @@ export function MessageBlock({ block, connector, onBranch, isStreaming = false }
                                         code({ className, children, node, ...props }) {
                                             const match = /language-(\w+)/.exec(className || "");
                                             const codeText = String(children).replace(/\n$/, "");
-                                            const isInline = node?.position?.start.line === node?.position?.end.line;
+                                            const isInline = !match;
+
+                                            const language = (match?.[1] ?? "text").toLowerCase();
+                                            const targetId = `code-${language}-${node?.position?.start?.offset ?? codeText.length}`;
 
                                             if (isInline) {
                                                 return (
-                                                    <code className={className} {...props}>
-                                                        {children}
+                                                    <code
+                                                        className="mx-1 rounded border border-gray-200 bg-gray-100 px-1.5 py-0.5 font-mono text-sm font-medium"
+                                                        {...props}
+                                                    >
+                                                        {codeText}
                                                     </code>
                                                 );
                                             }
 
                                             return (
-                                                <SyntaxHighlighter
-                                                    language={match?.[1] ?? "text"}
-                                                    style={oneDark}
-                                                    customStyle={{
-                                                        margin: 0,
-                                                        maxWidth: "100%",
-                                                        overflowX: "auto",
-                                                        borderRadius: "0.5rem",
-                                                        padding: "1rem",
-                                                        fontSize: "0.95rem",
-                                                        lineHeight: "1.6",
-                                                    }}
-                                                >
-                                                    {codeText}
-                                                </SyntaxHighlighter>
+                                                <div className="my-4 flex w-full flex-col overflow-hidden rounded-xl border border-gray-700 bg-[#282C34]">
+                                                    <div className="flex items-center justify-between border-b border-gray-700 bg-[#21252B] px-4 py-2">
+                                                        <span className="font-mono text-xs lowercase text-gray-300">
+                                                            {language}
+                                                        </span>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => void copyToClipboard(codeText, targetId)}
+                                                            className={`rounded-full p-2 transition-colors ${
+                                                                copiedTarget === targetId
+                                                                    ? "bg-primary/15 text-primary"// チェック時: ホバー影なし
+                                                                    : "text-gray-400 hover:bg-gray-700 hover:text-gray-200"
+                                                            }`}
+                                                            aria-label="Copy code"
+                                                        >
+                                                            {copiedTarget === targetId ? (
+                                                                <Check className="h-3.5 w-3.5 text-green-500" />
+                                                            ) : (
+                                                                <Copy className="h-3.5 w-3.5" />
+                                                            )}
+                                                        </button>
+                                                    </div>
+
+                                                    <div className="w-full overflow-x-auto text-sm">
+                                                        <SyntaxHighlighter
+                                                            language={language}
+                                                            style={oneDark}
+                                                            customStyle={{
+                                                                margin: 0,
+                                                                maxWidth: "100%",
+                                                                overflowX: "auto",
+                                                                borderRadius: "0.5rem",
+                                                                padding: "1rem",
+                                                                fontSize: "0.95rem",
+                                                                lineHeight: "1.6",
+                                                            }}
+                                                        >
+                                                            {codeText}
+                                                        </SyntaxHighlighter>
+                                                    </div>
+                                                </div>
                                             );
                                         },
                                     }}
@@ -192,12 +230,16 @@ export function MessageBlock({ block, connector, onBranch, isStreaming = false }
                                     aria-label="Copy AI message"
                                     className={`rounded-full p-2 transition-colors ${
                                         copiedTarget === "ai"
-                                            ? "bg-primary/15 text-primary"
+                                            ? "bg-transparent text-green-500" // チェック時: 背景なし
                                             : "bg-transparent text-muted-foreground hover:bg-muted hover:text-foreground"
                                     }`}
                                     onClick={() => void copyToClipboard(block.ai_content, "ai")}
                                 >
-                                    <Copy className="h-4 w-4" />
+                                    {copiedTarget === "ai" ? (
+                                        <Check className="h-4 w-4 text-green-500" />
+                                    ) : (
+                                        <Copy className="h-4 w-4" />
+                                    )}
                                 </button>
                             </div>
                         )}

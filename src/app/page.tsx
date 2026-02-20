@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Header } from "@/components/header"; // Headerをインポート
@@ -8,13 +8,63 @@ import { useUser } from "@clerk/nextjs";
 import { mutate } from "swr";
 import { ChatComposer } from "@/components/chat/chat-composer";
 import { useChatStore } from "@/store/chat-store";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export default function Home() {
   const [input, setInput] = useState("");
   const [isSending, setIsSending] = useState(false);
+  const [errorOpen, setErrorOpen] = useState(false);
+  const [errorCode, setErrorCode] = useState<number | null>(null);
+  const [errorMessage, setErrorMessage] = useState("");
   const { user } = useUser();
   const router = useRouter();
   const setCurrentIds = useChatStore((state) => state.setCurrentIds);
+
+  const parseError = (error: unknown) => {
+    const fallbackMessage = "会話の開始に失敗しました。";
+    let parsedCode: number | null = null;
+    let parsedMessage = fallbackMessage;
+
+    if (error instanceof Error && error.message) {
+      const match = error.message.match(/^\[(\d+)\]\s*(.*)$/);
+      if (match) {
+        parsedCode = Number(match[1]);
+        parsedMessage = match[2] || fallbackMessage;
+      } else {
+        parsedMessage = error.message;
+      }
+    }
+
+    return { parsedCode, parsedMessage };
+  };
+
+  useEffect(() => {
+    const raw = sessionStorage.getItem("chat-init-error");
+    if (!raw) return;
+
+    sessionStorage.removeItem("chat-init-error");
+
+    try {
+      const parsed = JSON.parse(raw) as { code?: unknown; message?: unknown };
+      setErrorCode(typeof parsed.code === "number" ? parsed.code : null);
+      setErrorMessage(
+        typeof parsed.message === "string" && parsed.message.trim().length > 0
+          ? parsed.message
+          : "会話の開始に失敗しました。"
+      );
+      setErrorOpen(true);
+    } catch (parseError) {
+      console.error("[ChatInitErrorParseFailed]", parseError);
+    }
+  }, []);
 
   const handleSend = async () => {
     const message = input.trim();
@@ -37,25 +87,68 @@ export default function Home() {
         body: JSON.stringify({
           chat_id: chatId,
           branch_id: branchId,
-          block_id: blockId,
           message,
         }),
       });
 
-      if (!res.ok) throw new Error("Failed to create chat");
+      if (!res.ok) {
+        const payload = await res
+          .json()
+          .catch(() => ({ error: "会話の開始に失敗しました。" }));
+
+        const messageText =
+          typeof payload?.error === "string"
+            ? payload.error
+            : "会話の開始に失敗しました。";
+
+        throw new Error(`[${res.status}] ${messageText}`);
+      }
+
+      sessionStorage.setItem(
+        `pending-init:${chatId}`,
+        JSON.stringify({ message })
+      );
 
       setInput("");
-      await mutate("/api/internal/chat/list");
       router.push(`/chat/${chatId}`);
+      void mutate("/api/internal/chat/list");
     } catch (error) {
-      console.error(error);
+      const { parsedCode, parsedMessage } = parseError(error);
+      setErrorCode(parsedCode);
+      setErrorMessage(parsedMessage);
+      setErrorOpen(true);
     } finally {
       setIsSending(false);
     }
   };
 
+  const retryMessage = "しばらく時間をおいて再度お試しください。";
+  const shouldShowRetryMessage = !errorMessage.includes(retryMessage);
+
   return (
     <>
+      <AlertDialog open={errorOpen} onOpenChange={setErrorOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              エラーが発生しました{errorCode ? ` (${errorCode})` : ""}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {errorMessage}
+              {shouldShowRetryMessage && (
+                <>
+                  <br />
+                  {retryMessage}
+                </>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction>閉じる</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <Header className="bg-[#F0F4F8]" />
 
       <main className="flex-1 flex flex-col items-center justify-center min-h-[calc(100vh-4rem)] bg-[#F0F4F8] text-[#1F1F1F]">

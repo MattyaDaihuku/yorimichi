@@ -55,10 +55,16 @@ export function ChatWindow({
 }: ChatWindowProps) {
     const [input, setInput] = useState("");
     const [isSending, setIsSending] = useState(false);
+    const [isStreamingAutoFollow, setIsStreamingAutoFollow] = useState(false);
     const [errorOpen, setErrorOpen] = useState(false);
     const [errorCode, setErrorCode] = useState<number | null>(null);
     const [errorMessage, setErrorMessage] = useState("");
     const blockListRef = useRef<HTMLDivElement | null>(null);
+    const latestBottomRef = useRef<HTMLDivElement | null>(null);
+    const initialFocusedBranchRef = useRef<string | null>(null);
+    const focusOnNextSentBlockRef = useRef(false);
+    const streamingSessionBlockIdRef = useRef<string | null>(null);
+    const isAutoFollowUnlockedRef = useRef(false);
     const blocks = useChatStore((state) => state.chatData?.blocks ?? {});
 
     const branchBlockCount = useMemo(
@@ -67,18 +73,100 @@ export function ChatWindow({
     );
 
     useEffect(() => {
+        if (initialFocusedBranchRef.current === branchId) return;
+
+        const container = blockListRef.current;
+        if (!container) return;
+
+        if (branchBlockCount === 0) return;
+
+        const blockElements = container.querySelectorAll<HTMLElement>("[data-message-block='true']");
+        const latestBlock = blockElements[blockElements.length - 1];
+        if (!latestBlock) return;
+
+        latestBlock.scrollIntoView({ behavior: "auto", block: "start" });
+        initialFocusedBranchRef.current = branchId;
+    }, [branchId, branchBlockCount]);
+
+    useEffect(() => {
+        if (!streamingBlock) {
+            streamingSessionBlockIdRef.current = null;
+            isAutoFollowUnlockedRef.current = false;
+            setIsStreamingAutoFollow(false);
+            return;
+        }
+
+        if (streamingSessionBlockIdRef.current !== streamingBlock.block_id) {
+            streamingSessionBlockIdRef.current = streamingBlock.block_id;
+            isAutoFollowUnlockedRef.current = false;
+            setIsStreamingAutoFollow(false);
+            return;
+        }
+
+        if (!isAutoFollowUnlockedRef.current && streamingBlock.ai_content.trim().length > 0) {
+            setIsStreamingAutoFollow(true);
+        }
+    }, [streamingBlock?.block_id, streamingBlock?.ai_content, streamingBlock]);
+
+    useEffect(() => {
+        if (!focusOnNextSentBlockRef.current) return;
+
         const container = blockListRef.current;
         if (!container) return;
 
         const blockElements = container.querySelectorAll<HTMLElement>("[data-message-block='true']");
         const latestBlock = blockElements[blockElements.length - 1];
-        latestBlock?.scrollIntoView({ behavior: "auto", block: "start" });
-    }, [branchId, branchBlockCount, streamingBlock?.ai_content]);
+        if (!latestBlock) return;
+
+        latestBlock.scrollIntoView({ behavior: "auto", block: "start" });
+        focusOnNextSentBlockRef.current = false;
+    }, [branchBlockCount, streamingBlock?.block_id]);
+
+    useEffect(() => {
+        if (!streamingBlock || !isStreamingAutoFollow) return;
+
+        latestBottomRef.current?.scrollIntoView({ behavior: "auto", block: "end" });
+    }, [streamingBlock?.block_id, streamingBlock?.ai_content, isStreamingAutoFollow]);
+
+    useEffect(() => {
+        if (!streamingBlock || !isStreamingAutoFollow) return;
+
+        const stopAutoFollow = () => {
+            isAutoFollowUnlockedRef.current = true;
+            setIsStreamingAutoFollow(false);
+        };
+
+        const handleKeyDown = (event: KeyboardEvent) => {
+            const unlockKeys = new Set([
+                "ArrowUp",
+                "ArrowDown",
+                "PageUp",
+                "PageDown",
+                "Home",
+                "End",
+                " ",
+            ]);
+            if (unlockKeys.has(event.key)) {
+                stopAutoFollow();
+            }
+        };
+
+        window.addEventListener("wheel", stopAutoFollow, { passive: true });
+        window.addEventListener("touchmove", stopAutoFollow, { passive: true });
+        window.addEventListener("keydown", handleKeyDown);
+
+        return () => {
+            window.removeEventListener("wheel", stopAutoFollow);
+            window.removeEventListener("touchmove", stopAutoFollow);
+            window.removeEventListener("keydown", handleKeyDown);
+        };
+    }, [streamingBlock, isStreamingAutoFollow]);
 
     const send = async () => {
         const message = input.trim();
         if (!message || isSending || disabled) return;
 
+        focusOnNextSentBlockRef.current = true;
         setIsSending(true);
         setInput("");
         try {
@@ -153,6 +241,11 @@ export function ChatWindow({
                         branchId={branchId}
                         streamingBlock={streamingBlock}
                         onBranch={onBranch}
+                    />
+                    <div
+                        ref={latestBottomRef}
+                        aria-hidden="true"
+                        className={fixedInput ? "scroll-mb-80" : "scroll-mb-6"}
                     />
                 </div>
 

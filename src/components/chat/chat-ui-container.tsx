@@ -1,9 +1,18 @@
 "use client";
 
-import { useState, Fragment } from "react";
+import { useState, Fragment, useEffect } from "react";
 import { Plus, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
+import { cn } from "@/lib/utils";
+import { useChatStore, getHistoryFromChatData } from "@/store/chat-store";
+import { ChatWindow } from "@/components/chat/chat-window";
+import { ChatComposer } from "@/components/chat/chat-composer";
+import { MessageBlock, type ConnectorConfig } from "@/components/chat/message-block";
+import { toast } from "sonner";
+import { sendMessageWithStreaming, type StreamingBlock } from "@/lib/chat-send";
+import { DeleteBranchButton } from "@/components/chat/delete-branch-button";
+import { AddBranchButton } from "@/components/chat/add-branch-button";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,13 +24,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { cn } from "@/lib/utils";
-import { useChatStore, getHistoryFromChatData } from "@/store/chat-store";
-import { ChatWindow } from "@/components/chat/chat-window";
-import { ChatComposer } from "@/components/chat/chat-composer";
-import { MessageBlock, type ConnectorConfig } from "@/components/chat/message-block";
-import { toast } from "sonner";
-import { sendMessageWithStreaming, type StreamingBlock } from "@/lib/chat-send";
 
 export interface ChatUIContainerProps {
   chatId: string;
@@ -113,11 +115,6 @@ const CreationPane = ({ chatId, parentBlockId, reload, onCreated }: CreationPane
     }
   };
 
-  const connector: ConnectorConfig = {
-    style: "branched",
-    type: "continue",
-  };
-
   return (
     <div className="flex flex-col h-full bg-background relative overflow-hidden">
       <div className="flex-1 overflow-y-auto p-4 space-y-8">
@@ -140,6 +137,7 @@ const CreationPane = ({ chatId, parentBlockId, reload, onCreated }: CreationPane
           onSubmit={handleCreate}
           isSending={isCreating}
           placeholder="新しいブランチでメッセージを送信..."
+          alwaysBorder={true}
         />
       </div>
     </div>
@@ -169,7 +167,7 @@ const ChatPaneHelper = ({ pane, onRemove, chatId, reload, onPaneConfigUpdate, on
 
     const currentBranchBlocks = Object.values(chatData?.blocks ?? {})
       .filter((block) => block.branch_id === pane.branchId)
-      .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+      .sort((a, b) => new Date(a.created_at).getTime() - new Date(a.created_at).getTime());
 
     const history = currentBranchBlocks.flatMap((block) => [
       { role: "user" as const, content: block.user_content },
@@ -180,6 +178,7 @@ const ChatPaneHelper = ({ pane, onRemove, chatId, reload, onPaneConfigUpdate, on
       chatId,
       branchId: pane.branchId,
       message,
+      model: "gemini-2.5-flash", // Use default model
       history,
       reload,
       setStreamingBlock,
@@ -205,7 +204,6 @@ const ChatPaneHelper = ({ pane, onRemove, chatId, reload, onPaneConfigUpdate, on
 
       toast.success("ブランチを削除しました");
       removeBranch(pane.branchId);
-      // We don't necessarily need to await reload for UI removal
       onRemove(pane.id);
       void reload();
     } catch (error) {
@@ -216,7 +214,7 @@ const ChatPaneHelper = ({ pane, onRemove, chatId, reload, onPaneConfigUpdate, on
 
   return (
     <div className={cn("h-full w-full bg-background relative group flex flex-col", className)}>
-      {/* Header Area (Existing AlertDialog Layout reused) */}
+      {/* Header Area using common DeleteBranchButton logic but customized for close behavior */}
       {(pane.branchId || pane.creationContext) && (
         <AlertDialog>
           <AlertDialogTrigger asChild>
@@ -249,7 +247,7 @@ const ChatPaneHelper = ({ pane, onRemove, chatId, reload, onPaneConfigUpdate, on
         </AlertDialog>
       )}
 
-      {/* Chat Content with scroll support */}
+      {/* Chat Content */}
       <div className="flex-1 min-h-0 w-full overflow-hidden">
         {pane.branchId ? (
           <div className="h-full flex flex-col min-h-0">
@@ -280,29 +278,6 @@ const ChatPaneHelper = ({ pane, onRemove, chatId, reload, onPaneConfigUpdate, on
   );
 };
 
-interface AddWindowButtonHelperProps {
-  onClick: () => void;
-  isFullWidth?: boolean;
-  className?: string;
-}
-
-const AddWindowButtonHelper = ({ onClick, isFullWidth, className }: AddWindowButtonHelperProps) => {
-  return (
-    <Button
-      variant="outline"
-      size="icon"
-      className={cn(
-        "h-12 w-12 rounded-full border-dashed flex-shrink-0 share-shadow bg-background",
-        className
-      )}
-      onClick={onClick}
-      title="Add window"
-    >
-      <Plus className="w-5 h-5 text-muted-foreground/60" />
-    </Button>
-  );
-};
-
 // --- Main Container ---
 
 export function ChatUIContainer({ chatId, mainBranchId, initialActiveBranchId, initialCreationContext, reload, onCloseAll, onBranch }: ChatUIContainerProps) {
@@ -310,30 +285,26 @@ export function ChatUIContainer({ chatId, mainBranchId, initialActiveBranchId, i
   const [activePanes, setActivePanes] = useState<PaneConfig[]>(() => {
     const panes: PaneConfig[] = [];
 
-    // If we have a creation context, look for siblings
     if (initialCreationContext && chatData) {
       const parentBlockId = initialCreationContext.parentBlockId;
       const siblings = Object.values(chatData.branches)
         .filter(b => b.parent_block_id === parentBlockId)
-        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()) // Newest first
-        .slice(0, 2); // Take latest 2 siblings
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+        .slice(0, 2);
 
-      // Add siblings reversed so newest is on the left
       siblings.reverse().forEach(s => {
         panes.push({ id: `pane-${s.branch_id}`, branchId: s.branch_id });
       });
 
-      // Add the creation pane at the end
       panes.push({ id: "pane-create-initial", creationContext: initialCreationContext });
     } else {
-      // Default behavior or initial load with specific branch
       if (initialActiveBranchId && chatData) {
         const currentBranch = chatData.branches[initialActiveBranchId];
         if (currentBranch?.parent_block_id) {
           const siblings = Object.values(chatData.branches)
             .filter(b => b.parent_block_id === currentBranch.parent_block_id)
             .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-            .slice(0, 3); // Take up to 3 for view
+            .slice(0, 3);
 
           siblings.reverse().forEach(s => {
             panes.push({ id: `pane-${s.branch_id}`, branchId: s.branch_id });
@@ -358,7 +329,6 @@ export function ChatUIContainer({ chatId, mainBranchId, initialActiveBranchId, i
     const existingCreation = activePanes.find(p => p.creationContext);
     let context = existingCreation?.creationContext || initialCreationContext;
 
-    // If no creation context is available yet, derive it from the rightmost pane's branch
     if (!context && activePanes.length > 0 && chatData) {
       const lastPane = activePanes[activePanes.length - 1];
       if (lastPane.branchId) {
@@ -386,7 +356,6 @@ export function ChatUIContainer({ chatId, mainBranchId, initialActiveBranchId, i
     onBranch(blockId);
   };
 
-
   const updatePaneConfig = (id: string, newConfig: Partial<PaneConfig>) => {
     setActivePanes(prev => prev.map(p => p.id === id ? { ...p, ...newConfig } : p));
   };
@@ -408,32 +377,46 @@ export function ChatUIContainer({ chatId, mainBranchId, initialActiveBranchId, i
             />
           </div>
         ))}
+        {activePanes.length < 3 && (
+          <div className="min-w-[60px] h-full flex items-center justify-center snap-center flex-shrink-0">
+            <AddBranchButton onClick={addPane} className="w-12 h-12 rounded-full" />
+          </div>
+        )}
       </div>
 
       {/* 2. Desktop Layout */}
-      <ResizablePanelGroup orientation="horizontal" className="hidden md:flex flex-1">
-        {activePanes.map((pane, index) => (
-          <Fragment key={pane.id}>
-            <ResizablePanel defaultSize={100 / activePanes.length} minSize={25} className="relative group">
-              <ChatPaneHelper
-                pane={pane}
-                onRemove={removePane}
-                chatId={chatId}
-                reload={reload}
-                onPaneConfigUpdate={updatePaneConfig}
-                onBranch={handleBranch}
-                mainBranchId={mainBranchId}
-              />
-            </ResizablePanel>
-            {index < activePanes.length - 1 && <ResizableHandle className="bg-transparent w-2 shrink-0" />}
-          </Fragment>
-        ))}
-      </ResizablePanelGroup>
+      {activePanes.length > 0 && (
+        <ResizablePanelGroup orientation="horizontal" className="hidden md:flex flex-1">
+          {activePanes.map((pane, index) => (
+            <Fragment key={pane.id}>
+              <ResizablePanel defaultSize={100 / activePanes.length} minSize={25} className="relative group">
+                <ChatPaneHelper
+                  pane={pane}
+                  onRemove={removePane}
+                  chatId={chatId}
+                  reload={reload}
+                  onPaneConfigUpdate={updatePaneConfig}
+                  onBranch={handleBranch}
+                  mainBranchId={mainBranchId}
+                />
+              </ResizablePanel>
+              {index < activePanes.length - 1 && <ResizableHandle className="bg-transparent w-2 shrink-0" />}
+            </Fragment>
+          ))}
+        </ResizablePanelGroup>
+      )}
 
       {/* 3. Desktop Add Button Area */}
-      <div className="hidden md:flex flex-col justify-center ml-2">
+      <div className="hidden md:flex">
         {activePanes.length < 3 && (
-          <AddWindowButtonHelper onClick={addPane} />
+          <Fragment>
+            {activePanes.length > 0 && <div className="w-2 bg-transparent shrink-0" />}
+            <AddBranchButton
+              onClick={addPane}
+              isFullWidth={activePanes.length === 0}
+              className={activePanes.length === 0 ? "" : "w-12 shrink-0"}
+            />
+          </Fragment>
         )}
       </div>
     </div>

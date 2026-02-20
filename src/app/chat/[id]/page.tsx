@@ -1,6 +1,7 @@
 "use client";
 
 import { use, useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Header } from "@/components/header"; // Headerをインポート
 import { useChatStore } from "@/store/chat-store";
 import { MainBranchView } from "@/components/chat/main-branch-view";
@@ -13,9 +14,74 @@ interface ChatPageProps {
 
 export default function ChatPage({ params }: ChatPageProps) {
   const { id } = use(params);
+  const router = useRouter();
   const { chatData, isLoading, error, fetchChat, clearChat } = useChatStore();
   const [creationContext, setCreationContext] = useState<{ parentBlockId: string } | undefined>();
   const [branchContext, setBranchContext] = useState<any>(null);
+  const [initialMessage, setInitialMessage] = useState<string | null>(null);
+
+  const parseError = (err: unknown) => {
+    const fallbackMessage = "送信中にエラーが発生しました。";
+
+    if (err instanceof Error && err.message) {
+      const match = err.message.match(/^\[(\d+)\]\s*(.*)$/);
+      if (match) {
+        return {
+          code: Number(match[1]),
+          message: match[2] || fallbackMessage,
+        };
+      }
+
+      return { code: 500, message: err.message };
+    }
+
+    return { code: 500, message: fallbackMessage };
+  };
+
+  const revertInitializedChat = async () => {
+    try {
+      await fetch("/api/internal/chat/revert", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ chat_id: id }),
+      });
+    } catch (revertError) {
+      console.error("[ChatInitRevertFailed]", revertError);
+    }
+  };
+
+  const handleInitialSendError = async (sendError: unknown) => {
+    const parsed = parseError(sendError);
+    await revertInitializedChat();
+
+    sessionStorage.setItem(
+      "chat-init-error",
+      JSON.stringify({ code: parsed.code, message: parsed.message })
+    );
+
+    void fetch("/api/internal/chat/list");
+    router.replace("/");
+  };
+
+  useEffect(() => {
+    try {
+      const key = `pending-init:${id}`;
+      const raw = sessionStorage.getItem(key);
+      if (!raw) return;
+
+      sessionStorage.removeItem(key);
+
+      const parsed = JSON.parse(raw) as { message?: unknown };
+      const pendingMessage =
+        typeof parsed.message === "string" ? parsed.message.trim() : "";
+
+      if (pendingMessage) {
+        setInitialMessage(pendingMessage);
+      }
+    } catch (storageError) {
+      console.error("[PendingInitReadFailed]", storageError);
+    }
+  }, [id]);
 
   useEffect(() => {
     clearChat();
@@ -51,7 +117,7 @@ export default function ChatPage({ params }: ChatPageProps) {
   };
 
   return (
-    <>
+    <div className="flex flex-col h-screen w-full bg-gray-50/50">
       <Header title={chatData?.chat_title ?? ""} className="bg-background" />
 
       {isLoading && <TopLinearLoader />}
@@ -66,6 +132,9 @@ export default function ChatPage({ params }: ChatPageProps) {
                 chatId={chatData.chat_id}
                 branch={deepestBranch}
                 reload={() => fetchChat(id)}
+                initialMessage={initialMessage}
+                onInitialMessageHandled={() => setInitialMessage(null)}
+                onInitialSendError={handleInitialSendError}
                 onSwitchToSubBranch={handleSwitchToSub}
               />
             ) : (
@@ -91,6 +160,6 @@ export default function ChatPage({ params }: ChatPageProps) {
           )}
         </div>
       </main>
-    </>
+    </div>
   );
 }
