@@ -233,8 +233,8 @@ export function ChatWindow({
                 <div
                     ref={blockListRef}
                     className={cn(
-                        "min-w-0 w-full",
-                        flexLayout ? "flex-1 overflow-y-auto" : ""
+                        "min-w-0 w-full [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden",
+                        flexLayout ? "flex-1 overflow-y-auto p-4" : ""
                     )}
                 >
                     <BlockList

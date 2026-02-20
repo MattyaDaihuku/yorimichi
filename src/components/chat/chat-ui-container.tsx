@@ -117,7 +117,7 @@ const CreationPane = ({ chatId, parentBlockId, reload, onCreated }: CreationPane
 
   return (
     <div className="flex flex-col h-full bg-background relative overflow-hidden">
-      <div className="flex-1 overflow-y-auto p-4 space-y-8">
+      <div className="flex-1 overflow-y-auto p-4 space-y-8 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
         {parentBlock && (
           <div className="max-w-3xl mx-auto opacity-80 origin-top pt-4">
             <MessageBlock
@@ -130,15 +130,20 @@ const CreationPane = ({ chatId, parentBlockId, reload, onCreated }: CreationPane
           </div>
         )}
       </div>
-      <div className="p-4 border-t bg-white relative z-10">
-        <ChatComposer
-          value={message}
-          onChange={setMessage}
-          onSubmit={handleCreate}
-          isSending={isCreating}
-          placeholder="新しいブランチでメッセージを送信..."
-          alwaysBorder={true}
-        />
+      <div className="pointer-events-none z-20 bg-background pb-[env(safe-area-inset-bottom)] relative mt-auto">
+        <div className="absolute -top-7 left-0 right-0 z-0 h-8 bg-gradient-to-b from-transparent to-background" />
+        <div className="relative z-10 mx-auto w-full max-w-4xl px-6 pt-0 pb-6">
+          <div className="pointer-events-auto mx-auto w-full max-w-3xl">
+            <ChatComposer
+              value={message}
+              onChange={setMessage}
+              onSubmit={handleCreate}
+              isSending={isCreating}
+              placeholder="新しいブランチでメッセージを送信..."
+              alwaysBorder={false}
+            />
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -259,6 +264,7 @@ const ChatPaneHelper = ({ pane, onRemove, chatId, reload, onPaneConfigUpdate, on
               onSend={handleSend}
               onBranch={onBranch}
               flexLayout={true}
+              inputAlwaysBorder={false}
             />
           </div>
         ) : pane.creationContext ? (
@@ -407,7 +413,7 @@ export function ChatUIContainer({ chatId, mainBranchId, initialActiveBranchId, i
       )}
 
       {/* 3. Desktop Add Button Area */}
-      <div className="hidden md:flex">
+      <div className="hidden md:flex pr-2 pb-2">
         {activePanes.length < 3 && (
           <Fragment>
             {activePanes.length > 0 && <div className="w-2 bg-transparent shrink-0" />}
