@@ -3,6 +3,7 @@
 @import "shadcn/tailwind.css";
 
 @plugin "tailwindcss-animate";
+@plugin "@tailwindcss/typography";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -125,4 +126,56 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+@keyframes bot-loader-rotate {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes bot-loader-dash {
+  0% {
+    stroke-dasharray: 1 200;
+    stroke-dashoffset: 0;
+  }
+  50% {
+    stroke-dasharray: 89 200;
+    stroke-dashoffset: -35;
+  }
+  100% {
+    stroke-dasharray: 89 200;
+    stroke-dashoffset: -124;
+  }
+}
+
+@keyframes bot-loader-color {
+  100%, 0% { stroke: #4285f4; }
+  40% { stroke: #ea4335; }
+  66% { stroke: #fbbc05; }
+  80%, 90% { stroke: #34a853; }
+}
+
+.bot-circular-loader {
+  animation: bot-loader-rotate 2s linear infinite;
+  transform-origin: center center;
+}
+
+.bot-loader-path {
+  stroke: #4285f4;
+  stroke-linecap: round;
+  animation:
+    bot-loader-dash 1.5s ease-in-out infinite,
+    bot-loader-color 6s ease-in-out infinite;
 }

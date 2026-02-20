@@ -38,15 +38,17 @@ export function SidebarContent({ isCollapsed, toggleSidebar }: SidebarContentPro
       </div>
 
       {/* 新規チャットボタン */}
-      <div className="px-4 py-2 min-w-0">
+      <div className="px-4 pt-2 min-w-0">
         <NewChatButton isExpanded={!isCollapsed} onClick={handleClose} />
       </div>
 
       {/* 履歴リスト */}
-      <div className="flex-1 min-w-0 overflow-hidden mt-2">
+      <div className="flex-1 min-w-0 overflow-hidden">
         <div className={cn(
-          "transition-opacity duration-300 min-w-0 w-full",
-          isCollapsed ? "opacity-0 pointer-events-none" : "opacity-100"
+          "transition-opacity min-w-0 w-full h-full",
+          isCollapsed
+            ? "opacity-0 pointer-events-none duration-0"
+            : "opacity-100 duration-150"
         )}>
             <ChatHistory onClickItem={handleClose} />
         </div>

@@ -4,6 +4,7 @@ import "./globals.css";
 import { ClerkProvider, SignedIn, SignedOut } from "@clerk/nextjs";
 import { UserSync } from "@/components/auth/user-sync";
 import { Sidebar } from "@/components/sidebar";
+import { Toaster } from "@/components/ui/sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -35,13 +36,14 @@ export default function RootLayout({
             <UserSync />
             <div className="flex min-h-screen">
               <Sidebar />
-              <main className="flex-1 flex flex-col min-h-screen pl-[72px]">
+              <main className="flex-1 flex h-screen flex-col overflow-y-auto hide-scrollbar md:pl-[72px]">
                 {children}
               </main>
             </div>
           </SignedIn>
 
           <SignedOut>{children}</SignedOut>
+          <Toaster position="bottom-right" />
         </body>
       </html>
     </ClerkProvider>

@@ -2,7 +2,7 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getAuthUserId } from '@/lib/auth-utils';
-import { processChatInteraction, ChatMessage } from '@/lib/chat-utils';
+import { processChatInteraction, ChatMessage, RateLimitError } from '@/lib/chat-utils';
 import { z } from 'zod';
 
 const requestSchema = z.object({
@@ -12,7 +12,39 @@ const requestSchema = z.object({
     message: z.string().min(1),
 });
 
+async function cleanupInitializedChat(chatId: string) {
+    const branchIds = await prisma.branches.findMany({
+        where: { chat_id: chatId },
+        select: { branch_id: true },
+    });
+
+    const ids = branchIds.map((item) => item.branch_id);
+
+    if (ids.length > 0) {
+        await prisma.block.deleteMany({
+            where: {
+                branch_id: { in: ids },
+            },
+        });
+
+        await prisma.branches.deleteMany({
+            where: {
+                branch_id: { in: ids },
+            },
+        });
+    }
+
+    await prisma.chatlist.deleteMany({
+        where: { chat_id: chatId },
+    });
+}
+
 export async function POST(req: Request) {
+    let chatId: string | undefined;
+    let branchId: string | undefined;
+    let blockId: string | undefined;
+    let messageContent: string | undefined;
+
     try {
         const userId = await getAuthUserId(req);
         if (!userId) return new NextResponse("Unauthorized", { status: 401 });
@@ -24,17 +56,20 @@ export async function POST(req: Request) {
         }
 
         const { chat_id, branch_id, block_id, message } = validation.data;
-        const title = message.substring(0, 50); // タイトルは長すぎないように
+        chatId = chat_id;
+        branchId = branch_id;
+        blockId = block_id;
+        messageContent = message;
+        const title = message.substring(0, 50);
 
         // Transaction for Chatlist, Initial Branch, and Initial Block
         await prisma.$transaction(async (tx) => {
-            // User upsert logic (for development/first time)
-
-
-            // 1. Create Chatlist
-            await tx.chatlist.create({
-                data: {
-                    chat_id: chat_id, // Front-end provided ID
+            // 1. Create Chatlist (Upsert to prevent P2002)
+            await tx.chatlist.upsert({
+                where: { chat_id: chat_id },
+                update: {}, // No-op if exists
+                create: {
+                    chat_id: chat_id,
                     user_id: userId!,
                     chat_title: title,
                     is_pinned: false
@@ -42,9 +77,11 @@ export async function POST(req: Request) {
             });
 
             // 2. Create Initial Branch
-            await tx.branches.create({
-                data: {
-                    branch_id: branch_id, // Front-end provided ID
+            await tx.branches.upsert({
+                where: { branch_id: branch_id },
+                update: {},
+                create: {
+                    branch_id: branch_id,
                     chat_id: chat_id,
                     branch_title: title,
                     status: "active",
@@ -55,12 +92,14 @@ export async function POST(req: Request) {
             });
 
             // 3. Create Initial Block
-            await tx.block.create({
-                data: {
-                    block_id: block_id, // Front-end provided ID
+            await tx.block.upsert({
+                where: { block_id: block_id },
+                update: {},
+                create: {
+                    block_id: block_id,
                     branch_id: branch_id,
                     user_content: message,
-                    ai_content: "", // Placeholder
+                    ai_content: ""
                 }
             });
         });
@@ -68,10 +107,64 @@ export async function POST(req: Request) {
         // 4. Call Gemini and Stream Response
         const messages: ChatMessage[] = [{ role: 'user', content: message }];
 
-        return await processChatInteraction(branch_id, messages, block_id);
+        const aiResponse = await processChatInteraction(branch_id, messages, block_id);
 
-    } catch (error) {
+        if (!aiResponse.ok) {
+            await cleanupInitializedChat(chat_id);
+        }
+
+        return aiResponse;
+
+    } catch (error: any) {
         console.error("[CHAT_INIT]", JSON.stringify(error, null, 2));
+
+        // Cleanup on RateLimit
+        if (error instanceof RateLimitError || error?.name === 'RateLimitError' || error?.isRateLimitError) {
+            if (chatId) {
+                try {
+                    console.log(`[CHAT_INIT] Cleaning up chat ${chatId} due to error`);
+                    await prisma.chatlist.delete({ where: { chat_id: chatId } });
+                } catch (cleanupError) {
+                    console.error("[CHAT_INIT] Cleanup failed:", cleanupError);
+                }
+            }
+
+            return NextResponse.json(
+                {
+                    error: "Rate limit exceeded",
+                    code: error.limitType === 'DAILY' ? 'RATE_LIMIT_DAILY' : 'RATE_LIMIT_MINUTE',
+                    retryable: true
+                },
+                { status: 429 }
+            );
+        }
+
+        // Check for Prisma Unique Constraint (UUID Conflict) just in case
+        if (error.code === 'P2002') {
+            console.warn("[CHAT_INIT] P2002 Conflict ignored, proceeding conceptually as idempotent retry.", error.meta);
+
+            try {
+                // Retry Gemini Interaction
+                if (branchId && messageContent && blockId) {
+                    const messages: ChatMessage[] = [{ role: 'user', content: messageContent }];
+                    return await processChatInteraction(branchId, messages, blockId);
+                }
+            } catch (retryError: any) {
+                if (retryError instanceof RateLimitError || retryError?.isRateLimitError) {
+                    return NextResponse.json(
+                        {
+                            error: "Rate limit exceeded",
+                            code: retryError.limitType === 'DAILY' ? 'RATE_LIMIT_DAILY' : 'RATE_LIMIT_MINUTE',
+                            retryable: true
+                        },
+                        { status: 429 }
+                    );
+                }
+                console.error("[CHAT_INIT] Retry failed:", retryError);
+                return new NextResponse("Internal Error during Retry", { status: 500 });
+            }
+        }
+
         return new NextResponse("Internal Error", { status: 500 });
     }
 }
