@@ -1,3 +1,5 @@
+import type { AiModel } from "@/lib/ai-active-model";
+
 export type ChatHistoryItem = {
     role: "user" | "assistant" | "system";
     content: string;
@@ -14,6 +16,7 @@ type SendMessageParams = {
     chatId: string;
     branchId: string;
     message: string;
+    model: AiModel;
     history: ChatHistoryItem[];
     reload: () => Promise<void>;
     setStreamingBlock: (value: StreamingBlock | null | ((prev: StreamingBlock | null) => StreamingBlock | null)) => void;
@@ -23,6 +26,7 @@ export async function sendMessageWithStreaming({
     chatId,
     branchId,
     message,
+    model,
     history,
     reload,
     setStreamingBlock,
@@ -47,6 +51,7 @@ export async function sendMessageWithStreaming({
                 branch_id: branchId,
                 block_id: blockId,
                 message,
+                model,
                 history,
             }),
         });

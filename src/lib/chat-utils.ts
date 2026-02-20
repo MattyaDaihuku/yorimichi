@@ -2,7 +2,7 @@ import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { streamText } from 'ai';
 import prisma from '@/lib/prisma';
 import { NextResponse } from 'next/server';
-import { ACTIVE_MODEL } from './ai-active-model';
+import { ACTIVE_MODEL, type AiModel } from './ai-active-model';
 
 export type ChatMessage = {
     role: 'user' | 'assistant' | 'system';
@@ -81,7 +81,8 @@ function getGoogleProvider() {
 export async function processChatInteraction(
     branchId: string,
     messages: ChatMessage[],
-    blockId?: string
+    blockId?: string,
+    model: AiModel = ACTIVE_MODEL
 ) {
     try {
         const lastUserMessage = messages[messages.length - 1];
@@ -92,7 +93,7 @@ export async function processChatInteraction(
         const google = getGoogleProvider();
 
         const result = streamText({
-            model: google(ACTIVE_MODEL),
+            model: google(model),
             messages,
             onFinish: async ({ text, finishReason }) => {
                 try {
@@ -103,7 +104,7 @@ export async function processChatInteraction(
                         return;
                     }
 
-                    console.log(`[Chat] Saving/Updating block for branch: ${branchId} with model: ${ACTIVE_MODEL}`);
+                    console.log(`[Chat] Saving/Updating block for branch: ${branchId} with model: ${model}`);
                     if (blockId) {
                         await prisma.block.upsert({
                             where: { block_id: blockId },

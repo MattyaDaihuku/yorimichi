@@ -5,6 +5,7 @@ import type { ChatDetailResponse } from "@/store/chat-store";
 import { ChatWindow } from "@/components/chat/chat-window";
 import { useChatStore } from "@/store/chat-store";
 import { sendMessageWithStreaming, type StreamingBlock } from "@/lib/chat-send";
+import { useModelStore } from "@/store/model-store";
 
 type BranchItem = ChatDetailResponse["branches"][string];
 
@@ -29,6 +30,7 @@ export function MainBranchView({
     const [isInitialSending, setIsInitialSending] = useState(false);
     const autoSentRef = useRef(false);
     const chatData = useChatStore((state) => state.chatData);
+    const selectedModel = useModelStore((state) => state.selectedModel);
 
     const currentBranchBlocks = Object.values(chatData?.blocks ?? {})
         .filter((block) => block.branch_id === branch.branch_id)
@@ -47,6 +49,7 @@ export function MainBranchView({
             chatId,
             branchId: branch.branch_id,
             message,
+            model: selectedModel,
             history,
             reload,
             setStreamingBlock,
