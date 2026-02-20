@@ -102,7 +102,7 @@ export function BranchTree({ chatId }: { chatId: string }) {
       return;
     }
 
-    // 中身だけ切り替え（開いていなければ開く）
+    // 中身だけ切り替え
     setSelectedBranchId(branchId);
     if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
     setPanelState("visible");
