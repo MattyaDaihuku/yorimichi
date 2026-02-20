@@ -1,3 +1,5 @@
+import { useChatStore } from "@/store/chat-store";
+
 export type ChatHistoryItem = {
     role: "user" | "assistant" | "system";
     content: string;
@@ -28,6 +30,7 @@ export async function sendMessageWithStreaming({
     setStreamingBlock,
 }: SendMessageParams): Promise<void> {
     const blockId = crypto.randomUUID();
+    useChatStore.getState().setCurrentIds({ blockId });
 
     setStreamingBlock({
         block_id: "streaming-block",

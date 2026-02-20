@@ -31,9 +31,12 @@ export function BlockList({
                 new Date(first.created_at).getTime() - new Date(second.created_at).getTime()
         );
 
+    const allBlocks = chatData?.blocks ?? {};
     const parentBlock =
         targetBranch?.parent_block_id && targetBranch.depth > 0
-            ? (chatData?.blocks?.[targetBranch.parent_block_id] ?? null)
+            ? (Array.isArray(allBlocks)
+                ? (allBlocks.find(b => b.block_id === targetBranch.parent_block_id) ?? null)
+                : (allBlocks[targetBranch.parent_block_id] ?? null))
             : null;
 
     const sourceBlocks = parentBlock

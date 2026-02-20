@@ -33,6 +33,8 @@ type ChatWindowProps = {
     disclaimerText?: string;
     fixedInput?: boolean;
     fixedOffsetClassName?: string;
+    showComposer?: boolean;
+    flexLayout?: boolean;
     className?: string;
 };
 
@@ -47,6 +49,8 @@ export function ChatWindow({
     disclaimerText,
     fixedInput = false,
     fixedOffsetClassName = "left-0 right-0 md:left-[72px]",
+    showComposer = true,
+    flexLayout = false,
     className,
 }: ChatWindowProps) {
     const [input, setInput] = useState("");
@@ -132,8 +136,19 @@ export function ChatWindow({
                 </AlertDialogContent>
             </AlertDialog>
 
-            <section className={cn("space-y-4", fixedInput ? "pb-64" : "", className)}>
-                <div ref={blockListRef}>
+            <section className={cn(
+                "relative",
+                flexLayout ? "flex flex-1 flex-col min-h-0 h-full overflow-hidden" : "space-y-4",
+                (fixedInput && showComposer && !flexLayout) ? "pb-64" : "",
+                className
+            )}>
+                <div
+                    ref={blockListRef}
+                    className={cn(
+                        "min-w-0 w-full",
+                        flexLayout ? "flex-1 overflow-y-auto" : ""
+                    )}
+                >
                     <BlockList
                         branchId={branchId}
                         streamingBlock={streamingBlock}
@@ -141,45 +156,51 @@ export function ChatWindow({
                     />
                 </div>
 
-            {fixedInput ? (
-                <div className={cn("pointer-events-none fixed bottom-0 z-20 bg-background pb-[env(safe-area-inset-bottom)]", fixedOffsetClassName)}>
-                    <div className="absolute -top-7 left-0 right-0 z-0 h-8 bg-gradient-to-b from-transparent to-background" />
-                    <div className="relative z-10 mx-auto w-full max-w-4xl px-6 pt-0 pb-6">
-                        <div className="pointer-events-auto mx-auto w-full max-w-3xl">
-                            <ChatComposer
-                                value={input}
-                                onChange={setInput}
-                                onSubmit={send}
-                                placeholder={inputPlaceholder}
-                                disabled={disabled}
-                                isSending={isSending}
-                                alwaysBorder={inputAlwaysBorder}
-                            />
+                {showComposer && (
+                    fixedInput ? (
+                        <div className={cn(
+                            "pointer-events-none z-20 bg-background pb-[env(safe-area-inset-bottom)]",
+                            flexLayout ? "absolute bottom-0 left-0 right-0" : "fixed bottom-0",
+                            fixedOffsetClassName
+                        )}>
+                            <div className="absolute -top-7 left-0 right-0 z-0 h-8 bg-gradient-to-b from-transparent to-background" />
+                            <div className="relative z-10 mx-auto w-full max-w-4xl px-6 pt-0 pb-6">
+                                <div className="pointer-events-auto mx-auto w-full max-w-3xl">
+                                    <ChatComposer
+                                        value={input}
+                                        onChange={setInput}
+                                        onSubmit={send}
+                                        placeholder={inputPlaceholder}
+                                        disabled={disabled}
+                                        isSending={isSending}
+                                        alwaysBorder={inputAlwaysBorder}
+                                    />
+                                </div>
+                                {disclaimerText && (
+                                    <p className="mt-3 text-center text-xs text-muted-foreground">{disclaimerText}</p>
+                                )}
+                            </div>
                         </div>
-                        {disclaimerText && (
-                            <p className="mt-3 text-center text-xs text-muted-foreground">{disclaimerText}</p>
-                        )}
-                    </div>
-                </div>
-            ) : (
-                <>
-                    <div className="mx-auto w-full max-w-3xl">
-                        <ChatComposer
-                            value={input}
-                            onChange={setInput}
-                            onSubmit={send}
-                            placeholder={inputPlaceholder}
-                            disabled={disabled}
-                            isSending={isSending}
-                            alwaysBorder={inputAlwaysBorder}
-                        />
-                    </div>
+                    ) : (
+                        <>
+                            <div className="mx-auto w-full max-w-3xl">
+                                <ChatComposer
+                                    value={input}
+                                    onChange={setInput}
+                                    onSubmit={send}
+                                    placeholder={inputPlaceholder}
+                                    disabled={disabled}
+                                    isSending={isSending}
+                                    alwaysBorder={inputAlwaysBorder}
+                                />
+                            </div>
 
-                    {disclaimerText && (
-                        <p className="text-center text-xs text-muted-foreground">{disclaimerText}</p>
-                    )}
-                </>
-            )}
+                            {disclaimerText && (
+                                <p className="text-center text-xs text-muted-foreground">{disclaimerText}</p>
+                            )}
+                        </>
+                    )
+                )}
             </section>
         </>
     );

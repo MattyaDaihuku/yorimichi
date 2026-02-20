@@ -56,7 +56,7 @@ export async function POST(req: Request) {
                 }
             });
         });
-        createdBlockId = block_id;
+        blockIdForCleanup = block_id;
 
         // 2. Call Gemini and Stream Response
         const messages: ChatMessage[] = [
@@ -107,10 +107,10 @@ export async function POST(req: Request) {
 
         console.error("[MESSAGE_Send]", error);
 
-        if (createdBlockId) {
+        if (blockIdForCleanup) {
             try {
                 await prisma.block.deleteMany({
-                    where: { block_id: createdBlockId },
+                    where: { block_id: blockIdForCleanup },
                 });
             } catch (deleteError) {
                 console.error("[MESSAGE_Send][CleanupFailed]", deleteError);

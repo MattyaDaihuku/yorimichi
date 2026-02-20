@@ -12,9 +12,10 @@ type MainBranchViewProps = {
     chatId: string;
     branch: BranchItem;
     reload: () => Promise<void>;
+    onSwitchToSubBranch: (blockId: string) => void;
 };
 
-export function MainBranchView({ chatId, branch, reload }: MainBranchViewProps) {
+export function MainBranchView({ chatId, branch, reload, onSwitchToSubBranch }: MainBranchViewProps) {
     const [streamingBlock, setStreamingBlock] = useState<StreamingBlock | null>(null);
     const chatData = useChatStore((state) => state.chatData);
 
@@ -41,21 +42,44 @@ export function MainBranchView({ chatId, branch, reload }: MainBranchViewProps) 
         });
     };
 
-    return (
-        <section className="space-y-4">
-            <div className="rounded-xl border bg-muted/20 p-4">
-                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    Main Branch View
-                </p>
-                <p className="mt-1 text-sm text-muted-foreground">
-                    {branch.branch_title} / status: {branch.status}
-                </p>
-            </div>
+    const handleBranch = (blockId: string) => {
+        onSwitchToSubBranch(blockId);
+    };
 
+    return (
+        <section className="space-y-4 relative group">
+            {branch.depth > 0 && (
+                <div className="flex justify-end pr-2">
+                    <button
+                        onClick={async () => {
+                            if (!confirm("このブランチを削除しますか？")) return;
+                            try {
+                                const response = await fetch("/api/internal/branch/trash", {
+                                    method: "POST",
+                                    headers: { "Content-Type": "application/json" },
+                                    body: JSON.stringify({ trash_branch_id: branch.branch_id })
+                                });
+                                if (!response.ok) throw new Error("Failed to delete branch");
+                                useChatStore.getState().removeBranch(branch.branch_id);
+                                await reload();
+                            } catch (error) {
+                                console.error(error);
+                            }
+                        }}
+                        className="p-2 rounded-full hover:bg-destructive/10 text-destructive border shadow-sm transition-opacity opacity-0 group-hover:opacity-100"
+                        title="Delete branch"
+                    >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                    </button>
+                </div>
+            )}
             <ChatWindow
                 branchId={branch.branch_id}
                 streamingBlock={streamingBlock}
                 onSend={handleSend}
+                onBranch={handleBranch}
                 fixedInput
                 fixedOffsetClassName="left-0 right-0 md:left-[72px]"
                 disclaimerText="AI は間違えることがあります。重要な情報は確認してください。"
