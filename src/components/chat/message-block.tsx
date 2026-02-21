@@ -49,8 +49,8 @@ const AiMarkdownContent = memo(function AiMarkdownContent({
 }: AiMarkdownContentProps) {
     return (
         <div className="mb-2 w-full min-w-0 rounded-2xl rounded-tl-sm bg-white px-1 py-2 text-foreground/90">
-            <div className={`prose prose-sm max-w-none break-words md:prose-base 
-                            prose-code:before:content-none prose-code:after:content-none 
+            <div className={`prose prose-sm max-w-none break-words md:prose-base
+                            prose-code:before:content-none prose-code:after:content-none
                             ${showThinking ? "text-muted-foreground" : "text-foreground"}`}>
                 <ReactMarkdown
                     remarkPlugins={[remarkGfm]}
@@ -88,11 +88,10 @@ const AiMarkdownContent = memo(function AiMarkdownContent({
                                             size="icon"
                                             type="button"
                                             onClick={() => void onCopy(codeText, targetId)}
-                                            className={`flex h-9 w-9 items-center justify-center rounded-full p-0 transition-colors ${
-                                                copiedTarget === targetId
+                                            className={`flex h-9 w-9 items-center justify-center rounded-full p-0 transition-colors ${copiedTarget === targetId
                                                     ? "text-primary"// チェック時: ホバー影なし
                                                     : "text-gray-400 hover:bg-gray-700 hover:text-gray-200"
-                                            }`}
+                                                }`}
                                             aria-label="Copy code"
                                         >
                                             {copiedTarget === targetId ? (
@@ -126,7 +125,7 @@ const AiMarkdownContent = memo(function AiMarkdownContent({
     );
 });
 
-export function MessageBlock({ block, connector, onBranch, isStreaming = false }: MessageBlockProps) {
+export function MessageBlock({ block, connector, onBranch, onMerge, isStreaming = false }: MessageBlockProps) {
     const [copiedTarget, setCopiedTarget] = useState<string | null>(null);
     const [hoveredConnectorAction, setHoveredConnectorAction] = useState<"return" | "branch" | null>(null);
     const { style, type, options } = connector;
@@ -198,11 +197,10 @@ export function MessageBlock({ block, connector, onBranch, isStreaming = false }
                             type="button"
                             aria-label="Copy user message"
 
-                            className={`flex h-10 w-10 items-center justify-center rounded-full p-0 transition-colors ${
-                                copiedTarget === "user"
+                            className={`flex h-10 w-10 items-center justify-center rounded-full p-0 transition-colors ${copiedTarget === "user"
                                     ? "bg-transparent text-green-500" // チェック時: 背景なし
                                     : "bg-transparent text-muted-foreground hover:bg-muted hover:text-foreground"
-                            }`}
+                                }`}
                             onClick={() => void copyToClipboard(block.user_content, "user")}
                         >
                             {copiedTarget === "user" ? (
@@ -258,11 +256,10 @@ export function MessageBlock({ block, connector, onBranch, isStreaming = false }
                                     type="button"
                                     aria-label="Copy AI message"
 
-                                    className={`flex h-10 w-10 items-center justify-center rounded-full p-0 transition-colors ${
-                                        copiedTarget === "ai"
+                                    className={`flex h-10 w-10 items-center justify-center rounded-full p-0 transition-colors ${copiedTarget === "ai"
                                             ? "bg-transparent text-green-500" // チェック時: 背景なし
                                             : "bg-transparent text-muted-foreground hover:bg-muted hover:text-foreground"
-                                    }`}
+                                        }`}
                                     onClick={() => void copyToClipboard(block.ai_content, "ai")}
                                 >
                                     {copiedTarget === "ai" ? (
@@ -321,79 +318,79 @@ export function MessageBlock({ block, connector, onBranch, isStreaming = false }
                                 )}
 
 
-                            {options?.showBranch && (
-                                <path
-                                    d={`M 100 ${SPLIT_START_Y} C 100 35 ${RIGHT_BTN_CX} 25 ${RIGHT_BTN_CX} ${BTN_CY - 20}`}
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth={LINE_WIDTH}
-                                    className={LINE_COLOR}
-                                />
-                            )}
-
-                            {hoveredConnectorAction && (
-                                <>
-                                    <line
-                                        x1="100"
-                                        y1="0"
-                                        x2="100"
-                                        y2={SPLIT_START_Y}
-                                        stroke="currentColor"
-                                        strokeWidth={LINE_WIDTH}
-                                        className="text-gray-400/40 connector-comet-tail connector-comet-shared"
-                                    />
-                                    <line
-                                        x1="100"
-                                        y1="0"
-                                        x2="100"
-                                        y2={SPLIT_START_Y}
-                                        stroke="currentColor"
-                                        strokeWidth={LINE_WIDTH}
-                                        className="text-gray-500/80 connector-comet-head connector-comet-shared"
-                                    />
-                                </>
-                            )}
-
-                            {hoveredConnectorAction === "return" && options?.showReturn && (
-                                <>
-                                    <path
-                                        d={`M 100 ${SPLIT_START_Y} C 100 ${BTN_CY} 80 ${BTN_CY} ${LEFT_BTN_CX + 20} ${BTN_CY}`}
-                                        fill="none"
-                                        stroke="currentColor"
-                                        strokeWidth={LINE_WIDTH}
-                                        className="text-gray-400/40 connector-comet-tail connector-comet-branch"
-                                    />
-                                    <path
-                                        d={`M 100 ${SPLIT_START_Y} C 100 ${BTN_CY} 80 ${BTN_CY} ${LEFT_BTN_CX + 20} ${BTN_CY}`}
-                                        fill="none"
-                                        stroke="currentColor"
-                                        strokeWidth={LINE_WIDTH}
-                                        className="text-gray-500/80 connector-comet-head connector-comet-branch"
-                                    />
-                                </>
-                            )}
-
-                            {hoveredConnectorAction === "branch" && options?.showBranch && (
-                                <>
+                                {options?.showBranch && (
                                     <path
                                         d={`M 100 ${SPLIT_START_Y} C 100 35 ${RIGHT_BTN_CX} 25 ${RIGHT_BTN_CX} ${BTN_CY - 20}`}
                                         fill="none"
                                         stroke="currentColor"
                                         strokeWidth={LINE_WIDTH}
-                                        className="text-gray-400/40 connector-comet-tail connector-comet-branch"
+                                        className={LINE_COLOR}
                                     />
-                                    <path
-                                        d={`M 100 ${SPLIT_START_Y} C 100 35 ${RIGHT_BTN_CX} 25 ${RIGHT_BTN_CX} ${BTN_CY - 20}`}
-                                        fill="none"
-                                        stroke="currentColor"
-                                        strokeWidth={LINE_WIDTH}
+                                )}
 
-                                        className="text-gray-500/80 connector-comet-head connector-comet-branch"
-                                    />
-                                </>
-                            )}
-                        </>
-                    )}
+                                {hoveredConnectorAction && (
+                                    <>
+                                        <line
+                                            x1="100"
+                                            y1="0"
+                                            x2="100"
+                                            y2={SPLIT_START_Y}
+                                            stroke="currentColor"
+                                            strokeWidth={LINE_WIDTH}
+                                            className="text-gray-400/40 connector-comet-tail connector-comet-shared"
+                                        />
+                                        <line
+                                            x1="100"
+                                            y1="0"
+                                            x2="100"
+                                            y2={SPLIT_START_Y}
+                                            stroke="currentColor"
+                                            strokeWidth={LINE_WIDTH}
+                                            className="text-gray-500/80 connector-comet-head connector-comet-shared"
+                                        />
+                                    </>
+                                )}
+
+                                {hoveredConnectorAction === "return" && options?.showReturn && (
+                                    <>
+                                        <path
+                                            d={`M 100 ${SPLIT_START_Y} C 100 ${BTN_CY} 80 ${BTN_CY} ${LEFT_BTN_CX + 20} ${BTN_CY}`}
+                                            fill="none"
+                                            stroke="currentColor"
+                                            strokeWidth={LINE_WIDTH}
+                                            className="text-gray-400/40 connector-comet-tail connector-comet-branch"
+                                        />
+                                        <path
+                                            d={`M 100 ${SPLIT_START_Y} C 100 ${BTN_CY} 80 ${BTN_CY} ${LEFT_BTN_CX + 20} ${BTN_CY}`}
+                                            fill="none"
+                                            stroke="currentColor"
+                                            strokeWidth={LINE_WIDTH}
+                                            className="text-gray-500/80 connector-comet-head connector-comet-branch"
+                                        />
+                                    </>
+                                )}
+
+                                {hoveredConnectorAction === "branch" && options?.showBranch && (
+                                    <>
+                                        <path
+                                            d={`M 100 ${SPLIT_START_Y} C 100 35 ${RIGHT_BTN_CX} 25 ${RIGHT_BTN_CX} ${BTN_CY - 20}`}
+                                            fill="none"
+                                            stroke="currentColor"
+                                            strokeWidth={LINE_WIDTH}
+                                            className="text-gray-400/40 connector-comet-tail connector-comet-branch"
+                                        />
+                                        <path
+                                            d={`M 100 ${SPLIT_START_Y} C 100 35 ${RIGHT_BTN_CX} 25 ${RIGHT_BTN_CX} ${BTN_CY - 20}`}
+                                            fill="none"
+                                            stroke="currentColor"
+                                            strokeWidth={LINE_WIDTH}
+
+                                            className="text-gray-500/80 connector-comet-head connector-comet-branch"
+                                        />
+                                    </>
+                                )}
+                            </>
+                        )}
 
                     </svg>
 
