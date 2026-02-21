@@ -166,19 +166,29 @@ export function BranchTree({
     setPanelState("visible");
   };
 
-  const blocksByBranch = useMemo(() => {
-    const grouped: Record<string, Block[]> = {};
-    Object.values(blocksMap).forEach((block) => {
-      if (!grouped[block.branch_id]) grouped[block.branch_id] = [];
-      grouped[block.branch_id].push(block);
-    });
-    Object.values(grouped).forEach((arr) =>
-      arr.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
-    );
-    return grouped;
-  }, [blocksMap]);
+  const selectedBlocks = useMemo(() => {
+    if (!selectedBranchId || !chatData) return [];
 
-  const selectedBlocks = selectedBranchId ? blocksByBranch[selectedBranchId] ?? [] : [];
+    const allBlocks = chatData.blocks;
+    const targetBranch = chatData.branches[selectedBranchId];
+    if (!targetBranch) return [];
+
+    // 現在のブランチのブロックを取得して整列
+    const ownBlocks = Object.values(allBlocks)
+      .filter((block) => block.branch_id === selectedBranchId)
+      .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+
+    // 直近の親ブロック（分岐点）を取得
+    const parentBlock = targetBranch.parent_block_id
+      ? allBlocks[targetBranch.parent_block_id] ?? null
+      : null;
+
+    // 親ブロックを先頭に、現在のブランチのブロックを続ける（メインチャットの BlockList と同じロジック）
+    return parentBlock
+      ? [parentBlock, ...ownBlocks.filter((b) => b.block_id !== parentBlock.block_id)]
+      : ownBlocks;
+  }, [selectedBranchId, chatData]);
+
   const selectedBranch = selectedBranchId ? nodesMap[selectedBranchId] ?? null : null;
 
   if (isLoading) return <div className="p-4 text-center text-muted-foreground">読み込み中...</div>;
