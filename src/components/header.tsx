@@ -59,7 +59,7 @@ export function Header({ title = "", className }: HeaderProps) {
         <div className="grid grid-cols-3 items-center h-16 w-full">
           {/* 左側: サービスロゴ */}
           <div className="flex items-center justify-start gap-2 pl-10 md:pl-0 h-full">
-            <div className="relative h-full w-20 sm:w-24 md:w-28 lg:w-36">
+            <div className="relative h-full w-28 sm:w-32 md:w-36 lg:w-44">
               <Image
                 src="/yorimichi_logo.png"
                 alt="Yorimichi Logo"
@@ -90,7 +90,7 @@ export function Header({ title = "", className }: HeaderProps) {
                     elements: {
                       userButtonBox: "block !h-full !w-full",
                       userButtonTrigger: "!h-full !w-full rounded-full",
-                      userButtonAvatarBox: "!no-shimmer !h-full !w-full rounded-full overflow-hidden",
+                      userButtonAvatarBox: "!h-full !w-full rounded-full overflow-hidden",
                       userButtonAvatarImage: "!h-full !w-full object-cover",
                       userButtonPopoverCard: "shadow-xl",
                     }
@@ -103,6 +103,9 @@ export function Header({ title = "", className }: HeaderProps) {
                 className="px-4 h-9 rounded-full text-sm font-medium bg-white shadow-sm hover:bg-gray-100 border-gray-200 transition-colors duration-200 mr-0"
                 onClick={() => openSignIn({
                   appearance: {
+                    layout: {
+                      unsafe_disableDevelopmentModeWarnings: true,
+                    },
                     elements: {
                       modalBackdrop: {
                         backgroundColor: "rgba(0, 0, 0, 0.4)",
