@@ -105,7 +105,7 @@ const CreationPane = ({ chatId, parentBlockId, reload, onCreated }: CreationPane
       {/* メッセージエリア: スクロールバーを隠し、分岐を強調 */}
       <div className="flex-1 overflow-y-auto p-4 space-y-8 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
         {parentBlock && (
-          <div className="max-w-3xl mx-auto opacity-80 origin-top pt-4">
+          <div className="max-w-3xl mx-auto origin-top pt-4">
             <MessageBlock
               block={parentBlock}
               connector={{
@@ -118,8 +118,7 @@ const CreationPane = ({ chatId, parentBlockId, reload, onCreated }: CreationPane
       </div>
 
       {/* 入力エリア: フィールドが浮いているようなモダンなグラデーションデザイン */}
-      <div className="pointer-events-none z-20 bg-background pb-[env(safe-area-inset-bottom)] relative mt-auto">
-        <div className="absolute -top-7 left-0 right-0 z-0 h-8 bg-gradient-to-b from-transparent to-background" />
+      <div className="z-20 bg-background pb-[env(safe-area-inset-bottom)] relative mt-auto">
         <div className="relative z-10 mx-auto w-full max-w-4xl px-6 pt-0 pb-6">
           <div className="pointer-events-auto mx-auto w-full max-w-3xl">
             <ChatComposer
