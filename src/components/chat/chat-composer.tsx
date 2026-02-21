@@ -34,7 +34,7 @@ export function ChatComposer({
     value,
     onChange,
     onSubmit,
-    placeholder = "質問を入力する",
+    placeholder = "会話してみましょう",
     disabled = false,
     isSending = false,
     className,

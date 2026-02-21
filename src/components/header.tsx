@@ -59,7 +59,7 @@ export function Header({ title = "", className }: HeaderProps) {
           {/* 左側: サービス名 */}
           <div className="flex items-center justify-start gap-2 pl-10 md:pl-0">
             <span className="text-xs md:text-sm font-bold tracking-tight text-foreground/60 uppercase leading-none">
-              Git-Chat AI
+              Yorimichi
             </span>
           </div>
 

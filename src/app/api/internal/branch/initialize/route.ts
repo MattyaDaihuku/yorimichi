@@ -54,7 +54,7 @@ export async function POST(req: Request) {
                     chat_id: chat_id,
                     parent_branch_id: parent_branch_id,
                     parent_block_id: parent_block_id,
-                    branch_title: title || "New Branch",
+                    branch_title: title || "新しいヨリミチ",
                     status: "active",
                     depth: depth,
                 }

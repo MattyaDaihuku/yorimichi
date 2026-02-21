@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "GitChat",
+  title: "Yorimichi",
   description: "AI-powered Git conversation platform",
 };
 

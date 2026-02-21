@@ -47,7 +47,7 @@ export function ChatWindow({
     onBranch,
     onMerge,
     onSend,
-    inputPlaceholder = "メインブランチで会話する...",
+    inputPlaceholder = "会話してみましょう",
     inputAlwaysBorder = true,
     disabled = false,
     disclaimerText,

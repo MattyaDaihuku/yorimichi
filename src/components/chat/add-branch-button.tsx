@@ -16,7 +16,6 @@ export function AddBranchButton({ onClick, isFullWidth, className }: AddBranchBu
         className
       )}
       onClick={onClick}
-      title="Add window"
     >
       <Plus className="w-6 h-6 text-muted-foreground/60" />
     </div>
