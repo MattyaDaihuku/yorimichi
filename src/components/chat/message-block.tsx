@@ -29,8 +29,10 @@ interface MessageBlockProps {
     block: BlockViewModel;
     connector: ConnectorConfig;
     onBranch?: (blockId: string) => void;
+    onMerge?: (blockId: string) => void;
     isStreaming?: boolean;
 }
+
 
 interface AiMarkdownContentProps {
     aiContent: string;
@@ -195,6 +197,7 @@ export function MessageBlock({ block, connector, onBranch, isStreaming = false }
                             size="icon-lg"
                             type="button"
                             aria-label="Copy user message"
+
                             className={`flex h-10 w-10 items-center justify-center rounded-full p-0 transition-colors ${
                                 copiedTarget === "user"
                                     ? "bg-transparent text-green-500" // チェック時: 背景なし
@@ -239,6 +242,7 @@ export function MessageBlock({ block, connector, onBranch, isStreaming = false }
                         </div>
                     </div>
 
+
                     <div className="flex w-full min-w-0 flex-1 flex-col">
                         <AiMarkdownContent
                             aiContent={aiContent}
@@ -253,6 +257,7 @@ export function MessageBlock({ block, connector, onBranch, isStreaming = false }
                                     size="icon-lg"
                                     type="button"
                                     aria-label="Copy AI message"
+
                                     className={`flex h-10 w-10 items-center justify-center rounded-full p-0 transition-colors ${
                                         copiedTarget === "ai"
                                             ? "bg-transparent text-green-500" // チェック時: 背景なし
@@ -282,38 +287,39 @@ export function MessageBlock({ block, connector, onBranch, isStreaming = false }
                     style={{ height: isSplit ? LAST_HEIGHT : INTER_HEIGHT }}
                 >
                     <svg className="pointer-events-none absolute left-0 top-0 h-full w-full overflow-visible">
-                    <line
-                        x1="100"
-                        y1="0"
-                        x2="100"
-                        y2={isSplit ? MAIN_NODE_Y : INTER_HEIGHT}
-                        stroke="currentColor"
-                        strokeWidth={LINE_WIDTH}
-                        className={LINE_COLOR}
-                    />
+                        <line
+                            x1="100"
+                            y1="0"
+                            x2="100"
+                            y2={isSplit ? MAIN_NODE_Y : INTER_HEIGHT}
+                            stroke="currentColor"
+                            strokeWidth={LINE_WIDTH}
+                            className={LINE_COLOR}
+                        />
 
-                    {!isSplit &&
-                        (isBranched ? (
-                            <BranchNode cy={INTER_DOT_Y} />
-                        ) : (
-                            <circle cx="100" cy={INTER_DOT_Y} r="4" fill="currentColor" className={LINE_COLOR} />
-                        ))}
+                        {!isSplit &&
+                            (isBranched ? (
+                                <BranchNode cy={INTER_DOT_Y} />
+                            ) : (
+                                <circle cx="100" cy={INTER_DOT_Y} r="4" fill="currentColor" className={LINE_COLOR} />
+                            ))}
 
-                    {isSplit && (
-                        <>
-                            {isBranched && <BranchNode cy={SPLIT_START_Y + 25} />}
+                        {isSplit && (
+                            <>
+                                {isBranched && <BranchNode cy={SPLIT_START_Y + 25} />}
 
-                            <circle cx="100" cy={MAIN_NODE_Y} r="5" fill="currentColor" className="text-black" />
+                                <circle cx="100" cy={MAIN_NODE_Y} r="5" fill="currentColor" className="text-black" />
 
-                            {options?.showReturn && (
-                                <path
-                                    d={`M 100 ${SPLIT_START_Y} C 100 ${BTN_CY} 80 ${BTN_CY} ${LEFT_BTN_CX + 20} ${BTN_CY}`}
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth={LINE_WIDTH}
-                                    className={LINE_COLOR}
-                                />
-                            )}
+                                {options?.showReturn && (
+                                    <path
+                                        d={`M 100 ${SPLIT_START_Y} C 100 ${BTN_CY} 80 ${BTN_CY} ${LEFT_BTN_CX + 20} ${BTN_CY}`}
+                                        fill="none"
+                                        stroke="currentColor"
+                                        strokeWidth={LINE_WIDTH}
+                                        className={LINE_COLOR}
+                                    />
+                                )}
+
 
                             {options?.showBranch && (
                                 <path
@@ -381,12 +387,14 @@ export function MessageBlock({ block, connector, onBranch, isStreaming = false }
                                         fill="none"
                                         stroke="currentColor"
                                         strokeWidth={LINE_WIDTH}
+
                                         className="text-gray-500/80 connector-comet-head connector-comet-branch"
                                     />
                                 </>
                             )}
                         </>
                     )}
+
                     </svg>
 
                     {isSplit && (
@@ -396,16 +404,19 @@ export function MessageBlock({ block, connector, onBranch, isStreaming = false }
                                     className="absolute -translate-x-1/2 -translate-y-1/2"
                                     style={{ left: LEFT_BTN_CX, top: BTN_CY }}
                                 >
+
                                     <Button
                                         variant="outline"
                                         size="icon-lg"
                                         type="button"
+                                        onClick={() => onMerge?.(block.block_id)}
                                         className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-100 bg-white shadow-sm transition-all hover:border-gray-300 hover:bg-[#F9FAFB]"
                                         onMouseEnter={() => setHoveredConnectorAction("return")}
                                         onMouseLeave={() => setHoveredConnectorAction(null)}
                                     >
                                         <Check className="h-5 w-5 text-black" />
                                     </Button>
+
                                 </div>
                             )}
 
