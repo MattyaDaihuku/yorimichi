@@ -76,7 +76,7 @@ export function ChatHistory({ onClickItem }: { onClickItem?: () => void }) {
                 key={chat.chat_id}
                 className={cn(
                   "grid h-10 w-full min-w-0 max-w-full grid-cols-[minmax(0,1fr)_auto] items-center rounded-full hover:bg-[#DDE3EA] group transition-colors",
-                  pathname === `/chat/${chat.chat_id}` && "bg-accent"
+                  pathname === `/chat/${chat.chat_id}` && "bg-[#DDE3EA]"
                 )}
               >
                 <Link
