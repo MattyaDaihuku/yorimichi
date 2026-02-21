@@ -186,10 +186,10 @@ export function BranchTree({
   if (!chatData?.branches) return null;
 
   return (
-    <div className="p-3 mt-0 h-full flex flex-col min-h-0 bg-transparent">
+    <div className="pl-3 py-3 pr-0 mt-0 h-full flex flex-col min-h-0 bg-transparent">
       <div className="overflow-hidden overflow-x-hidden flex-1 min-h-0">
-        <div className="inline-flex items-stretch gap-6 pt-2.5 min-w-0">
-          <div className="flex flex-col items-start justify-start">
+        <div className="flex h-full w-full items-stretch gap-2 md:gap-6 pt-2.5 min-w-0">
+          <div className="flex flex-col items-start justify-start shrink-0">
             {roots.map((rootNode) => (
               <BranchNode
                 key={rootNode.branch_id}
@@ -206,9 +206,9 @@ export function BranchTree({
 
           <div
             className={cn(
-              "self-stretch overflow-hidden",
+              "self-stretch overflow-hidden flex-1 min-w-0 opacity-100",
               !isMobile && "transition-all duration-150 ease-out",
-              panelState === "visible" ? "w-[calc(100vw-88px)] md:w-[340px] opacity-100 translate-x-0" : "w-0 opacity-0 -translate-x-8"
+              panelState === "visible" ? "translate-x-0" : "w-0 opacity-0 -translate-x-8"
             )}
           >
             <div className="h-full w-full shrink-0 overflow-hidden">

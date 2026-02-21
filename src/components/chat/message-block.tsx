@@ -7,6 +7,7 @@ import remarkGfm from "remark-gfm";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 export type ConnectorConfig = {
     style: "straight" | "branched";
@@ -29,9 +30,10 @@ interface MessageBlockProps {
     connector: ConnectorConfig;
     onBranch?: (blockId: string) => void;
     isStreaming?: boolean;
+    isCompact?: boolean;
 }
 
-export function MessageBlock({ block, connector, onBranch, isStreaming = false }: MessageBlockProps) {
+export function MessageBlock({ block, connector, onBranch, isStreaming = false, isCompact = false }: MessageBlockProps) {
     const [copiedTarget, setCopiedTarget] = useState<string | null>(null);
     const { style, type, options } = connector;
     const isSplit = type === "split";
@@ -93,15 +95,18 @@ export function MessageBlock({ block, connector, onBranch, isStreaming = false }
 
     return (
         <div data-message-block="true" className="flex w-full flex-col items-center scroll-mt-24">
-            <div className="relative z-10 w-full max-w-3xl rounded-[24px] border border-gray-100 bg-white p-6 shadow-sm">
-                <div className="group mb-6 flex items-start justify-end gap-4">
+            <div className={cn(
+                "relative z-10 w-full rounded-[24px] border border-gray-100 bg-white shadow-sm transition-all",
+                isCompact ? "max-w-full p-3" : "max-w-3xl p-6"
+            )}>
+                <div className={cn("group flex items-start justify-end", isCompact ? "mb-3 gap-2" : "mb-6 gap-4")}>
                     <div className="flex flex-col gap-3 pt-3 opacity-100 transition-opacity">
                         <button
                             type="button"
                             aria-label="Copy user message"
                             className={`rounded-full p-2 transition-colors ${copiedTarget === "user"
-                                    ? "bg-transparent text-green-500" // チェック時: 背景なし
-                                    : "bg-transparent text-muted-foreground hover:bg-muted hover:text-foreground"
+                                ? "bg-transparent text-green-500" // チェック時: 背景なし
+                                : "bg-transparent text-muted-foreground hover:bg-muted hover:text-foreground"
                                 }`}
                             onClick={() => void copyToClipboard(block.user_content, "user")}
                         >
@@ -113,16 +118,22 @@ export function MessageBlock({ block, connector, onBranch, isStreaming = false }
                         </button>
                     </div>
 
-                    <div className="w-fit max-w-[75%] min-w-[120px] rounded-2xl rounded-tr-sm bg-[#E6F0FF] px-6 py-4 text-foreground/90">
-                        <p className="whitespace-pre-wrap break-words text-sm leading-relaxed md:text-base">
+                    <div className={cn(
+                        "w-fit rounded-2xl rounded-tr-sm bg-[#E6F0FF] text-foreground/90",
+                        isCompact ? "max-w-[90%] px-3 py-2" : "max-w-[75%] min-w-[120px] px-6 py-4"
+                    )}>
+                        <p className={cn("whitespace-pre-wrap break-words leading-relaxed", isCompact ? "text-sm" : "text-sm md:text-base")}>
                             {block.user_content}
                         </p>
                     </div>
                 </div>
 
-                <div className="flex w-full min-w-0 items-start gap-4">
+                <div className={cn("flex w-full min-w-0 items-start", isCompact ? "gap-1.5" : "gap-4")}>
                     <div className="shrink-0 pt-1">
-                        <div className="relative flex h-10 w-10 items-center justify-center rounded-full border border-gray-100 bg-white shadow-sm">
+                        <div className={cn(
+                            "relative flex items-center justify-center rounded-full border border-gray-100 bg-white shadow-sm",
+                            isCompact ? "h-8 w-8" : "h-10 w-10"
+                        )}>
                             {isStreaming && (
                                 <span className="pointer-events-none absolute -inset-1.5">
                                     <svg className="bot-circular-loader h-full w-full" viewBox="25 25 50 50">
@@ -138,15 +149,17 @@ export function MessageBlock({ block, connector, onBranch, isStreaming = false }
                                     </svg>
                                 </span>
                             )}
-                            <Bot className="h-5 w-5 text-foreground" />
+                            <Bot className={isCompact ? "h-4 w-4 text-foreground" : "h-5 w-5 text-foreground"} />
                         </div>
                     </div>
 
                     <div className="flex min-w-0 flex-1 flex-col">
-                        <div className="mb-2 w-full min-w-0 rounded-2xl rounded-tl-sm bg-white px-1 py-2 text-foreground/90">
-                            <div className={`prose prose-sm max-w-none break-words md:prose-base 
-                            prose-code:before:content-none prose-code:after:content-none 
-                            ${showThinking ? "text-muted-foreground" : "text-foreground"}`}>
+                        <div className={cn("w-full min-w-0 rounded-2xl rounded-tl-sm bg-white text-foreground/90", isCompact ? "mb-1 px-0 py-1" : "mb-2 px-1 py-2")}>
+                            <div className={cn(
+                                "prose max-w-none break-words prose-code:before:content-none prose-code:after:content-none",
+                                isCompact ? "prose-xs text-[13px] leading-relaxed" : "prose-sm md:prose-base",
+                                showThinking ? "text-muted-foreground" : "text-foreground"
+                            )}>
                                 <ReactMarkdown
                                     remarkPlugins={[remarkGfm]}
                                     components={{
@@ -182,8 +195,8 @@ export function MessageBlock({ block, connector, onBranch, isStreaming = false }
                                                             type="button"
                                                             onClick={() => void copyToClipboard(codeText, targetId)}
                                                             className={`rounded-full p-2 transition-colors ${copiedTarget === targetId
-                                                                    ? "bg-primary/15 text-primary"// チェック時: ホバー影なし
-                                                                    : "text-gray-400 hover:bg-gray-700 hover:text-gray-200"
+                                                                ? "bg-primary/15 text-primary"// チェック時: ホバー影なし
+                                                                : "text-gray-400 hover:bg-gray-700 hover:text-gray-200"
                                                                 }`}
                                                             aria-label="Copy code"
                                                         >
@@ -227,8 +240,8 @@ export function MessageBlock({ block, connector, onBranch, isStreaming = false }
                                     type="button"
                                     aria-label="Copy AI message"
                                     className={`rounded-full p-2 transition-colors ${copiedTarget === "ai"
-                                            ? "bg-transparent text-green-500" // チェック時: 背景なし
-                                            : "bg-transparent text-muted-foreground hover:bg-muted hover:text-foreground"
+                                        ? "bg-transparent text-green-500" // チェック時: 背景なし
+                                        : "bg-transparent text-muted-foreground hover:bg-muted hover:text-foreground"
                                         }`}
                                     onClick={() => void copyToClipboard(block.ai_content, "ai")}
                                 >

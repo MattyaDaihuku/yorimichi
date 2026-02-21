@@ -41,7 +41,7 @@ export function SubBranchView({
                 className={cn(
                     "hidden md:block h-full bg-background overflow-hidden transition-all duration-150",
                     panelState === "visible"
-                        ? "shrink-0 basis-[280px] lg:basis-[320px] xl:basis-[360px] max-w-[38vw] min-w-[240px]"
+                        ? "shrink-0 basis-[340px] lg:basis-[400px] xl:basis-[460px] max-w-[45vw] min-w-[300px]"
                         : "shrink-0 w-auto basis-auto min-w-0 max-w-none"
                 )}
             >
