@@ -274,7 +274,7 @@ const ChatPaneHelper = ({ pane, onRemove, chatId, reload, onPaneConfigUpdate, on
             <AlertDialogHeader>
               <AlertDialogTitle>表示の確認</AlertDialogTitle>
               <AlertDialogDescription>
-                {pane.branchId ? "本当にこのブランチを削除しますか？" : "このウィンドウを閉じますか？"}
+                {pane.branchId ? "本当にこのブランチを削除しますか？" : "このウィンドウを削除しますか？"} 
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter className="!flex-row justify-end gap-2">
@@ -283,7 +283,7 @@ const ChatPaneHelper = ({ pane, onRemove, chatId, reload, onPaneConfigUpdate, on
                 onClick={handleDelete}
                 variant="destructive"
               >
-                {pane.branchId ? "削除" : "閉じる"}
+                {pane.branchId ? "削除" : "削除"}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
