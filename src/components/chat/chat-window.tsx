@@ -28,6 +28,7 @@ type ChatWindowProps = {
     branchId: string;
     streamingBlock?: StreamingBlock | null;
     onBranch?: (blockId: string) => void;
+    onMerge?: (blockId: string) => void;
     onSend: (message: string) => Promise<void>;
     inputPlaceholder?: string;
     inputAlwaysBorder?: boolean;
@@ -44,6 +45,7 @@ export function ChatWindow({
     branchId,
     streamingBlock,
     onBranch,
+    onMerge,
     onSend,
     inputPlaceholder = "メインブランチで会話する...",
     inputAlwaysBorder = true,
@@ -243,14 +245,15 @@ export function ChatWindow({
                 <div
                     ref={blockListRef}
                     className={cn(
-                        "min-w-0 w-full",
-                        flexLayout ? "flex-1 overflow-y-auto" : ""
+                        "min-w-0 w-full [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden",
+                        flexLayout ? "flex-1 overflow-y-auto p-4" : ""
                     )}
                 >
                     <BlockList
                         branchId={branchId}
                         streamingBlock={streamingBlock}
                         onBranch={onBranch}
+                        onMerge={onMerge}
                     />
                     <div
                         ref={latestBottomRef}

@@ -1,7 +1,11 @@
 "use client";
 
 import { ChatUIContainer } from "@/components/chat/chat-ui-container";
+import { BranchTree } from "@/components/branch_view/parent_track";
 import type { ChatDetailResponse } from "@/store/chat-store";
+import { useState } from "react";
+import { cn } from "@/lib/utils";
+import { useChatStore } from "@/store/chat-store";
 
 type BranchItem = ChatDetailResponse["branches"][string];
 
@@ -26,17 +30,43 @@ export function SubBranchView({
     onCloseAll,
     onBranch
 }: SubBranchViewProps) {
+    const [panelState, setPanelState] = useState<"hidden-left" | "visible">("hidden-left");
+
+    const chatData = useChatStore((state) => state.chatData);
+    const isLoading = useChatStore((state) => state.isLoading);
+
     return (
-        <div className="h-full w-full">
-            <ChatUIContainer
-                chatId={chatId}
-                mainBranchId={mainBranch.branch_id}
-                initialActiveBranchId={initialActiveBranchId}
-                initialCreationContext={initialCreationContext}
-                reload={reload}
-                onCloseAll={onCloseAll}
-                onBranch={onBranch}
-            />
+        <div className="flex h-full w-full overflow-hidden">
+            <div
+                className={cn(
+                    "hidden md:block h-full bg-background overflow-hidden transition-all duration-150",
+                    panelState === "visible"
+                        ? "shrink-0 basis-[340px] lg:basis-[400px] xl:basis-[460px] max-w-[45vw] min-w-[300px]"
+                        : "shrink-0 w-auto basis-auto min-w-0 max-w-none"
+                )}
+            >
+                <BranchTree
+                    chatId={chatId}
+                    chatData={chatData}
+                    isLoading={isLoading}
+                    onPanelStateChange={setPanelState}
+
+                />
+            </div>
+
+            <div className="flex-1 min-w-0 h-full">
+                <ChatUIContainer
+                    chatId={chatId}
+                    mainBranchId={mainBranch.branch_id}
+                    initialActiveBranchId={initialActiveBranchId}
+                    initialCreationContext={initialCreationContext}
+                    reload={reload}
+                    onCloseAll={onCloseAll}
+                    onBranch={onBranch}
+                    chatData={chatData}
+                    isLoading={isLoading}
+                />
+            </div>
         </div>
     );
 }
