@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Menu, User } from "lucide-react";
+import Image from "next/image";
 import { UserButton, useUser, useClerk } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -56,11 +57,17 @@ export function Header({ title = "", className }: HeaderProps) {
         </Sheet>
 
         <div className="grid grid-cols-3 items-center h-16 w-full">
-          {/* 左側: サービス名 */}
-          <div className="flex items-center justify-start gap-2 pl-10 md:pl-0">
-            <span className="text-xs md:text-sm font-bold tracking-tight text-foreground/60 uppercase leading-none">
-              Yorimichi
-            </span>
+          {/* 左側: サービスロゴ */}
+          <div className="flex items-center justify-start gap-2 pl-12 md:pl-0 h-full">
+            <div className="relative h-8 w-32 md:h-10 md:w-40">
+              <Image
+                src="/yorimichi_logo.png"
+                alt="Yorimichi Logo"
+                fill
+                priority
+                className="object-contain object-left"
+              />
+            </div>
           </div>
 
           {/* 中央: 会話タイトル */}
