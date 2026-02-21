@@ -39,10 +39,10 @@ export function SubBranchView({
         <div className="flex h-full w-full overflow-hidden">
             <div
                 className={cn(
-                    "hidden md:block h-full bg-background overflow-hidden transition-all duration-150",
+                    "hidden md:block h-full bg-background overflow-hidden transition-all duration-300 linear",
                     panelState === "visible"
-                        ? "shrink-0 basis-[340px] lg:basis-[400px] xl:basis-[460px] max-w-[45vw] min-w-[300px]"
-                        : "shrink-0 w-auto basis-auto min-w-0 max-w-none"
+                        ? "shrink-0 basis-[460px] min-w-[460px]"
+                        : "shrink-0 basis-[60px] min-w-[60px]"
                 )}
             >
                 <BranchTree
