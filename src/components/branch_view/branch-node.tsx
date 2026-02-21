@@ -9,6 +9,7 @@ type BranchNodeProps = {
   onSelect: (branchId: string) => void;
   maxDepth: number;
   isPanelVisible: boolean;
+  availableHeight: number;
 };
 
 export function BranchNode({
@@ -18,6 +19,7 @@ export function BranchNode({
   onSelect,
   maxDepth,
   isPanelVisible,
+  availableHeight,
 }: BranchNodeProps) {
   const titleChars = Array.from(node.branch_title ?? "");
   const displayTitle =
@@ -25,25 +27,25 @@ export function BranchNode({
 
   const isSelected = selectedBranchId === node.branch_id;
   const isFloating = isSelected && isPanelVisible;
-  const isBottomNode = node.depth === maxDepth-1;
+  const isBottomNode = node.children.length === 0;
 
-  const nodeHeightByMaxDepth: Record<number, number> = {
-    1: 812,
-    2: 368,
-    3: 220
-  };
+  // 比率に基づいた高さの計算 (ノード:コネクタ = 3:1)
+  const totalUnits = (maxDepth + 1) * 3 + maxDepth * 1;
+  const unitHeight = availableHeight / totalUnits;
 
-  const nodeHeight = nodeHeightByMaxDepth[maxDepth] ?? 220;
+  const nodeHeight = unitHeight * 3;
+  const connectorHeight = unitHeight;
+  const lineHeight = Math.max(0, (connectorHeight - 12) / 2); // 12pxは中央の丸の高さ
 
   return (
     <div className="flex flex-col items-center min-w-min ml-1">
-      
+
       {/* ノードをつなぐ線と中点 */}
       {!isRoot && (
         <div className="flex flex-col items-center">
-          <div className="w-[2px] bg-gray-300 h-8" />
+          <div className="w-[2px] bg-gray-300" style={{ height: `${lineHeight}px` }} />
           <div className="w-3 h-3 bg-gray-400 rounded-full" />
-          <div className="w-[2px] bg-gray-300 h-8" />
+          <div className="w-[2px] bg-gray-300" style={{ height: `${lineHeight}px` }} />
         </div>
       )}
 
@@ -55,10 +57,14 @@ export function BranchNode({
           className={`
             relative flex shrink-0 justify-center items-center rounded-2xl border-1 transition-all cursor-pointer
             w-10 
-            ${isBottomNode ? "border-blue-300 bg-blue-100" : "border-gray-300 bg-white "}
-            ${isFloating ? "-translate-y-0 border-3 text-gray-600 font-bold" : "shadow-sm text-gray-400 font-semibold"}
+            ${isFloating
+              ? "border-3 border-blue-300 text-gray-800 font-bold"
+              : "border-gray-300 bg-white shadow-sm text-gray-400 font-semibold hover:border-3 hover:text-gray-600"}
           `}
-          style={{ height: `${nodeHeight}px` }}
+          style={{
+            height: `${nodeHeight}px`,
+            backgroundColor: isFloating ? "#e6f0ff" : undefined
+          }}
         >
           {/* 中のテキストだけを90度回転させる */}
           <span
@@ -82,6 +88,7 @@ export function BranchNode({
               onSelect={onSelect}
               maxDepth={maxDepth}
               isPanelVisible={isPanelVisible}
+              availableHeight={availableHeight}
             />
           ))}
         </div>
