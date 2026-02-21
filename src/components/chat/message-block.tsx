@@ -159,7 +159,7 @@ export function MessageBlock({ block, connector, onBranch, onMerge, isStreaming 
     const [copiedTarget, setCopiedTarget] = useState<string | null>(null);
     const [hoveredConnectorAction, setHoveredConnectorAction] = useState<"return" | "branch" | null>(null);
     const [isExpanded, setIsExpanded] = useState(false);
-    const isLongMessage = !isCompact && block.user_content.split("\n").length > 2;
+    const isLongMessage = block.user_content.split("\n").length > 2;
     const { style, type, options } = connector;
     const isSplit = type === "split";
     const isBranched = style === "branched";
@@ -225,71 +225,8 @@ export function MessageBlock({ block, connector, onBranch, onMerge, isStreaming 
                 isCompact ? "max-w-full" : "max-w-3xl"
             )}>
                 {/* Sticky user prompt — liquid glass */}
-                {isCompact ? (
-                    /* ── Compact mode: no sticky, simple layout ── */
-                    <div className="p-3">
-                        <div className="group mb-3 flex items-start justify-end gap-2">
-                            <div className="flex translate-x-1 flex-col gap-3 opacity-100 transition-opacity">
-                                <CopyButton
-                                    isCopied={copiedTarget === "user"}
-                                    onCopy={() => void copyToClipboard(block.user_content, "user")}
-                                    size="icon"
-                                    ariaLabel="Copy user message"
-                                    className="h-8 w-8"
-                                />
-                            </div>
-
-                            <div className="w-fit max-w-[90%] overflow-hidden rounded-4xl rounded-tr-sm bg-[#E6F0FF] px-3 py-2 text-foreground/90">
-                                <p className="whitespace-pre-wrap break-all text-sm leading-relaxed">
-                                    {block.user_content}
-                                </p>
-                            </div>
-                        </div>
-
-                        {/* AI response (compact) */}
-                        <div className="flex w-full min-w-0 items-start gap-1.5">
-                            <div className="shrink-0 pt-1">
-                                <div className="relative flex h-8 w-8 items-center justify-center rounded-full border border-gray-100 bg-white shadow-sm">
-                                    {isStreaming && (
-                                        <span className="pointer-events-none absolute -inset-1.5">
-                                            <svg className="bot-circular-loader h-full w-full" viewBox="25 25 50 50">
-                                                <circle className="bot-loader-path" cx="50" cy="50" r="20" fill="none" strokeWidth="2" strokeMiterlimit="10" />
-                                            </svg>
-                                        </span>
-                                    )}
-                                    <Bot className="h-4 w-4 text-foreground" />
-                                </div>
-                            </div>
-
-                            <div className="flex min-w-0 flex-1 flex-col">
-                                <AiMarkdownContent
-                                    aiContent={aiContent}
-                                    showThinking={showThinking}
-                                    copiedTarget={copiedTarget}
-                                    onCopy={copyToClipboard}
-                                />
-                                {!isStreaming && (
-                                    <div className="flex justify-start">
-                                        <CopyButton
-                                            isCopied={copiedTarget === "ai"}
-                                            onCopy={() => void copyToClipboard(block.ai_content, "ai")}
-                                            size="icon"
-                                            ariaLabel="Copy AI message"
-                                            className="h-8 w-8"
-                                        />
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-
-                        <div className="mt-3 flex justify-end">
-                            <p className="text-xs text-muted-foreground">{new Date(block.created_at).toLocaleString()}</p>
-                        </div>
-                    </div>
-                ) : (
-                    /* ── Normal mode: sticky frosted glass ── */
-                    <>
-                        <div className="sticky -top-5 z-20 ml-auto mr-2 w-fit max-w-[75%] rounded-[24px] bg-white/60 pl-2 pr-4 pt-4 pb-4 backdrop-blur-xl">
+                <>
+                        <div className="sticky -top-2 z-20 ml-auto mr-2 w-fit max-w-[75%] rounded-[24px] bg-white/60 pl-2 pr-4 pt-4 pb-4 backdrop-blur-xl">
                             <div className="group flex items-start justify-end gap-3">
                                 <div className="flex translate-x-1 flex-col gap-3 opacity-100 transition-opacity">
                                     <CopyButton
@@ -372,13 +309,8 @@ export function MessageBlock({ block, connector, onBranch, onMerge, isStreaming 
                                     )}
                                 </div>
                             </div>
-
-                            <div className="mt-3 flex justify-end">
-                                <p className="text-xs text-muted-foreground">{new Date(block.created_at).toLocaleString()}</p>
-                            </div>
                         </div>
                     </>
-                )}
             </div>
 
             {/* 下部のコネクタ（分岐線）描画 */}
