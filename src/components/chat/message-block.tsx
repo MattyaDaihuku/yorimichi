@@ -39,6 +39,45 @@ interface AiMarkdownContentProps {
     onCopy: (text: string, target: string) => Promise<void>;
 }
 
+interface CopyButtonProps {
+    isCopied: boolean;
+    onCopy: () => void;
+    className?: string;
+    iconClassName?: string;
+    ariaLabel?: string;
+    size?: any;
+}
+
+const CopyButton = memo(function CopyButton({
+    isCopied,
+    onCopy,
+    className = "",
+    iconClassName = "h-4 w-4",
+    ariaLabel = "Copy text",
+    size = "icon",
+}: CopyButtonProps) {
+    return (
+        <Button
+            variant="ghost"
+            size={size}
+            type="button"
+            aria-label={ariaLabel}
+            className={`flex items-center justify-center rounded-full p-0 transition-colors ${
+                isCopied
+                    ? "bg-transparent hover:bg-transparent" // チェック時はホバーで暗くならない
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground" // コピーアイコン時はホバーで暗くなる
+            } ${className}`}
+            onClick={onCopy}
+        >
+            {isCopied ? (
+                <Check className={`${iconClassName} text-green-500`} />
+            ) : (
+                <Copy className={iconClassName} />
+            )}
+        </Button>
+    );
+});
+
 const AiMarkdownContent = memo(function AiMarkdownContent({
     aiContent,
     showThinking,
@@ -81,24 +120,14 @@ const AiMarkdownContent = memo(function AiMarkdownContent({
                                         <span className="font-mono text-xs lowercase text-gray-300">
                                             {language}
                                         </span>
-                                        <Button
-                                            variant="ghost"
+                                        <CopyButton
+                                            isCopied={copiedTarget === targetId}
+                                            onCopy={() => void onCopy(codeText, targetId)}
                                             size="icon"
-                                            type="button"
-                                            onClick={() => void onCopy(codeText, targetId)}
-                                            className={`flex h-9 w-9 items-center justify-center rounded-full p-0 transition-colors ${
-                                                copiedTarget === targetId
-                                                    ? "text-primary"// チェック時: ホバー影なし
-                                                    : "text-gray-400 hover:bg-gray-700 hover:text-gray-200"
-                                            }`}
-                                            aria-label="Copy code"
-                                        >
-                                            {copiedTarget === targetId ? (
-                                                <Check className="h-3.5 w-3.5 text-green-500" />
-                                            ) : (
-                                                <Copy className="h-3.5 w-3.5" />
-                                            )}
-                                        </Button>
+                                            ariaLabel="Copy code"
+                                            className="h-9 w-9"
+                                            iconClassName="h-3.5 w-3.5"
+                                        />
                                     </div>
 
                                     <div className="w-full overflow-x-auto text-sm">
@@ -190,24 +219,13 @@ export function MessageBlock({ block, connector, onBranch, isStreaming = false }
             <div className="relative z-10 w-full max-w-3xl rounded-[24px] border border-gray-100 bg-white p-6 shadow-sm">
                 <div className="group mb-6 flex items-start justify-end gap-4">
                     <div className="flex translate-x-2 flex-col gap-3 opacity-100 transition-opacity">
-                        <Button
-                            variant="ghost"
+                        <CopyButton
+                            isCopied={copiedTarget === "user"}
+                            onCopy={() => void copyToClipboard(block.user_content, "user")}
                             size="icon-lg"
-                            type="button"
-                            aria-label="Copy user message"
-                            className={`flex h-10 w-10 items-center justify-center rounded-full p-0 transition-colors ${
-                                copiedTarget === "user"
-                                    ? "bg-transparent text-green-500" // チェック時: 背景なし
-                                    : "bg-transparent text-muted-foreground hover:bg-muted hover:text-foreground"
-                            }`}
-                            onClick={() => void copyToClipboard(block.user_content, "user")}
-                        >
-                            {copiedTarget === "user" ? (
-                                <Check className="h-4 w-4 text-green-500" />
-                            ) : (
-                                <Copy className="h-4 w-4" />
-                            )}
-                        </Button>
+                            ariaLabel="Copy user message"
+                            className="h-10 w-10"
+                        />
                     </div>
 
                     <div className="w-fit max-w-[75%] rounded-4xl rounded-tr-sm bg-[#E6F0FF] px-6 py-4 text-foreground/90">
@@ -248,24 +266,13 @@ export function MessageBlock({ block, connector, onBranch, isStreaming = false }
                         />
                         {!isStreaming && (
                             <div className="flex justify-start">
-                                <Button
-                                    variant="ghost"
+                                <CopyButton
+                                    isCopied={copiedTarget === "ai"}
+                                    onCopy={() => void copyToClipboard(block.ai_content, "ai")}
                                     size="icon-lg"
-                                    type="button"
-                                    aria-label="Copy AI message"
-                                    className={`flex h-10 w-10 items-center justify-center rounded-full p-0 transition-colors ${
-                                        copiedTarget === "ai"
-                                            ? "bg-transparent text-green-500" // チェック時: 背景なし
-                                            : "bg-transparent text-muted-foreground hover:bg-muted hover:text-foreground"
-                                    }`}
-                                    onClick={() => void copyToClipboard(block.ai_content, "ai")}
-                                >
-                                    {copiedTarget === "ai" ? (
-                                        <Check className="h-4 w-4 text-green-500" />
-                                    ) : (
-                                        <Copy className="h-4 w-4" />
-                                    )}
-                                </Button>
+                                    ariaLabel="Copy AI message"
+                                    className="h-10 w-10"
+                                />
                             </div>
                         )}
                     </div>
