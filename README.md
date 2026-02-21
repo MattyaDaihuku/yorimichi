@@ -58,22 +58,28 @@ Gitの「ブランチ（分岐）」概念をチャットに最適化して導�
 ---
 
 ## 今後の展望
+- 停止・再生成機能
+- チャットの削除機能
+- チャットの共有機能
+- プロンプトの編集機能
+- AIにファイルや音声・動画を送信
+- Gemini以外のAPIも使用できるようにする
 
 ---
 
 ## 使用技術
 
 ### フロントエンド / バックエンド
-- **Next.js 16** (App Router)
+- **Next.js 16**
 - **TypeScript**
-- **Tailwind CSS 4** (Radix UI / Shadcn UI)
-- **Vercel AI SDK** (Google Gemini)
+- **Tailwind CSS 4**
+- **Vercel AI SDK** (Gemini API)
 
 ### データベース / 認証
-- **Supabase** (PostgreSQL)
-- **Prisma** (ORM)
-- **Clerk** (Authentication / User Syncing)
-- **Zustand** (State Management)
+- **Supabase**
+- **Zustand**
+- **Prisma**
+- **Clerk**
 
 ### 開発環境
 - **Docker**
