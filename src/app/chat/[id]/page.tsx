@@ -1,7 +1,7 @@
 "use client";
 
 import { use, useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, notFound } from "next/navigation";
 import { Header } from "@/components/header"; // Headerをインポート
 import { useChatStore } from "@/store/chat-store";
 import { MainBranchView } from "@/components/chat/main-branch-view";
@@ -153,6 +153,12 @@ export default function ChatPage({ params }: ChatPageProps) {
     setCreationContext({ parentBlockId: blockId });
   };
 
+  useEffect(() => {
+    if (error === "NOT_FOUND") {
+      notFound();
+    }
+  }, [error]);
+
   // ビューの判定
   const isMainView = !creationContext && (deepestBranch?.depth === 0);
 
@@ -164,7 +170,7 @@ export default function ChatPage({ params }: ChatPageProps) {
 
       <main className={`flex-1 bg-background ${isMainView ? "p-6 overflow-y-auto" : "overflow-hidden"}`}>
         <div className={`mx-auto h-full ${isMainView ? "max-w-4xl space-y-6 pb-10" : "max-w-none w-full"}`}>
-          {error && <p className="text-sm text-destructive p-4">{error}</p>}
+          {error && error !== "NOT_FOUND" && <p className="text-sm text-destructive p-4">{error}</p>}
 
           {chatData && deepestBranch && (
             isMainView ? (
