@@ -101,25 +101,26 @@ const CreationPane = ({ chatId, parentBlockId, reload, onCreated }: CreationPane
   };
 
   return (
-    <div className="flex flex-col h-full bg-background relative overflow-hidden">
-      {/* メッセージエリア: スクロールバーを隠し、分岐を強調 */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-8 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-        {parentBlock && (
-          <div className="max-w-3xl mx-auto origin-top pt-4">
+    <section className="relative flex flex-1 flex-col min-h-0 h-full overflow-hidden">
+      {/* メッセージエリア: ChatWindow と同じ構造 */}
+      <div className="min-w-0 w-full flex-1 overflow-y-auto p-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+        <div>
+          {parentBlock && (
             <MessageBlock
               block={parentBlock}
               isCompact={typeof window !== 'undefined' && window.innerWidth < 768}
               connector={{
-                style: "branched", // 分岐スタイルを採用
+                style: "branched",
                 type: "continue"
               }}
             />
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
-      {/* 入力エリア: フィールドが浮いているようなモダンなグラデーションデザイン */}
-      <div className="z-20 bg-background pb-[env(safe-area-inset-bottom)] relative mt-auto">
+      {/* 入力エリア: ChatWindow (fixedInput + flexLayout) と同じ構造 */}
+      <div className="pointer-events-none z-20 bg-background pb-[env(safe-area-inset-bottom)] relative">
+        <div className="absolute -top-7 left-0 right-0 z-0 h-8 bg-gradient-to-b from-transparent to-background" />
         <div className="relative z-10 mx-auto w-full max-w-4xl px-6 pt-0 pb-6">
           <div className="pointer-events-auto mx-auto w-full max-w-3xl">
             <ChatComposer
@@ -128,12 +129,12 @@ const CreationPane = ({ chatId, parentBlockId, reload, onCreated }: CreationPane
               onSubmit={handleCreate}
               isSending={isCreating}
               placeholder="新しいブランチでメッセージを送信..."
-              alwaysBorder={false} // モダンな枠なしスタイル
+              alwaysBorder={false}
             />
           </div>
         </div>
       </div>
-    </div>
+    </section>
   );
 };
 
@@ -522,7 +523,7 @@ export function ChatUIContainer({ chatId, mainBranchId, initialActiveBranchId, i
                     onCreated={(newBranchId, message) => handleCreated(pane.id, newBranchId, message)}
                   />
                 </ResizablePanel>
-                {index < activePanes.length - 1 && <ResizableHandle className="bg-transparent w-2" />}
+                {index < activePanes.length - 1 && <ResizableHandle className="bg-transparent w-2 after:w-px! after:bg-border/50!" />}
               </Fragment>
             ))}
           </ResizablePanelGroup>
