@@ -7,6 +7,12 @@ import remarkGfm from "remark-gfm";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const CodeHighlighter = lazy(() => import("./code-highlighter"));
 
@@ -226,91 +232,91 @@ export function MessageBlock({ block, connector, onBranch, onMerge, isStreaming 
             )}>
                 {/* Sticky user prompt — liquid glass */}
                 <>
-                        <div className="sticky -top-2 z-20 ml-auto mr-2 w-fit max-w-[75%] rounded-[24px] bg-white/60 pl-2 pr-4 pt-4 pb-4 backdrop-blur-xl">
-                            <div className="group flex items-start justify-end gap-3">
-                                <div className="flex translate-x-1 flex-col gap-3 opacity-100 transition-opacity">
-                                    <CopyButton
-                                        isCopied={copiedTarget === "user"}
-                                        onCopy={() => void copyToClipboard(block.user_content, "user")}
-                                        size="icon-lg"
-                                        ariaLabel="Copy user message"
-                                        className="h-10 w-10"
-                                    />
-                                </div>
-
-                                <div className={`w-fit overflow-hidden rounded-4xl rounded-tr-sm bg-[#E6F0FF] pl-6 ${isLongMessage ? "pr-3" : "pr-6"} py-4 text-foreground/90 transition-all duration-200`}>
-                                    <div className="flex items-start gap-2">
-                                        <p className={`whitespace-pre-wrap break-all text-sm leading-relaxed md:text-base ${!isExpanded && isLongMessage ? "line-clamp-2" : ""
-                                            }`}>
-                                            {block.user_content}
-                                        </p>
-                                        {isLongMessage && (
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                onClick={() => setIsExpanded(!isExpanded)}
-                                                className="-mt-1 h-10 w-10 shrink-0 rounded-full text-slate-500 hover:text-slate-900 toggle-ripple"
-                                                data-expanded={isExpanded}
-                                                aria-label={isExpanded ? "折りたたむ" : "もっと見る"}
-                                            >
-                                                {isExpanded ? (
-                                                    <ChevronUp className="h-4 w-4" />
-                                                ) : (
-                                                    <ChevronDown className="h-4 w-4" />
-                                                )}
-                                            </Button>
-                                        )}
-                                    </div>
-                                </div>
+                    <div className="sticky -top-2 z-20 ml-auto mr-2 w-fit max-w-[75%] rounded-[24px] bg-white/60 pl-2 pr-4 pt-4 pb-4 backdrop-blur-xl">
+                        <div className="group flex items-start justify-end gap-3">
+                            <div className="flex translate-x-1 flex-col gap-3 opacity-100 transition-opacity">
+                                <CopyButton
+                                    isCopied={copiedTarget === "user"}
+                                    onCopy={() => void copyToClipboard(block.user_content, "user")}
+                                    size="icon-lg"
+                                    ariaLabel="Copy user message"
+                                    className="h-10 w-10"
+                                />
                             </div>
-                        </div>
 
-                        {/* AI response */}
-                        <div className="px-6 pb-6 pt-4">
-                            <div className="flex w-full min-w-0 flex-col items-stretch gap-3 md:flex-row md:items-start md:gap-4">
-                                <div className="shrink-0 self-start pt-0 md:pt-1">
-                                    <div className="relative flex h-10 w-10 items-center justify-center rounded-full border border-gray-100 bg-white shadow-sm">
-                                        {isStreaming && (
-                                            <span className="pointer-events-none absolute -inset-1.5">
-                                                <svg className="bot-circular-loader h-full w-full" viewBox="25 25 50 50">
-                                                    <circle
-                                                        className="bot-loader-path"
-                                                        cx="50"
-                                                        cy="50"
-                                                        r="20"
-                                                        fill="none"
-                                                        strokeWidth="2"
-                                                        strokeMiterlimit="10"
-                                                    />
-                                                </svg>
-                                            </span>
-                                        )}
-                                        <Bot className="h-5 w-5 text-foreground" />
-                                    </div>
-                                </div>
-
-                                <div className="flex w-full min-w-0 flex-1 flex-col">
-                                    <AiMarkdownContent
-                                        aiContent={aiContent}
-                                        showThinking={showThinking}
-                                        copiedTarget={copiedTarget}
-                                        onCopy={copyToClipboard}
-                                    />
-                                    {!isStreaming && (
-                                        <div className="flex justify-start">
-                                            <CopyButton
-                                                isCopied={copiedTarget === "ai"}
-                                                onCopy={() => void copyToClipboard(block.ai_content, "ai")}
-                                                size="icon-lg"
-                                                ariaLabel="Copy AI message"
-                                                className="h-10 w-10"
-                                            />
-                                        </div>
+                            <div className={`w-fit overflow-hidden rounded-4xl rounded-tr-sm bg-[#E6F0FF] pl-6 ${isLongMessage ? "pr-3" : "pr-6"} py-4 text-foreground/90 transition-all duration-200`}>
+                                <div className="flex items-start gap-2">
+                                    <p className={`whitespace-pre-wrap break-all text-sm leading-relaxed md:text-base ${!isExpanded && isLongMessage ? "line-clamp-2" : ""
+                                        }`}>
+                                        {block.user_content}
+                                    </p>
+                                    {isLongMessage && (
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={() => setIsExpanded(!isExpanded)}
+                                            className="-mt-1 h-10 w-10 shrink-0 rounded-full text-slate-500 hover:text-slate-900 toggle-ripple"
+                                            data-expanded={isExpanded}
+                                            aria-label={isExpanded ? "折りたたむ" : "もっと見る"}
+                                        >
+                                            {isExpanded ? (
+                                                <ChevronUp className="h-4 w-4" />
+                                            ) : (
+                                                <ChevronDown className="h-4 w-4" />
+                                            )}
+                                        </Button>
                                     )}
                                 </div>
                             </div>
                         </div>
-                    </>
+                    </div>
+
+                    {/* AI response */}
+                    <div className="px-6 pb-6 pt-4">
+                        <div className="flex w-full min-w-0 flex-col items-stretch gap-3 md:flex-row md:items-start md:gap-4">
+                            <div className="shrink-0 self-start pt-0 md:pt-1">
+                                <div className="relative flex h-10 w-10 items-center justify-center rounded-full border border-gray-100 bg-white shadow-sm">
+                                    {isStreaming && (
+                                        <span className="pointer-events-none absolute -inset-1.5">
+                                            <svg className="bot-circular-loader h-full w-full" viewBox="25 25 50 50">
+                                                <circle
+                                                    className="bot-loader-path"
+                                                    cx="50"
+                                                    cy="50"
+                                                    r="20"
+                                                    fill="none"
+                                                    strokeWidth="2"
+                                                    strokeMiterlimit="10"
+                                                />
+                                            </svg>
+                                        </span>
+                                    )}
+                                    <Bot className="h-5 w-5 text-foreground" />
+                                </div>
+                            </div>
+
+                            <div className="flex w-full min-w-0 flex-1 flex-col">
+                                <AiMarkdownContent
+                                    aiContent={aiContent}
+                                    showThinking={showThinking}
+                                    copiedTarget={copiedTarget}
+                                    onCopy={copyToClipboard}
+                                />
+                                {!isStreaming && (
+                                    <div className="flex justify-start">
+                                        <CopyButton
+                                            isCopied={copiedTarget === "ai"}
+                                            onCopy={() => void copyToClipboard(block.ai_content, "ai")}
+                                            size="icon-lg"
+                                            ariaLabel="Copy AI message"
+                                            className="h-10 w-10"
+                                        />
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </>
             </div>
 
             {/* 下部のコネクタ（分岐線）描画 */}
@@ -436,17 +442,26 @@ export function MessageBlock({ block, connector, onBranch, onMerge, isStreaming 
                                     className="absolute -translate-x-1/2 -translate-y-1/2"
                                     style={{ left: LEFT_BTN_CX, top: BTN_CY }}
                                 >
-                                    <Button
-                                        variant="outline"
-                                        size="icon-lg"
-                                        type="button"
-                                        onClick={() => onMerge?.(block.block_id)}
-                                        className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-100 bg-white shadow-sm transition-all hover:border-gray-300 hover:bg-[#F9FAFB]"
-                                        onMouseEnter={() => setHoveredConnectorAction("return")}
-                                        onMouseLeave={() => setHoveredConnectorAction(null)}
-                                    >
-                                        <Check className="h-5 w-5 text-black" />
-                                    </Button>
+                                    <TooltipProvider>
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
+                                                <Button
+                                                    variant="outline"
+                                                    size="icon-lg"
+                                                    type="button"
+                                                    onClick={() => onMerge?.(block.block_id)}
+                                                    className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-100 bg-white shadow-sm transition-all hover:border-gray-300 hover:bg-[#F9FAFB]"
+                                                    onMouseEnter={() => setHoveredConnectorAction("return")}
+                                                    onMouseLeave={() => setHoveredConnectorAction(null)}
+                                                >
+                                                    <Check className="h-5 w-5 text-black" />
+                                                </Button>
+                                            </TooltipTrigger>
+                                            <TooltipContent className="bg-black text-white border-transparent">
+                                                <p>本筋に合流する</p>
+                                            </TooltipContent>
+                                        </Tooltip>
+                                    </TooltipProvider>
                                 </div>
                             )}
 
@@ -455,19 +470,28 @@ export function MessageBlock({ block, connector, onBranch, onMerge, isStreaming 
                                     className="absolute -translate-x-1/2 -translate-y-1/2"
                                     style={{ left: RIGHT_BTN_CX, top: BTN_CY }}
                                 >
-                                    <Button
-                                        variant="outline"
-                                        size="icon-lg"
-                                        type="button"
-                                        onClick={() => onBranch?.(block.block_id)}
-                                        className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-100 bg-white shadow-sm transition-all hover:border-gray-300 hover:bg-[#F9FAFB]"
-                                        onMouseEnter={() => setHoveredConnectorAction("branch")}
-                                        onMouseLeave={() => setHoveredConnectorAction(null)}
-                                    >
-                                        <MessageCircleQuestionMark
-                                            className="h-5 w-5 text-black"
-                                        />
-                                    </Button>
+                                    <TooltipProvider>
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
+                                                <Button
+                                                    variant="outline"
+                                                    size="icon-lg"
+                                                    type="button"
+                                                    onClick={() => onBranch?.(block.block_id)}
+                                                    className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-100 bg-white shadow-sm transition-all hover:border-gray-300 hover:bg-[#F9FAFB]"
+                                                    onMouseEnter={() => setHoveredConnectorAction("branch")}
+                                                    onMouseLeave={() => setHoveredConnectorAction(null)}
+                                                >
+                                                    <MessageCircleQuestionMark
+                                                        className="h-5 w-5 text-black"
+                                                    />
+                                                </Button>
+                                            </TooltipTrigger>
+                                            <TooltipContent className="bg-black text-white border-transparent">
+                                                <p>ヨリミチする</p>
+                                            </TooltipContent>
+                                        </Tooltip>
+                                    </TooltipProvider>
                                 </div>
                             )}
                         </>
