@@ -119,8 +119,8 @@ const CreationPane = ({ chatId, parentBlockId, reload, onCreated }: CreationPane
       </div>
 
       {/* 入力エリア: ChatWindow (fixedInput + flexLayout) と同じ構造 */}
-      <div className="pointer-events-none z-20 bg-background pb-[env(safe-area-inset-bottom)] relative">
-        <div className="absolute -top-7 left-0 right-0 z-0 h-8 bg-gradient-to-b from-transparent to-background" />
+      <div className="pointer-events-none z-20 bg-[#fafafa] pb-[env(safe-area-inset-bottom)] relative">
+        <div className="absolute -top-7 left-0 right-0 z-0 h-8 bg-gradient-to-b from-transparent to-[#fafafa]" />
         <div className="relative z-10 mx-auto w-full max-w-4xl px-6 pt-0 pb-6">
           <div className="pointer-events-auto mx-auto w-full max-w-3xl">
             <ChatComposer
@@ -258,7 +258,7 @@ const ChatPaneHelper = ({ pane, onRemove, chatId, reload, onPaneConfigUpdate, on
   };
 
   return (
-    <div className={cn("h-full w-full bg-background relative group flex flex-col", className)}>
+    <div className={cn("h-full w-full bg-[#fafafa] relative group flex flex-col", className)}>
       {/* Header Area using common DeleteBranchButton logic but customized for close behavior */}
       {(pane.branchId || pane.creationContext) && (
         <AlertDialog>

@@ -272,11 +272,11 @@ export function ChatWindow({
                 {showComposer && (
                     fixedInput ? (
                         <div className={cn(
-                            "pointer-events-none z-20 bg-background pb-[env(safe-area-inset-bottom)]",
+                            "pointer-events-none z-20 bg-[#fafafa] pb-[env(safe-area-inset-bottom)]",
                             flexLayout ? "absolute bottom-0 left-0 right-0" : "fixed bottom-0",
                             fixedOffsetClassName
                         )}>
-                            <div className="absolute -top-7 left-0 right-0 z-0 h-8 bg-gradient-to-b from-transparent to-background" />
+                            <div className="absolute -top-7 left-0 right-0 z-0 h-8 bg-gradient-to-b from-transparent to-[#fafafa]" />
                             <div className="relative z-10 mx-auto w-full max-w-4xl px-6 pt-0 pb-6">
                                 {showRefocusButton && (
                                     <div className="pointer-events-none absolute -top-20 left-1/2 -translate-x-1/2">
