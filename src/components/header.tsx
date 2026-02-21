@@ -32,7 +32,7 @@ export function Header({ title = "", className }: HeaderProps) {
 
       <header
         className={cn(
-       　 "fixed inset-x-0 top-0 md:left-[72px] z-20 px-6 pt-[env(safe-area-inset-top)] h-[calc(4rem+env(safe-area-inset-top))] transition-colors duration-300",
+        "fixed inset-x-0 top-0 md:left-[72px] z-20 px-6 pt-[env(safe-area-inset-top)] h-[calc(4rem+env(safe-area-inset-top))] transition-colors duration-300",
           className || "bg-background"
         )}
       >
