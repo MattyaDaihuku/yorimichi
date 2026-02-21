@@ -53,6 +53,7 @@ export function ChatComposer({
                     }`}
             >
                 <Textarea
+                    suppressHydrationWarning
                     value={value}
                     onChange={(e) => onChange(e.target.value)}
                     placeholder={placeholder}
