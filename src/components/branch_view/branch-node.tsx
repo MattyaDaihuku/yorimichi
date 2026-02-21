@@ -57,10 +57,14 @@ export function BranchNode({
           className={`
             relative flex shrink-0 justify-center items-center rounded-2xl border-1 transition-all cursor-pointer
             w-10 
-            ${isBottomNode ? "border-blue-300 bg-blue-100" : "border-gray-300 bg-white "}
-            ${isFloating ? "-translate-y-0 border-3 text-gray-600 font-bold" : "shadow-sm text-gray-400 font-semibold"}
+            ${isFloating
+              ? "border-3 border-blue-300 text-gray-800 font-bold"
+              : "border-gray-300 bg-white shadow-sm text-gray-400 font-semibold hover:border-3 hover:text-gray-600"}
           `}
-          style={{ height: `${nodeHeight}px` }}
+          style={{
+            height: `${nodeHeight}px`,
+            backgroundColor: isFloating ? "#e6f0ff" : undefined
+          }}
         >
           {/* 中のテキストだけを90度回転させる */}
           <span
