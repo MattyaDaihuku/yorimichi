@@ -219,9 +219,9 @@ export function MessageBlock({ block, connector, onBranch, isStreaming = false }
         <div data-message-block="true" className="flex w-full flex-col items-center scroll-mt-24">
             <div className="relative z-10 w-full max-w-3xl rounded-[24px] border border-gray-100 bg-white shadow-sm">
                 {/* Sticky user prompt — liquid glass */}
-                <div className="sticky -top-5 z-20 ml-auto mr-2 w-fit max-w-[75%] rounded-[24px] border-white/30 bg-white/60 pl-2 pr-4 pt-4 pb-4 shadow-[0_1px_3px_rgba(0,0,0,0.04)] backdrop-blur-xl">
-                    <div className="group flex items-start justify-end gap-4">
-                        <div className="flex translate-x-2 flex-col gap-3 opacity-100 transition-opacity">
+                <div className="sticky -top-5 z-20 ml-auto mr-2 w-fit max-w-[75%] rounded-[24px] bg-white/60 pl-2 pr-4 pt-4 pb-4 backdrop-blur-xl">
+                    <div className="group flex items-start justify-end gap-3">
+                        <div className="flex translate-x-1 flex-col gap-3 opacity-100 transition-opacity">
                             <CopyButton
                                 isCopied={copiedTarget === "user"}
                                 onCopy={() => void copyToClipboard(block.user_content, "user")}
