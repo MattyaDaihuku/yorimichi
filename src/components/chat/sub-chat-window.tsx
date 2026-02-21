@@ -71,7 +71,7 @@ export function SubChatWindow({ branchId }: SubChatWindowProps) {
         <div ref={blockListRef} className="space-y-4 pb-8">
           {displayBlocks.length === 0 ? (
             <div className="rounded-lg border bg-muted/20 p-6 text-sm text-muted-foreground mt-4 mx-auto max-w-3xl">
-              このサブブランチにはまだ会話がありません。
+              このヨリミチにはまだ会話がありません。
             </div>
           ) : (
             displayBlocks.map((block, index) => {
@@ -102,7 +102,7 @@ export function SubChatWindow({ branchId }: SubChatWindowProps) {
             value={input}
             onChange={setInput}
             onSubmit={send}
-            placeholder="サブブランチにメッセージを送信..."
+            placeholder="会話してみましょう"
             isSending={isSending}
             alwaysBorder={true}
           />

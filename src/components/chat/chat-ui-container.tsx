@@ -89,12 +89,12 @@ const CreationPane = ({ chatId, parentBlockId, reload, onCreated }: CreationPane
 
       if (!response.ok) throw new Error("Failed to initialize branch");
 
-      toast.success("ブランチを作成しました");
+      toast.success("ヨリミチしました");
       await reload();
       onCreated(branchId, message);
     } catch (error) {
       console.error(error);
-      toast.error("作成に失敗しました");
+      toast.error("ヨリミチに失敗しました");
     } finally {
       setIsCreating(false);
     }
@@ -128,7 +128,7 @@ const CreationPane = ({ chatId, parentBlockId, reload, onCreated }: CreationPane
               onChange={setMessage}
               onSubmit={handleCreate}
               isSending={isCreating}
-              placeholder="新しいブランチでメッセージを送信..."
+              placeholder="会話してみましょう"
               alwaysBorder={false}
             />
           </div>
@@ -217,7 +217,7 @@ const ChatPaneHelper = ({ pane, onRemove, chatId, reload, onPaneConfigUpdate, on
         throw new Error(err.error || "Failed to merge branch");
       }
 
-      toast.success("ブランチを統合しました");
+      toast.success("ヨリミチを終了しました");
       mergeBranch(pane.branchId);
       // Reload BEFORE removing the pane so the store has fresh data
       // (including copied blocks) before the view transitions
@@ -225,7 +225,7 @@ const ChatPaneHelper = ({ pane, onRemove, chatId, reload, onPaneConfigUpdate, on
       onRemove(pane.id);
     } catch (error) {
       console.error(error);
-      const msg = error instanceof Error ? error.message : "統合に失敗しました";
+      const msg = error instanceof Error ? error.message : "ヨリミチを終了できませんでした";
       toast.error(msg);
     }
   };
@@ -247,13 +247,13 @@ const ChatPaneHelper = ({ pane, onRemove, chatId, reload, onPaneConfigUpdate, on
         throw new Error("Failed to delete branch");
       }
 
-      toast.success("ブランチを削除しました");
+      toast.success("ヨリミチをやめました");
       removeBranch(pane.branchId);
       onRemove(pane.id);
       void reload();
     } catch (error) {
       console.error(error);
-      toast.error("削除に失敗しました");
+      toast.error("ヨリミチをやめることに失敗しました");
     }
   };
 
@@ -274,18 +274,18 @@ const ChatPaneHelper = ({ pane, onRemove, chatId, reload, onPaneConfigUpdate, on
           </AlertDialogTrigger>
           <AlertDialogContent className="min-w-0 w-[400px] sm:max-w-[400px]">
             <AlertDialogHeader>
-              <AlertDialogTitle>ブランチ削除の確認</AlertDialogTitle>
+              <AlertDialogTitle>ヨリミチをやめますか？</AlertDialogTitle>
               <AlertDialogDescription>
-                {pane.branchId ? "本当にこのブランチを削除しますか？" : "このウィンドウを削除しますか？"}
+                {pane.branchId ? "" : ""}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter className="!flex-row justify-end gap-2">
-              <AlertDialogCancel className="mt-0">キャンセル</AlertDialogCancel>
+              <AlertDialogCancel className="mt-0">いいえ</AlertDialogCancel>
               <AlertDialogAction
                 onClick={handleDelete}
                 variant="destructive"
               >
-                {pane.branchId ? "削除" : "削除"}
+                はい
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

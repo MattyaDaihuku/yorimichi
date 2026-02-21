@@ -29,7 +29,7 @@ export function BranchConversationPanel({
     >
       {blocks.length === 0 ? (
         <div className="p-4 pt-8">
-          <p className="text-sm text-muted-foreground">このブランチの会話はまだありません。</p>
+          <p className="text-sm text-muted-foreground">このヨリミチに会話はまだありません。</p>
         </div>
       ) : (
         <div className="px-2 pb-4 pt-4">

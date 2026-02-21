@@ -7,6 +7,12 @@ import remarkGfm from "remark-gfm";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const CodeHighlighter = lazy(() => import("./code-highlighter"));
 
@@ -436,17 +442,26 @@ export function MessageBlock({ block, connector, onBranch, onMerge, isStreaming 
                                     className="absolute -translate-x-1/2 -translate-y-1/2"
                                     style={{ left: LEFT_BTN_CX, top: BTN_CY }}
                                 >
-                                    <Button
-                                        variant="outline"
-                                        size="icon-lg"
-                                        type="button"
-                                        onClick={() => onMerge?.(block.block_id)}
-                                        className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-100 bg-white shadow-sm transition-all hover:border-gray-300 hover:bg-[#F9FAFB]"
-                                        onMouseEnter={() => setHoveredConnectorAction("return")}
-                                        onMouseLeave={() => setHoveredConnectorAction(null)}
-                                    >
-                                        <Check className="h-5 w-5 text-black" />
-                                    </Button>
+                                    <TooltipProvider>
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
+                                                <Button
+                                                    variant="outline"
+                                                    size="icon-lg"
+                                                    type="button"
+                                                    onClick={() => onMerge?.(block.block_id)}
+                                                    className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-100 bg-white shadow-sm transition-all hover:border-gray-300 hover:bg-[#F9FAFB]"
+                                                    onMouseEnter={() => setHoveredConnectorAction("return")}
+                                                    onMouseLeave={() => setHoveredConnectorAction(null)}
+                                                >
+                                                    <Check className="h-5 w-5 text-black" />
+                                                </Button>
+                                            </TooltipTrigger>
+                                            <TooltipContent className="bg-black text-white border-transparent">
+                                                <p>本筋に合流する</p>
+                                            </TooltipContent>
+                                        </Tooltip>
+                                    </TooltipProvider>
                                 </div>
                             )}
 
@@ -455,19 +470,28 @@ export function MessageBlock({ block, connector, onBranch, onMerge, isStreaming 
                                     className="absolute -translate-x-1/2 -translate-y-1/2"
                                     style={{ left: RIGHT_BTN_CX, top: BTN_CY }}
                                 >
-                                    <Button
-                                        variant="outline"
-                                        size="icon-lg"
-                                        type="button"
-                                        onClick={() => onBranch?.(block.block_id)}
-                                        className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-100 bg-white shadow-sm transition-all hover:border-gray-300 hover:bg-[#F9FAFB]"
-                                        onMouseEnter={() => setHoveredConnectorAction("branch")}
-                                        onMouseLeave={() => setHoveredConnectorAction(null)}
-                                    >
-                                        <MessageCircleQuestionMark
-                                            className="h-5 w-5 text-black"
-                                        />
-                                    </Button>
+                                    <TooltipProvider>
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
+                                                <Button
+                                                    variant="outline"
+                                                    size="icon-lg"
+                                                    type="button"
+                                                    onClick={() => onBranch?.(block.block_id)}
+                                                    className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-100 bg-white shadow-sm transition-all hover:border-gray-300 hover:bg-[#F9FAFB]"
+                                                    onMouseEnter={() => setHoveredConnectorAction("branch")}
+                                                    onMouseLeave={() => setHoveredConnectorAction(null)}
+                                                >
+                                                    <MessageCircleQuestionMark
+                                                        className="h-5 w-5 text-black"
+                                                    />
+                                                </Button>
+                                            </TooltipTrigger>
+                                            <TooltipContent className="bg-black text-white border-transparent">
+                                                <p>ヨリミチする</p>
+                                            </TooltipContent>
+                                        </Tooltip>
+                                    </TooltipProvider>
                                 </div>
                             )}
                         </>
