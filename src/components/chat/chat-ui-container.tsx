@@ -347,6 +347,7 @@ export function ChatUIContainer({ chatId, mainBranchId, initialActiveBranchId, i
     return () => mql.removeEventListener("change", onChange);
   }, []);
 
+
   const [activePanes, setActivePanes] = useState<PaneConfig[]>(() => {
     const panes: PaneConfig[] = [];
 
@@ -469,7 +470,7 @@ export function ChatUIContainer({ chatId, mainBranchId, initialActiveBranchId, i
           ))}
           {activePanes.length < 3 && (
             <div className="min-w-[60px] h-full flex items-center justify-center snap-center flex-shrink-0">
-              <AddBranchButton onClick={addPane} className="w-12 h-12 rounded-full" />
+              <AddBranchButton onClick={addPane} className="w-10 h-10 rounded-full" />
             </div>
           )}
         </div>
@@ -502,7 +503,7 @@ export function ChatUIContainer({ chatId, mainBranchId, initialActiveBranchId, i
               <AddBranchButton
                 onClick={addPane}
                 isFullWidth={activePanes.length === 0}
-                className={activePanes.length === 0 ? "" : "w-12 shrink-0"}
+                className={activePanes.length === 0 ? "" : "w-10 shrink-0"}
               />
             </div>
           )}

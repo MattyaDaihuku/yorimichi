@@ -12,7 +12,7 @@ export function AddBranchButton({ onClick, isFullWidth, className }: AddBranchBu
     <div
       className={cn(
         "flex flex-col items-center justify-center bg-muted/30 border-2 border-dashed border-muted-foreground/40 rounded-4xl shadow-sm hover:bg-muted/80 transition-colors cursor-pointer group",
-        isFullWidth ? "flex-1 w-full h-full" : "w-12 shrink-0",
+        isFullWidth ? "flex-1 w-full h-full" : "w-10 shrink-0",
         className
       )}
       onClick={onClick}
