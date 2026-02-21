@@ -63,8 +63,8 @@ const CopyButton = memo(function CopyButton({
             type="button"
             aria-label={ariaLabel}
             className={`flex items-center justify-center rounded-full p-0 transition-colors ${isCopied
-                    ? "bg-transparent hover:bg-transparent" // チェック時はホバーで暗くならない
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground" // コピーアイコン時はホバーで暗くなる
+                ? "bg-transparent hover:bg-transparent" // チェック時はホバーで暗くならない
+                : "text-muted-foreground hover:bg-muted hover:text-foreground" // コピーアイコン時はホバーで暗くなる
                 } ${className}`}
             onClick={onCopy}
         >
@@ -229,7 +229,7 @@ export function MessageBlock({ block, connector, onBranch, isStreaming = false }
                         />
                     </div>
 
-                    <div className="w-fit max-w-[75%] rounded-4xl rounded-tr-sm bg-[#E6F0FF] pl-6 pr-3 py-4 text-foreground/90 transition-all duration-200">
+                    <div className={`w-fit max-w-[75%] rounded-4xl rounded-tr-sm bg-[#E6F0FF] pl-6 ${isLongMessage ? "pr-3" : "pr-6"} py-4 text-foreground/90 transition-all duration-200`}>
                         <div className="flex items-start gap-2">
                             <p className={`whitespace-pre-wrap break-words text-sm leading-relaxed md:text-base ${!isExpanded && isLongMessage ? "line-clamp-2" : ""
                                 }`}>
@@ -240,7 +240,8 @@ export function MessageBlock({ block, connector, onBranch, isStreaming = false }
                                     variant="ghost"
                                     size="icon"
                                     onClick={() => setIsExpanded(!isExpanded)}
-                                    className="-mt-1 h-10 w-10 shrink-0 rounded-full text-slate-500 hover:bg-black/5 hover:text-slate-900"
+                                    className="-mt-1 h-10 w-10 shrink-0 rounded-full text-slate-500 hover:text-slate-900 toggle-ripple"
+                                    data-expanded={isExpanded}
                                     aria-label={isExpanded ? "折りたたむ" : "もっと見る"}
                                 >
                                     {isExpanded ? (
