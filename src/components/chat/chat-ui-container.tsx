@@ -108,6 +108,7 @@ const CreationPane = ({ chatId, parentBlockId, reload, onCreated }: CreationPane
           <div className="max-w-3xl mx-auto origin-top pt-4">
             <MessageBlock
               block={parentBlock}
+              isCompact={typeof window !== 'undefined' && window.innerWidth < 768}
               connector={{
                 style: "branched", // 分岐スタイルを採用
                 type: "continue"
@@ -328,15 +329,7 @@ export function ChatUIContainer({ chatId, mainBranchId, initialActiveBranchId, i
   const firstChatRef = useRef<HTMLDivElement>(null);
   const [isReady, setIsReady] = useState(false);
 
-  // モバイルでのスクロール位置調整
-  useEffect(() => {
-    if (firstChatRef.current && chatData && !isReady) {
-      firstChatRef.current.scrollIntoView({ behavior: 'auto', inline: 'center' });
-      setIsReady(true);
-    }
-  }, [chatData, isReady]);
-
-  // isMobile フック (developのロジック)
+  // isMobile フック
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
     const mql = window.matchMedia("(max-width: 767px)");
@@ -346,6 +339,16 @@ export function ChatUIContainer({ chatId, mainBranchId, initialActiveBranchId, i
     return () => mql.removeEventListener("change", onChange);
   }, []);
 
+  // モバイルでのスクロール位置調整
+  useEffect(() => {
+    if (isMobile && firstChatRef.current && chatData) {
+      // 初期マウント時に最初のチャットが見えるようにスクロール
+      firstChatRef.current.scrollIntoView({ behavior: 'auto', inline: 'center' });
+      setIsReady(true);
+    } else if (!isMobile) {
+      setIsReady(true);
+    }
+  }, [chatData, isMobile]);
 
   const [activePanes, setActivePanes] = useState<PaneConfig[]>(() => {
     const panes: PaneConfig[] = [];
@@ -405,7 +408,18 @@ export function ChatUIContainer({ chatId, mainBranchId, initialActiveBranchId, i
     }
 
     if (context) {
-      setActivePanes([...activePanes, { id: `pane-add-${Date.now()}`, creationContext: context }]);
+      const newId = `pane-add-${Date.now()}`;
+      setActivePanes([...activePanes, { id: newId, creationContext: context }]);
+
+      // モバイルの場合、新しいパネル（作成画面）へ自動スクロール
+      if (isMobile) {
+        setTimeout(() => {
+          const newPane = containerRef.current?.querySelector(`[data-pane-id="${newId}"]`);
+          if (newPane) {
+            newPane.scrollIntoView({ behavior: 'smooth', inline: 'center' });
+          }
+        }, 100);
+      }
     }
   };
 
@@ -425,12 +439,24 @@ export function ChatUIContainer({ chatId, mainBranchId, initialActiveBranchId, i
   };
 
   const handleCreated = (paneId: string, newBranchId: string, message?: string) => {
+    const nextId = `pane-${newBranchId}`;
+    // 状態を更新
     updatePaneConfig(paneId, {
-      id: `pane-${newBranchId}`,
+      id: nextId,
       branchId: newBranchId,
       creationContext: undefined,
       initialMessage: message
     });
+
+    // モバイルの場合、作成された新しいブランチ画面へ自動スクロール
+    if (isMobile) {
+      setTimeout(() => {
+        const newPane = containerRef.current?.querySelector(`[data-pane-id="${nextId}"]`);
+        if (newPane) {
+          newPane.scrollIntoView({ behavior: 'smooth', inline: 'center' });
+        }
+      }, 300);
+    }
   };
 
   return (
@@ -441,7 +467,7 @@ export function ChatUIContainer({ chatId, mainBranchId, initialActiveBranchId, i
           ref={containerRef}
           className={cn(
             "flex w-full h-full overflow-x-auto overflow-y-hidden snap-x snap-mandatory gap-2 p-2 scroll-smooth",
-            !isReady ? "opacity-0 invisible" : "opacity-100 visible"
+            !isReady ? "opacity-0" : "opacity-100" // invisibleは削除して確実にマウントさせる
           )}
         >
           {/* 先頭にツリー表示を表示 */}
@@ -453,6 +479,7 @@ export function ChatUIContainer({ chatId, mainBranchId, initialActiveBranchId, i
             <div
               key={pane.id}
               ref={index === 0 ? firstChatRef : null}
+              data-pane-id={pane.id} // 自動スクロール用にIDを付与
               className="min-w-full max-w-full snap-center h-full flex-shrink-0"
             >
               <ChatPaneHelper
@@ -468,8 +495,12 @@ export function ChatUIContainer({ chatId, mainBranchId, initialActiveBranchId, i
             </div>
           ))}
           {activePanes.length < 3 && (
-            <div className="min-w-[60px] h-full flex items-center justify-center snap-center flex-shrink-0">
-              <AddBranchButton onClick={addPane} className="w-10 h-10 rounded-full" />
+            <div className="flex flex-col h-full pb-2 snap-center flex-shrink-0">
+              <AddBranchButton
+                onClick={addPane}
+                isFullWidth={false}
+                className="w-10 h-full shrink-0 rounded-4xl"
+              />
             </div>
           )}
         </div>
