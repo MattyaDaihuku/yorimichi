@@ -21,10 +21,6 @@ export function BranchNode({
   isPanelVisible,
   availableHeight,
 }: BranchNodeProps) {
-  const titleChars = Array.from(node.branch_title ?? "");
-  const displayTitle =
-    titleChars.length > 10 ? `${titleChars.slice(0, 10).join("")}...` : node.branch_title;
-
   const isSelected = selectedBranchId === node.branch_id;
   const isFloating = isSelected && isPanelVisible;
   const isBottomNode = node.children.length === 0;
@@ -36,6 +32,16 @@ export function BranchNode({
   const nodeHeight = unitHeight * 3;
   const connectorHeight = unitHeight;
   const lineHeight = Math.max(0, (connectorHeight - 12) / 2); // 12pxは中央の丸の高さ
+
+  // 枠のサイズ(nodeHeight)と文字数を連動させる
+  // text-sm (14px) + letter-spacing, パディング等を考慮して1文字約16pxとして計算
+  const paddingChars = 2; // 上下の余白分
+  const maxChars = Math.max(1, Math.floor(nodeHeight / 16) - paddingChars);
+  const titleChars = Array.from(node.branch_title ?? "");
+  const displayTitle =
+    titleChars.length > maxChars
+      ? `${titleChars.slice(0, Math.max(1, maxChars - 1)).join("")}…`
+      : node.branch_title;
 
   return (
     <div className="flex flex-col items-center min-w-min ml-1">
