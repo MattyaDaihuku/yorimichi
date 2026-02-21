@@ -1,7 +1,7 @@
 "use client";
 
 import { lazy, memo, Suspense, useCallback, useState } from "react";
-import { Bot, Copy, MessageCircleQuestionMark, Check } from "lucide-react";
+import { Bot, Copy, MessageCircleQuestionMark, Check, ChevronDown, ChevronUp } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { toast } from "sonner";
@@ -62,11 +62,10 @@ const CopyButton = memo(function CopyButton({
             size={size}
             type="button"
             aria-label={ariaLabel}
-            className={`flex items-center justify-center rounded-full p-0 transition-colors ${
-                isCopied
+            className={`flex items-center justify-center rounded-full p-0 transition-colors ${isCopied
                     ? "bg-transparent hover:bg-transparent" // チェック時はホバーで暗くならない
                     : "text-muted-foreground hover:bg-muted hover:text-foreground" // コピーアイコン時はホバーで暗くなる
-            } ${className}`}
+                } ${className}`}
             onClick={onCopy}
         >
             {isCopied ? (
@@ -156,6 +155,8 @@ const AiMarkdownContent = memo(function AiMarkdownContent({
 export function MessageBlock({ block, connector, onBranch, isStreaming = false }: MessageBlockProps) {
     const [copiedTarget, setCopiedTarget] = useState<string | null>(null);
     const [hoveredConnectorAction, setHoveredConnectorAction] = useState<"return" | "branch" | null>(null);
+    const [isExpanded, setIsExpanded] = useState(false);
+    const isLongMessage = block.user_content.split("\n").length > 2;
     const { style, type, options } = connector;
     const isSplit = type === "split";
     const isBranched = style === "branched";
@@ -228,10 +229,28 @@ export function MessageBlock({ block, connector, onBranch, isStreaming = false }
                         />
                     </div>
 
-                    <div className="w-fit max-w-[75%] rounded-4xl rounded-tr-sm bg-[#E6F0FF] px-6 py-4 text-foreground/90">
-                        <p className="whitespace-pre-wrap break-words text-sm leading-relaxed md:text-base">
-                            {block.user_content}
-                        </p>
+                    <div className="w-fit max-w-[75%] rounded-4xl rounded-tr-sm bg-[#E6F0FF] pl-6 pr-3 py-4 text-foreground/90 transition-all duration-200">
+                        <div className="flex items-start gap-2">
+                            <p className={`whitespace-pre-wrap break-words text-sm leading-relaxed md:text-base ${!isExpanded && isLongMessage ? "line-clamp-2" : ""
+                                }`}>
+                                {block.user_content}
+                            </p>
+                            {isLongMessage && (
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => setIsExpanded(!isExpanded)}
+                                    className="-mt-1 h-10 w-10 shrink-0 rounded-full text-slate-500 hover:bg-black/5 hover:text-slate-900"
+                                    aria-label={isExpanded ? "折りたたむ" : "もっと見る"}
+                                >
+                                    {isExpanded ? (
+                                        <ChevronUp className="h-4 w-4" />
+                                    ) : (
+                                        <ChevronDown className="h-4 w-4" />
+                                    )}
+                                </Button>
+                            )}
+                        </div>
                     </div>
                 </div>
 
@@ -289,111 +308,111 @@ export function MessageBlock({ block, connector, onBranch, isStreaming = false }
                     style={{ height: isSplit ? LAST_HEIGHT : INTER_HEIGHT }}
                 >
                     <svg className="pointer-events-none absolute left-0 top-0 h-full w-full overflow-visible">
-                    <line
-                        x1="100"
-                        y1="0"
-                        x2="100"
-                        y2={isSplit ? MAIN_NODE_Y : INTER_HEIGHT}
-                        stroke="currentColor"
-                        strokeWidth={LINE_WIDTH}
-                        className={LINE_COLOR}
-                    />
+                        <line
+                            x1="100"
+                            y1="0"
+                            x2="100"
+                            y2={isSplit ? MAIN_NODE_Y : INTER_HEIGHT}
+                            stroke="currentColor"
+                            strokeWidth={LINE_WIDTH}
+                            className={LINE_COLOR}
+                        />
 
-                    {!isSplit &&
-                        (isBranched ? (
-                            <BranchNode cy={INTER_DOT_Y} />
-                        ) : (
-                            <circle cx="100" cy={INTER_DOT_Y} r="4" fill="currentColor" className={LINE_COLOR} />
-                        ))}
+                        {!isSplit &&
+                            (isBranched ? (
+                                <BranchNode cy={INTER_DOT_Y} />
+                            ) : (
+                                <circle cx="100" cy={INTER_DOT_Y} r="4" fill="currentColor" className={LINE_COLOR} />
+                            ))}
 
-                    {isSplit && (
-                        <>
-                            {isBranched && <BranchNode cy={SPLIT_START_Y + 25} />}
+                        {isSplit && (
+                            <>
+                                {isBranched && <BranchNode cy={SPLIT_START_Y + 25} />}
 
-                            <circle cx="100" cy={MAIN_NODE_Y} r="5" fill="currentColor" className="text-black" />
+                                <circle cx="100" cy={MAIN_NODE_Y} r="5" fill="currentColor" className="text-black" />
 
-                            {options?.showReturn && (
-                                <path
-                                    d={`M 100 ${SPLIT_START_Y} C 100 ${BTN_CY} 80 ${BTN_CY} ${LEFT_BTN_CX + 20} ${BTN_CY}`}
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth={LINE_WIDTH}
-                                    className={LINE_COLOR}
-                                />
-                            )}
-
-                            {options?.showBranch && (
-                                <path
-                                    d={`M 100 ${SPLIT_START_Y} C 100 35 ${RIGHT_BTN_CX} 25 ${RIGHT_BTN_CX} ${BTN_CY - 20}`}
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth={LINE_WIDTH}
-                                    className={LINE_COLOR}
-                                />
-                            )}
-
-                            {hoveredConnectorAction && (
-                                <>
-                                    <line
-                                        x1="100"
-                                        y1="0"
-                                        x2="100"
-                                        y2={SPLIT_START_Y}
-                                        stroke="currentColor"
-                                        strokeWidth={LINE_WIDTH}
-                                        className="text-gray-400/40 connector-comet-tail connector-comet-shared"
-                                    />
-                                    <line
-                                        x1="100"
-                                        y1="0"
-                                        x2="100"
-                                        y2={SPLIT_START_Y}
-                                        stroke="currentColor"
-                                        strokeWidth={LINE_WIDTH}
-                                        className="text-gray-500/80 connector-comet-head connector-comet-shared"
-                                    />
-                                </>
-                            )}
-
-                            {hoveredConnectorAction === "return" && options?.showReturn && (
-                                <>
+                                {options?.showReturn && (
                                     <path
                                         d={`M 100 ${SPLIT_START_Y} C 100 ${BTN_CY} 80 ${BTN_CY} ${LEFT_BTN_CX + 20} ${BTN_CY}`}
                                         fill="none"
                                         stroke="currentColor"
                                         strokeWidth={LINE_WIDTH}
-                                        className="text-gray-400/40 connector-comet-tail connector-comet-branch"
+                                        className={LINE_COLOR}
                                     />
-                                    <path
-                                        d={`M 100 ${SPLIT_START_Y} C 100 ${BTN_CY} 80 ${BTN_CY} ${LEFT_BTN_CX + 20} ${BTN_CY}`}
-                                        fill="none"
-                                        stroke="currentColor"
-                                        strokeWidth={LINE_WIDTH}
-                                        className="text-gray-500/80 connector-comet-head connector-comet-branch"
-                                    />
-                                </>
-                            )}
+                                )}
 
-                            {hoveredConnectorAction === "branch" && options?.showBranch && (
-                                <>
+                                {options?.showBranch && (
                                     <path
                                         d={`M 100 ${SPLIT_START_Y} C 100 35 ${RIGHT_BTN_CX} 25 ${RIGHT_BTN_CX} ${BTN_CY - 20}`}
                                         fill="none"
                                         stroke="currentColor"
                                         strokeWidth={LINE_WIDTH}
-                                        className="text-gray-400/40 connector-comet-tail connector-comet-branch"
+                                        className={LINE_COLOR}
                                     />
-                                    <path
-                                        d={`M 100 ${SPLIT_START_Y} C 100 35 ${RIGHT_BTN_CX} 25 ${RIGHT_BTN_CX} ${BTN_CY - 20}`}
-                                        fill="none"
-                                        stroke="currentColor"
-                                        strokeWidth={LINE_WIDTH}
-                                        className="text-gray-500/80 connector-comet-head connector-comet-branch"
-                                    />
-                                </>
-                            )}
-                        </>
-                    )}
+                                )}
+
+                                {hoveredConnectorAction && (
+                                    <>
+                                        <line
+                                            x1="100"
+                                            y1="0"
+                                            x2="100"
+                                            y2={SPLIT_START_Y}
+                                            stroke="currentColor"
+                                            strokeWidth={LINE_WIDTH}
+                                            className="text-gray-400/40 connector-comet-tail connector-comet-shared"
+                                        />
+                                        <line
+                                            x1="100"
+                                            y1="0"
+                                            x2="100"
+                                            y2={SPLIT_START_Y}
+                                            stroke="currentColor"
+                                            strokeWidth={LINE_WIDTH}
+                                            className="text-gray-500/80 connector-comet-head connector-comet-shared"
+                                        />
+                                    </>
+                                )}
+
+                                {hoveredConnectorAction === "return" && options?.showReturn && (
+                                    <>
+                                        <path
+                                            d={`M 100 ${SPLIT_START_Y} C 100 ${BTN_CY} 80 ${BTN_CY} ${LEFT_BTN_CX + 20} ${BTN_CY}`}
+                                            fill="none"
+                                            stroke="currentColor"
+                                            strokeWidth={LINE_WIDTH}
+                                            className="text-gray-400/40 connector-comet-tail connector-comet-branch"
+                                        />
+                                        <path
+                                            d={`M 100 ${SPLIT_START_Y} C 100 ${BTN_CY} 80 ${BTN_CY} ${LEFT_BTN_CX + 20} ${BTN_CY}`}
+                                            fill="none"
+                                            stroke="currentColor"
+                                            strokeWidth={LINE_WIDTH}
+                                            className="text-gray-500/80 connector-comet-head connector-comet-branch"
+                                        />
+                                    </>
+                                )}
+
+                                {hoveredConnectorAction === "branch" && options?.showBranch && (
+                                    <>
+                                        <path
+                                            d={`M 100 ${SPLIT_START_Y} C 100 35 ${RIGHT_BTN_CX} 25 ${RIGHT_BTN_CX} ${BTN_CY - 20}`}
+                                            fill="none"
+                                            stroke="currentColor"
+                                            strokeWidth={LINE_WIDTH}
+                                            className="text-gray-400/40 connector-comet-tail connector-comet-branch"
+                                        />
+                                        <path
+                                            d={`M 100 ${SPLIT_START_Y} C 100 35 ${RIGHT_BTN_CX} 25 ${RIGHT_BTN_CX} ${BTN_CY - 20}`}
+                                            fill="none"
+                                            stroke="currentColor"
+                                            strokeWidth={LINE_WIDTH}
+                                            className="text-gray-500/80 connector-comet-head connector-comet-branch"
+                                        />
+                                    </>
+                                )}
+                            </>
+                        )}
                     </svg>
 
                     {isSplit && (
