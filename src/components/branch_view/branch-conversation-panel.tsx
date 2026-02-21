@@ -24,7 +24,7 @@ export function BranchConversationPanel({
 
   return (
     <aside
-      className="w-full shrink-0 rounded-xl border bg-white overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+      className="w-full shrink-0 rounded-xl border bg-[#f6f6f6] overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
       style={{ height: `${containerHeight}px` }}
     >
       {blocks.length === 0 ? (

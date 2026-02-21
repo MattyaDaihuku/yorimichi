@@ -163,12 +163,12 @@ export default function ChatPage({ params }: ChatPageProps) {
   const isMainView = !creationContext && (deepestBranch?.depth === 0);
 
   return (
-    <div className="flex flex-col h-screen w-full bg-gray-50/50">
-      <Header title={chatData?.chat_title ?? ""} className="bg-background" />
+    <div className="flex flex-col h-screen w-full bg-[#fafafa]">
+      <Header title={chatData?.chat_title ?? ""} className="bg-[#fafafa]" />
 
       {isLoading && <TopLinearLoader />}
 
-      <main className={`flex-1 bg-background ${isMainView ? "p-6 overflow-y-auto" : "overflow-hidden"}`}>
+      <main className={`flex-1 bg-[#fafafa] ${isMainView ? "p-6 overflow-y-auto" : "overflow-hidden"}`}>
         <div className={`mx-auto h-full ${isMainView ? "max-w-4xl space-y-6 pb-10" : "max-w-none w-full"}`}>
           {error && error !== "NOT_FOUND" && <p className="text-sm text-destructive p-4">{error}</p>}
 

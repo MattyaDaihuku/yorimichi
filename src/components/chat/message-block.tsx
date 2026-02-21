@@ -217,9 +217,9 @@ export function MessageBlock({ block, connector, onBranch, onMerge, isStreaming 
 
         return (
             <g>
-                <circle cx="100" cy={cy} r={outerRadius} fill="white" />
+                <circle cx="100" cy={cy} r={outerRadius} fill="#fafafa" />
                 <polygon points={points} fill="currentColor" className={className || LINE_COLOR} />
-                <circle cx="100" cy={cy} r={5} fill="white" />
+                <circle cx="100" cy={cy} r={5} fill="#fafafa" />
             </g>
         );
     };
@@ -347,7 +347,7 @@ export function MessageBlock({ block, connector, onBranch, onMerge, isStreaming 
                                 {isBranched ? (
                                     <BranchNode cy={MAIN_NODE_Y} />
                                 ) : (
-                                    <circle cx="100" cy={MAIN_NODE_Y} r="5" fill="currentColor" className="text-black" />
+                                    <circle cx="100" cy={MAIN_NODE_Y} r="5" fill="currentColor" className="text-gray-400" />
                                 )}
 
                                 {options?.showReturn && (

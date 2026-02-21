@@ -66,6 +66,7 @@ export function ChatWindow({
     const blockListRef = useRef<HTMLDivElement | null>(null);
     const latestBottomRef = useRef<HTMLDivElement | null>(null);
     const initialFocusedBranchRef = useRef<string | null>(null);
+    const lastFocusedBlockCountRef = useRef<number>(0);
     const focusOnNextSentBlockRef = useRef(false);
     const streamingSessionBlockIdRef = useRef<string | null>(null);
     const isAutoFollowUnlockedRef = useRef(false);
@@ -77,7 +78,12 @@ export function ChatWindow({
     );
 
     useEffect(() => {
-        if (initialFocusedBranchRef.current === branchId) return;
+        const isSameBranch = initialFocusedBranchRef.current === branchId;
+        const blockCountIncreased = branchBlockCount > lastFocusedBlockCountRef.current;
+
+        // Skip if same branch and block count hasn't increased
+        // (Re-scroll when block count increases, e.g. after merge copies blocks)
+        if (isSameBranch && !blockCountIncreased) return;
 
         const container = blockListRef.current;
         if (!container) return;
@@ -90,6 +96,7 @@ export function ChatWindow({
 
         latestBlock.scrollIntoView({ behavior: "auto", block: "start" });
         initialFocusedBranchRef.current = branchId;
+        lastFocusedBlockCountRef.current = branchBlockCount;
     }, [branchId, branchBlockCount]);
 
     useEffect(() => {
@@ -265,11 +272,11 @@ export function ChatWindow({
                 {showComposer && (
                     fixedInput ? (
                         <div className={cn(
-                            "pointer-events-none z-20 bg-background pb-[env(safe-area-inset-bottom)]",
+                            "pointer-events-none z-20 bg-[#fafafa] pb-[env(safe-area-inset-bottom)]",
                             flexLayout ? "absolute bottom-0 left-0 right-0" : "fixed bottom-0",
                             fixedOffsetClassName
                         )}>
-                            <div className="absolute -top-7 left-0 right-0 z-0 h-8 bg-gradient-to-b from-transparent to-background" />
+                            <div className="absolute -top-7 left-0 right-0 z-0 h-8 bg-gradient-to-b from-transparent to-[#fafafa]" />
                             <div className="relative z-10 mx-auto w-full max-w-4xl px-6 pt-0 pb-6">
                                 {showRefocusButton && (
                                     <div className="pointer-events-none absolute -top-20 left-1/2 -translate-x-1/2">
@@ -280,7 +287,7 @@ export function ChatWindow({
                                             className={cn(
                                                 "pointer-events-auto h-11 w-11 rounded-full",
                                                 // 背景：極薄の白（または黒）で、透明度を高く設定
-                                                "bg-gray-400/30 dark:bg-slate-800/40", 
+                                                "bg-gray-400/30 dark:bg-slate-800/40",
                                                 // ガラス効果：背後をぼかす（これがLiquid Glassの肝）
                                                 "backdrop-blur-md",
                                                 // 境界線：光が当たっているような細く明るい線
