@@ -123,6 +123,7 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }
@@ -150,10 +151,12 @@
     stroke-dasharray: 1 200;
     stroke-dashoffset: 0;
   }
+
   50% {
     stroke-dasharray: 89 200;
     stroke-dashoffset: -35;
   }
+
   100% {
     stroke-dasharray: 89 200;
     stroke-dashoffset: -124;
@@ -161,10 +164,24 @@
 }
 
 @keyframes bot-loader-color {
-  100%, 0% { stroke: #4285f4; }
-  40% { stroke: #ea4335; }
-  66% { stroke: #fbbc05; }
-  80%, 90% { stroke: #34a853; }
+
+  100%,
+  0% {
+    stroke: #4285f4;
+  }
+
+  40% {
+    stroke: #ea4335;
+  }
+
+  66% {
+    stroke: #fbbc05;
+  }
+
+  80%,
+  90% {
+    stroke: #34a853;
+  }
 }
 
 .bot-circular-loader {
@@ -181,11 +198,16 @@
 }
 
 @keyframes skeleton-breathe {
-  0%, 100% {
-    background-color: rgb(196 199 197 / 0.28); /* 暗め */
+
+  0%,
+  100% {
+    background-color: rgb(196 199 197 / 0.28);
+    /* 暗め */
   }
+
   50% {
-    background-color: rgb(196 199 197 / 0.55); /* 明るめ */
+    background-color: rgb(196 199 197 / 0.55);
+    /* 明るめ */
   }
 }
 
@@ -199,11 +221,13 @@
     stroke-dashoffset: 0;
     opacity: 0.45;
   }
+
   50% {
     stroke-dasharray: 26 220;
     stroke-dashoffset: -40;
     opacity: 1;
   }
+
   100% {
     stroke-dasharray: 10 220;
     stroke-dashoffset: -88;
@@ -217,11 +241,13 @@
     stroke-dashoffset: 8;
     opacity: 0.18;
   }
+
   50% {
     stroke-dasharray: 40 220;
     stroke-dashoffset: -32;
     opacity: 0.38;
   }
+
   100% {
     stroke-dasharray: 20 220;
     stroke-dashoffset: -80;
@@ -257,4 +283,90 @@
 
 .connector-comet-branch.connector-comet-tail {
   animation-delay: -0.12s;
+}
+
+.toggle-ripple {
+  position: relative;
+  overflow: hidden;
+  background-color: transparent !important;
+  transition: transform 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* 共通の同心円状アニメーション設定 */
+.toggle-ripple::after,
+.toggle-ripple::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  transform: scale(0);
+  opacity: 0;
+  pointer-events: none;
+  /* ホバー離脱のトランジション（外→中心に戻る） */
+  transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.2s;
+}
+
+/* --- ホバー時（中心→外へ広がる） --- */
+.toggle-ripple:hover::after {
+  transform: scale(1);
+  opacity: 1;
+}
+
+/* 未展開時のホバー色 */
+.toggle-ripple[data-expanded="false"]::after {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* 展開時のホバー色 (濃い方) */
+.toggle-ripple[data-expanded="true"]::after {
+  background-color: rgba(0, 0, 0, 0.15);
+}
+
+/* クリック時のキーフレーム定義 */
+@keyframes ripple-expand {
+  from {
+    transform: scale(0);
+    opacity: 1;
+  }
+
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes ripple-collapse {
+  from {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  to {
+    transform: scale(0);
+    opacity: 0;
+  }
+}
+
+/* 未展開状態でクリック → 中心から外へ広がる */
+.toggle-ripple[data-expanded="false"]:active::before {
+  background-color: rgba(0, 0, 0, 0.1);
+  animation: ripple-expand 0.4s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+/* 展開状態でクリック → 外から中心へ縮む */
+.toggle-ripple[data-expanded="true"]:active::before {
+  background-color: rgba(0, 0, 0, 0.12);
+  animation: ripple-collapse 0.4s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+/* ボタン全体の押し込み感 */
+.toggle-ripple:active {
+  transform: scale(0.96);
+}
+
+/* アイコンを最前面に保持 */
+.toggle-ripple>svg {
+  position: relative;
+  z-index: 10;
 }
