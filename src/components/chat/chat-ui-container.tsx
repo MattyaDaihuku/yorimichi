@@ -219,9 +219,10 @@ const ChatPaneHelper = ({ pane, onRemove, chatId, reload, onPaneConfigUpdate, on
 
       toast.success("ブランチを統合しました");
       mergeBranch(pane.branchId);
-      onRemove(pane.id);
-      // If closing the last sub-pane, ensure we return to main view via onCloseAll
+      // Reload BEFORE removing the pane so the store has fresh data
+      // (including copied blocks) before the view transitions
       await reload();
+      onRemove(pane.id);
     } catch (error) {
       console.error(error);
       const msg = error instanceof Error ? error.message : "統合に失敗しました";
