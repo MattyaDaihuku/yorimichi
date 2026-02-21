@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Header } from "@/components/header";
-import { useUser } from "@clerk/nextjs";
+import { useUser, useClerk } from "@clerk/nextjs";
 import { mutate } from "swr";
 import { ChatComposer } from "@/components/chat/chat-composer";
 import { useChatStore } from "@/store/chat-store";
@@ -25,6 +25,7 @@ export default function Home() {
   const [errorCode, setErrorCode] = useState<number | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
   const { user, isLoaded } = useUser();
+  const { openSignIn } = useClerk();
   const router = useRouter();
   const setCurrentIds = useChatStore((state) => state.setCurrentIds);
 
@@ -66,9 +67,44 @@ export default function Home() {
     }
   }, []);
 
+  // ログイン後のプロンプト復元
+  useEffect(() => {
+    if (isLoaded && user) {
+      const savedPrompt = localStorage.getItem("guest_prompt");
+      if (savedPrompt) {
+        setInput(savedPrompt);
+        localStorage.removeItem("guest_prompt");
+      }
+    }
+  }, [isLoaded, user]);
+
   const handleSend = async () => {
     const message = input.trim();
     if (!message || isSending) return;
+
+    // 未ログインの場合はモーダルを表示
+    if (!user) {
+      // ログイン後に復元するために入力内容を保存
+      localStorage.setItem("guest_prompt", message);
+      openSignIn({
+        appearance: {
+          elements: {
+            modalBackdrop: {
+              backgroundColor: "rgba(0, 0, 0, 0.4)",
+            },
+            modalCloseButton: {
+              outline: "none",
+              boxShadow: "none",
+              "&:focus": {
+                outline: "none",
+                boxShadow: "none",
+              }
+            }
+          }
+        }
+      });
+      return;
+    }
 
     const chatId = crypto.randomUUID();
     const branchId = crypto.randomUUID();
@@ -172,7 +208,7 @@ export default function Home() {
                 </span>
               ) : (
                 <span className="bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">
-                  {user?.fullName || "User"}
+                  {user?.fullName || "ゲスト"}
                 </span>
               )}
               <span className="ml-1 text-[#c4c7c5]">さん</span>

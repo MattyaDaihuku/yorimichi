@@ -39,7 +39,7 @@ export function NewChatButton({ isExpanded, onClick }: NewChatButtonProps) {
         "whitespace-nowrap transition-all duration-300 ease-in-out pr-4 font-medium",
         isExpanded ? "opacity-100 max-w-[200px]" : "opacity-0 max-w-0"
       )}>
-        New Chat
+        チャットを新規作成
       </span>
     </Button>
   );

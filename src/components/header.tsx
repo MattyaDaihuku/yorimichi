@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { Menu, User } from "lucide-react";
-import { UserButton, useUser } from "@clerk/nextjs";
+import { UserButton, useUser, useClerk } from "@clerk/nextjs";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { SidebarContent } from "@/components/sidebar/sidebar-content";
@@ -17,7 +18,8 @@ export function Skeleton({ className }: { className?: string }) {
 }
 
 export function Header({ title = "", className }: HeaderProps) {
-  const { user, isLoaded } = useUser(); // 変更
+  const { user, isLoaded } = useUser();
+  const { openSignIn } = useClerk();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
   return (
@@ -30,7 +32,7 @@ export function Header({ title = "", className }: HeaderProps) {
 
       <header
         className={cn(
-          "fixed inset-x-0 top-0 md:left-[72px] z-20 px-2.5 pt-[env(safe-area-inset-top)] h-[calc(4rem+env(safe-area-inset-top))] transition-colors duration-300",
+          "fixed inset-x-0 top-0 md:left-[72px] z-20 px-6 pt-[env(safe-area-inset-top)] h-[calc(4rem+env(safe-area-inset-top))] transition-colors duration-300",
           className || "bg-background"
         )}
       >
@@ -70,10 +72,12 @@ export function Header({ title = "", className }: HeaderProps) {
 
           {/* 右側: ユーザーアイコン */}
           <div className="flex justify-end">
-            <div className="h-9 w-9 md:h-9 md:w-9 rounded-full flex items-center justify-center cursor-pointer transition-colors">
-              {!isLoaded ? (
+            {!isLoaded ? (
+              <div className="h-9 w-9 rounded-full flex items-center justify-center">
                 <Skeleton className="h-9 w-9 rounded-full skeleton-breathe" />
-              ) : user ? (
+              </div>
+            ) : user ? (
+              <div className="h-9 w-9 rounded-full flex items-center justify-center cursor-pointer transition-colors">
                 <UserButton
                   appearance={{
                     elements: {
@@ -85,10 +89,32 @@ export function Header({ title = "", className }: HeaderProps) {
                     }
                   }}
                 />
-              ) : (
-                <User className="h-5 w-5 text-muted-foreground" />
-              )}
-            </div>
+              </div>
+            ) : (
+              <Button
+                variant="outline"
+                className="px-4 h-9 rounded-full text-sm font-medium bg-white shadow-sm hover:bg-gray-100 border-gray-200 transition-colors duration-200 mr-0"
+                onClick={() => openSignIn({
+                  appearance: {
+                    elements: {
+                      modalBackdrop: {
+                        backgroundColor: "rgba(0, 0, 0, 0.4)",
+                      },
+                      modalCloseButton: {
+                        outline: "none",
+                        boxShadow: "none",
+                        "&:focus": {
+                          outline: "none",
+                          boxShadow: "none",
+                        }
+                      }
+                    }
+                  }
+                })}
+              >
+                ログイン
+              </Button>
+            )}
           </div>
         </div>
       </header>
