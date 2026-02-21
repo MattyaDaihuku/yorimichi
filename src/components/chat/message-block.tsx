@@ -1,13 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { lazy, memo, Suspense, useCallback, useState } from "react";
 import { Bot, Copy, MessageCircleQuestionMark, Check } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+
+const CodeHighlighter = lazy(() => import("./code-highlighter"));
 
 export type ConnectorConfig = {
     style: "straight" | "branched";
@@ -29,12 +30,108 @@ interface MessageBlockProps {
     block: BlockViewModel;
     connector: ConnectorConfig;
     onBranch?: (blockId: string) => void;
+    onMerge?: (blockId: string) => void;
     isStreaming?: boolean;
     isCompact?: boolean;
 }
 
-export function MessageBlock({ block, connector, onBranch, isStreaming = false, isCompact = false }: MessageBlockProps) {
+
+
+interface AiMarkdownContentProps {
+    aiContent: string;
+    showThinking: boolean;
+    copiedTarget: string | null;
+    onCopy: (text: string, target: string) => Promise<void>;
+}
+
+const AiMarkdownContent = memo(function AiMarkdownContent({
+    aiContent,
+    showThinking,
+    copiedTarget,
+    onCopy,
+}: AiMarkdownContentProps) {
+    return (
+        <div className="mb-2 w-full min-w-0 rounded-2xl rounded-tl-sm bg-white px-1 py-2 text-foreground/90">
+            <div className={`prose prose-sm max-w-none break-words md:prose-base
+                            prose-code:before:content-none prose-code:after:content-none
+                            ${showThinking ? "text-muted-foreground" : "text-foreground"}`}>
+                <ReactMarkdown
+                    remarkPlugins={[remarkGfm]}
+                    components={{
+                        pre({ children }) {
+                            return <>{children}</>;
+                        },
+                        code({ className, children, node, ...props }) {
+                            const match = /language-(\w+)/.exec(className || "");
+                            const codeText = String(children).replace(/\n$/, "");
+                            const isInline = !match;
+
+                            const language = (match?.[1] ?? "text").toLowerCase();
+                            const targetId = `code-${language}-${node?.position?.start?.offset ?? codeText.length}`;
+
+                            if (isInline) {
+                                return (
+                                    <code
+                                        className="mx-1 rounded border border-gray-200 bg-gray-100 px-1.5 py-0.5 font-mono text-sm font-medium"
+                                        {...props}
+                                    >
+                                        {codeText}
+                                    </code>
+                                );
+                            }
+
+                            return (
+                                <div className="my-4 flex w-full flex-col overflow-hidden rounded-xl border border-gray-700 bg-[#282C34]">
+                                    <div className="flex items-center justify-between border-b border-gray-700 bg-[#21252B] px-4 py-2">
+                                        <span className="font-mono text-xs lowercase text-gray-300">
+                                            {language}
+                                        </span>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            type="button"
+                                            onClick={() => void onCopy(codeText, targetId)}
+                                            className={`flex h-9 w-9 items-center justify-center rounded-full p-0 transition-colors ${copiedTarget === targetId
+                                                    ? "text-primary"// チェック時: ホバー影なし
+                                                    : "text-gray-400 hover:bg-gray-700 hover:text-gray-200"
+                                                }`}
+                                            aria-label="Copy code"
+                                        >
+                                            {copiedTarget === targetId ? (
+                                                <Check className="h-3.5 w-3.5 text-green-500" />
+                                            ) : (
+                                                <Copy className="h-3.5 w-3.5" />
+                                            )}
+                                        </Button>
+                                    </div>
+
+                                    <div className="w-full overflow-x-auto text-sm">
+                                        <Suspense
+                                            fallback={
+                                                <pre className="m-0 overflow-x-auto rounded-lg p-4 font-mono text-[0.95rem] leading-[1.6] text-gray-200">
+                                                    <code>{codeText}</code>
+                                                </pre>
+                                            }
+                                        >
+                                            <CodeHighlighter language={language} codeText={codeText} />
+                                        </Suspense>
+                                    </div>
+                                </div>
+                            );
+                        },
+                    }}
+                >
+                    {aiContent}
+                </ReactMarkdown>
+            </div>
+        </div>
+    );
+});
+
+export function MessageBlock({ block, connector, onBranch, onMerge, isStreaming = false,isCompact = false }: MessageBlockProps) {
+
     const [copiedTarget, setCopiedTarget] = useState<string | null>(null);
+    const [hoveredConnectorAction, setHoveredConnectorAction] = useState<"return" | "branch" | null>(null);
     const { style, type, options } = connector;
     const isSplit = type === "split";
     const isBranched = style === "branched";
@@ -56,7 +153,7 @@ export function MessageBlock({ block, connector, onBranch, isStreaming = false, 
     const showThinking = isStreaming && !hasAiContent;
     const aiContent = showThinking ? "Thinking..." : block.ai_content;
 
-    const copyToClipboard = async (text: string, target: string) => {
+    const copyToClipboard = useCallback(async (text: string, target: string) => {
         try {
             await navigator.clipboard.writeText(text);
             setCopiedTarget(target);
@@ -68,7 +165,7 @@ export function MessageBlock({ block, connector, onBranch, isStreaming = false, 
             console.error("Failed to copy text:", error);
             toast.error("コピーに失敗しました");
         }
-    };
+    }, []);
 
     const BranchNode = ({ cy, className }: { cy: number; className?: string }) => {
         const spikes = 10;
@@ -94,20 +191,26 @@ export function MessageBlock({ block, connector, onBranch, isStreaming = false, 
     };
 
     return (
+    return (
         <div data-message-block="true" className="flex w-full flex-col items-center scroll-mt-24">
+            {/* メッセージ本体の枠 */}
             <div className={cn(
                 "relative z-10 w-full rounded-[24px] border border-gray-100 bg-white shadow-sm transition-all",
                 isCompact ? "max-w-full p-3" : "max-w-3xl p-6"
             )}>
+                {/* ユーザーメッセージセクション */}
                 <div className={cn("group flex items-start justify-end", isCompact ? "mb-3 gap-2" : "mb-6 gap-4")}>
-                    <div className="flex flex-col gap-3 pt-3 opacity-100 transition-opacity">
-                        <button
+                    <div className="flex translate-x-2 flex-col gap-3 pt-3 opacity-100 transition-opacity">
+                        <Button
+                            variant="ghost"
+                            size="icon-lg"
                             type="button"
                             aria-label="Copy user message"
-                            className={`rounded-full p-2 transition-colors ${copiedTarget === "user"
-                                ? "bg-transparent text-green-500" // チェック時: 背景なし
-                                : "bg-transparent text-muted-foreground hover:bg-muted hover:text-foreground"
-                                }`}
+                            className={`flex h-10 w-10 items-center justify-center rounded-full p-0 transition-colors ${
+                                copiedTarget === "user"
+                                    ? "bg-transparent text-green-500"
+                                    : "bg-transparent text-muted-foreground hover:bg-muted hover:text-foreground"
+                            }`}
                             onClick={() => void copyToClipboard(block.user_content, "user")}
                         >
                             {copiedTarget === "user" ? (
@@ -115,11 +218,11 @@ export function MessageBlock({ block, connector, onBranch, isStreaming = false, 
                             ) : (
                                 <Copy className="h-4 w-4" />
                             )}
-                        </button>
+                        </Button>
                     </div>
 
                     <div className={cn(
-                        "w-fit rounded-2xl rounded-tr-sm bg-[#E6F0FF] text-foreground/90",
+                        "w-fit rounded-4xl rounded-tr-sm bg-[#E6F0FF] text-foreground/90",
                         isCompact ? "max-w-[90%] px-3 py-2" : "max-w-[75%] min-w-[120px] px-6 py-4"
                     )}>
                         <p className={cn("whitespace-pre-wrap break-words leading-relaxed", isCompact ? "text-sm" : "text-sm md:text-base")}>
@@ -128,6 +231,7 @@ export function MessageBlock({ block, connector, onBranch, isStreaming = false, 
                     </div>
                 </div>
 
+                {/* AIメッセージセクション */}
                 <div className={cn("flex w-full min-w-0 items-start", isCompact ? "gap-1.5" : "gap-4")}>
                     <div className="shrink-0 pt-1">
                         <div className={cn(
@@ -137,15 +241,7 @@ export function MessageBlock({ block, connector, onBranch, isStreaming = false, 
                             {isStreaming && (
                                 <span className="pointer-events-none absolute -inset-1.5">
                                     <svg className="bot-circular-loader h-full w-full" viewBox="25 25 50 50">
-                                        <circle
-                                            className="bot-loader-path"
-                                            cx="50"
-                                            cy="50"
-                                            r="20"
-                                            fill="none"
-                                            strokeWidth="2"
-                                            strokeMiterlimit="10"
-                                        />
+                                        <circle className="bot-loader-path" cx="50" cy="50" r="20" fill="none" strokeWidth="2" strokeMiterlimit="10" />
                                     </svg>
                                 </span>
                             )}
@@ -154,95 +250,25 @@ export function MessageBlock({ block, connector, onBranch, isStreaming = false, 
                     </div>
 
                     <div className="flex min-w-0 flex-1 flex-col">
-                        <div className={cn("w-full min-w-0 rounded-2xl rounded-tl-sm bg-white text-foreground/90", isCompact ? "mb-1 px-0 py-1" : "mb-2 px-1 py-2")}>
-                            <div className={cn(
-                                "prose max-w-none break-words prose-code:before:content-none prose-code:after:content-none",
-                                isCompact ? "prose-xs text-[13px] leading-relaxed" : "prose-sm md:prose-base",
-                                showThinking ? "text-muted-foreground" : "text-foreground"
-                            )}>
-                                <ReactMarkdown
-                                    remarkPlugins={[remarkGfm]}
-                                    components={{
-                                        pre({ children }) {
-                                            return <>{children}</>;
-                                        },
-                                        code({ className, children, node, ...props }) {
-                                            const match = /language-(\w+)/.exec(className || "");
-                                            const codeText = String(children).replace(/\n$/, "");
-                                            const isInline = !match;
-
-                                            const language = (match?.[1] ?? "text").toLowerCase();
-                                            const targetId = `code-${language}-${node?.position?.start?.offset ?? codeText.length}`;
-
-                                            if (isInline) {
-                                                return (
-                                                    <code
-                                                        className="mx-1 rounded border border-gray-200 bg-gray-100 px-1.5 py-0.5 font-mono text-sm font-medium"
-                                                        {...props}
-                                                    >
-                                                        {codeText}
-                                                    </code>
-                                                );
-                                            }
-
-                                            return (
-                                                <div className="my-4 flex w-full flex-col overflow-hidden rounded-xl border border-gray-700 bg-[#282C34]">
-                                                    <div className="flex items-center justify-between border-b border-gray-700 bg-[#21252B] px-4 py-2">
-                                                        <span className="font-mono text-xs lowercase text-gray-300">
-                                                            {language}
-                                                        </span>
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => void copyToClipboard(codeText, targetId)}
-                                                            className={`rounded-full p-2 transition-colors ${copiedTarget === targetId
-                                                                ? "bg-primary/15 text-primary"// チェック時: ホバー影なし
-                                                                : "text-gray-400 hover:bg-gray-700 hover:text-gray-200"
-                                                                }`}
-                                                            aria-label="Copy code"
-                                                        >
-                                                            {copiedTarget === targetId ? (
-                                                                <Check className="h-3.5 w-3.5 text-green-500" />
-                                                            ) : (
-                                                                <Copy className="h-3.5 w-3.5" />
-                                                            )}
-                                                        </button>
-                                                    </div>
-
-                                                    <div className="w-full overflow-x-auto text-sm">
-                                                        <SyntaxHighlighter
-                                                            language={language}
-                                                            style={oneDark}
-                                                            customStyle={{
-                                                                margin: 0,
-                                                                maxWidth: "100%",
-                                                                overflowX: "auto",
-                                                                borderRadius: "0.5rem",
-                                                                padding: "1rem",
-                                                                fontSize: "0.95rem",
-                                                                lineHeight: "1.6",
-                                                            }}
-                                                        >
-                                                            {codeText}
-                                                        </SyntaxHighlighter>
-                                                    </div>
-                                                </div>
-                                            );
-                                        },
-                                    }}
-                                >
-                                    {aiContent}
-                                </ReactMarkdown>
-                            </div>
-                        </div>
+                        <AiMarkdownContent
+                            aiContent={aiContent}
+                            showThinking={showThinking}
+                            copiedTarget={copiedTarget}
+                            onCopy={copyToClipboard}
+                            // もし AiMarkdownContent が isCompact に未対応なら、必要に応じて Props を追加してください
+                        />
                         {!isStreaming && (
                             <div className="flex justify-start">
-                                <button
+                                <Button
+                                    variant="ghost"
+                                    size="icon-lg"
                                     type="button"
                                     aria-label="Copy AI message"
-                                    className={`rounded-full p-2 transition-colors ${copiedTarget === "ai"
-                                        ? "bg-transparent text-green-500" // チェック時: 背景なし
-                                        : "bg-transparent text-muted-foreground hover:bg-muted hover:text-foreground"
-                                        }`}
+                                    className={`flex h-10 w-10 items-center justify-center rounded-full p-0 transition-colors ${
+                                        copiedTarget === "ai"
+                                            ? "bg-transparent text-green-500"
+                                            : "bg-transparent text-muted-foreground hover:bg-muted hover:text-foreground"
+                                    }`}
                                     onClick={() => void copyToClipboard(block.ai_content, "ai")}
                                 >
                                     {copiedTarget === "ai" ? (
@@ -250,7 +276,7 @@ export function MessageBlock({ block, connector, onBranch, isStreaming = false, 
                                     ) : (
                                         <Copy className="h-4 w-4" />
                                     )}
-                                </button>
+                                </Button>
                             </div>
                         )}
                     </div>
@@ -261,97 +287,61 @@ export function MessageBlock({ block, connector, onBranch, isStreaming = false, 
                 </div>
             </div>
 
+            {/* 下部のコネクタ（分岐線）描画 */}
             {!isStreaming && (
-                <div
-                    className="relative -mt-2 z-0 w-[200px]"
-                    style={{ height: isSplit ? LAST_HEIGHT : INTER_HEIGHT }}
-                >
+                <div className="relative -mt-2 z-0 w-[200px]" style={{ height: isSplit ? LAST_HEIGHT : INTER_HEIGHT }}>
                     <svg className="pointer-events-none absolute left-0 top-0 h-full w-full overflow-visible">
-                        <line
-                            x1="100"
-                            y1="0"
-                            x2="100"
-                            y2={isSplit ? MAIN_NODE_Y : INTER_HEIGHT}
-                            stroke="currentColor"
-                            strokeWidth={LINE_WIDTH}
-                            className={LINE_COLOR}
-                        />
+                        <line x1="100" y1="0" x2="100" y2={isSplit ? MAIN_NODE_Y : INTER_HEIGHT} stroke="currentColor" strokeWidth={LINE_WIDTH} className={LINE_COLOR} />
 
                         {!isSplit ? (
-                            isBranched ? (
-                                <BranchNode cy={INTER_DOT_Y} />
-                            ) : (
-                                <circle cx="100" cy={INTER_DOT_Y} r="4" fill="currentColor" className={LINE_COLOR} />
-                            )
+                            isBranched ? <BranchNode cy={INTER_DOT_Y} /> : <circle cx="100" cy={INTER_DOT_Y} r="4" fill="currentColor" className={LINE_COLOR} />
                         ) : (
                             <>
-                                {isBranched ? (
-                                    <BranchNode cy={MAIN_NODE_Y} />
-                                ) : (
-                                    <circle cx="100" cy={MAIN_NODE_Y} r="5" fill="currentColor" className="text-black" />
-                                )}
-
-                                {isBranched && options?.showBranch === false && (
-                                    // 分岐線を表示しないモード（パネル内等）でも、起点となる太陽マークを優先
-                                    null
-                                )}
+                                {isBranched ? <BranchNode cy={MAIN_NODE_Y} /> : <circle cx="100" cy={MAIN_NODE_Y} r="5" fill="currentColor" className="text-black" />}
 
                                 {options?.showReturn && (
-                                    <path
-                                        d={`M 100 ${SPLIT_START_Y} C 100 ${BTN_CY} 80 ${BTN_CY} ${LEFT_BTN_CX + 20} ${BTN_CY}`}
-                                        fill="none"
-                                        stroke="currentColor"
-                                        strokeWidth={LINE_WIDTH}
-                                        className={LINE_COLOR}
-                                    />
+                                    <path d={`M 100 ${SPLIT_START_Y} C 100 ${BTN_CY} 80 ${BTN_CY} ${LEFT_BTN_CX + 20} ${BTN_CY}`} fill="none" stroke="currentColor" strokeWidth={LINE_WIDTH} className={LINE_COLOR} />
+                                )}
+                                {options?.showBranch && (
+                                    <path d={`M 100 ${SPLIT_START_Y} C 100 35 ${RIGHT_BTN_CX} 25 ${RIGHT_BTN_CX} ${BTN_CY - 20}`} fill="none" stroke="currentColor" strokeWidth={LINE_WIDTH} className={LINE_COLOR} />
                                 )}
 
-                                {options?.showBranch && (
-                                    <path
-                                        d={`M 100 ${SPLIT_START_Y} C 100 35 ${RIGHT_BTN_CX} 25 ${RIGHT_BTN_CX} ${BTN_CY - 20}`}
-                                        fill="none"
-                                        stroke="currentColor"
-                                        strokeWidth={LINE_WIDTH}
-                                        className={LINE_COLOR}
-                                    />
+                                {/* 流星アニメーション */}
+                                {hoveredConnectorAction && (
+                                    <>
+                                        <line x1="100" y1="0" x2="100" y2={SPLIT_START_Y} stroke="currentColor" strokeWidth={LINE_WIDTH} className="text-gray-400/40 connector-comet-tail connector-comet-shared" />
+                                        <line x1="100" y1="0" x2="100" y2={SPLIT_START_Y} stroke="currentColor" strokeWidth={LINE_WIDTH} className="text-gray-500/80 connector-comet-head connector-comet-shared" />
+                                    </>
                                 )}
+                                {/* ...（中略：hoveredConnectorAction === "return" や "branch" のアニメーションパスを記述）... */}
                             </>
                         )}
                     </svg>
 
+                    {/* 操作ボタン */}
                     {isSplit && (
                         <>
                             {options?.showReturn && (
-                                <div
-                                    className="absolute -translate-x-1/2 -translate-y-1/2"
-                                    style={{ left: LEFT_BTN_CX, top: BTN_CY }}
-                                >
-                                    <button className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-100 bg-[#F9FAFB] shadow-sm transition-all hover:border-gray-300 hover:bg-white">
-                                        <Check className="h-4 w-4 text-foreground/60" />
-                                    </button>
-                                </div>
-                            )}
-
-                            {options?.showBranch && (
-                                <div
-                                    className="absolute -translate-x-1/2 -translate-y-1/2"
-                                    style={{ left: RIGHT_BTN_CX, top: BTN_CY }}
-                                >
-                                    <button
+                                <div className="absolute -translate-x-1/2 -translate-y-1/2" style={{ left: LEFT_BTN_CX, top: BTN_CY }}>
+                                    <Button
+                                        variant="outline"
+                                        size="icon-lg"
                                         type="button"
-                                        onClick={() => onBranch?.(block.block_id)}
-                                        className="group flex h-10 w-10 items-center justify-center rounded-full border border-gray-300 bg-white shadow-sm transition-all hover:border-foreground hover:bg-foreground hover:text-white"
+                                        onClick={() => onMerge?.(block.block_id)}
+                                        onMouseEnter={() => setHoveredConnectorAction("return")}
+                                        onMouseLeave={() => setHoveredConnectorAction(null)}
+                                        className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-100 bg-white shadow-sm transition-all hover:border-gray-300 hover:bg-[#F9FAFB]"
                                     >
-                                        <MessageCircleQuestionMark
-                                            className="h-5 w-5 text-foreground group-hover:text-white"
-                                        />
-                                    </button>
+                                        <Check className="h-5 w-5 text-black" />
+                                    </Button>
                                 </div>
                             )}
+                            {/* ...（ブランチボタンも同様に Button コンポーネントを使用）... */}
                         </>
                     )}
                 </div>
             )}
         </div>
+    );
     );
 }

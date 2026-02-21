@@ -98,23 +98,63 @@ export default function ChatPage({ params }: ChatPageProps) {
 
   const deepestBranch = useMemo(() => {
     if (!chatData?.branches) return null;
-    return Object.values(chatData.branches).reduce((prev, current) => {
-      return (current.depth > (prev?.depth ?? -1)) ? current : prev;
+
+    // 有効なブランチ（active/locked）のみを抽出
+    const branches = Object.values(chatData.branches);
+    const validBranches = branches.filter(
+      (b) => b.status === "active" || b.status === "locked"
+    );
+
+    if (validBranches.length === 0) {
+      // 全て無効な場合はメインブランチ（depth 0）を探す
+      return branches.find(b => b.depth === 0) || null;
+    }
+
+    // 最も深いブランチを選択。同じ深さなら作成日時が新しいものを優先
+    return validBranches.reduce((prev, current) => {
+      if (!prev) return current;
+      if (current.depth > prev.depth) return current;
+      if (current.depth === prev.depth) {
+        return new Date(current.created_at).getTime() > new Date(prev.created_at).getTime() ? current : prev;
+      }
+      return prev;
     }, null as any);
   }, [chatData]);
-
-  const handleSwitchToSub = (blockId: string) => {
-    const block = chatData?.blocks[blockId];
-    if (block) {
-      setBranchContext(chatData?.branches[block.branch_id] || null);
-    }
-    setCreationContext({ parentBlockId: blockId });
-  };
 
   const handleCloseSubBranch = () => {
     setCreationContext(undefined);
     setBranchContext(null);
   };
+
+  const handleReload = async () => {
+    await fetchChat(id);
+    const data = useChatStore.getState().chatData;
+    if (!data) return;
+
+    if (creationContext?.parentBlockId) {
+      const activeSiblings = Object.values(data.branches).filter(
+        b => b.parent_block_id === creationContext.parentBlockId &&
+          (b.status === "active" || b.status === "locked")
+      );
+
+      // アクティブな兄弟がいなくなったら、サブブランチの表示を閉じる
+      if (activeSiblings.length === 0) {
+        handleCloseSubBranch();
+      }
+    }
+  };
+
+  const handleSwitchToSub = (blockId: string) => {
+    const data = useChatStore.getState().chatData;
+    const block = data?.blocks[blockId];
+    if (block) {
+      setBranchContext(data?.branches[block.branch_id] || null);
+    }
+    setCreationContext({ parentBlockId: blockId });
+  };
+
+  // ビューの判定
+  const isMainView = !creationContext && (deepestBranch?.depth === 0);
 
   return (
     <div className="flex flex-col h-screen w-full bg-gray-50/50">
@@ -122,16 +162,16 @@ export default function ChatPage({ params }: ChatPageProps) {
 
       {isLoading && <TopLinearLoader />}
 
-      <main className={`flex-1 bg-background ${(deepestBranch?.depth === 0 && !creationContext) ? "p-6 overflow-y-auto" : "overflow-hidden"}`}>
-        <div className={`mx-auto h-full ${(deepestBranch?.depth === 0 && !creationContext) ? "max-w-4xl space-y-6 pb-10" : "max-w-none w-full"}`}>
+      <main className={`flex-1 bg-background ${isMainView ? "p-6 overflow-y-auto" : "overflow-hidden"}`}>
+        <div className={`mx-auto h-full ${isMainView ? "max-w-4xl space-y-6 pb-10" : "max-w-none w-full"}`}>
           {error && <p className="text-sm text-destructive p-4">{error}</p>}
 
           {chatData && deepestBranch && (
-            (deepestBranch.depth === 0 && !creationContext) ? (
+            isMainView ? (
               <MainBranchView
                 chatId={chatData.chat_id}
                 branch={deepestBranch}
-                reload={() => fetchChat(id)}
+                reload={handleReload}
                 initialMessage={initialMessage}
                 onInitialMessageHandled={() => setInitialMessage(null)}
                 onInitialSendError={handleInitialSendError}
@@ -140,12 +180,12 @@ export default function ChatPage({ params }: ChatPageProps) {
             ) : (
               <div className="h-full w-full">
                 <SubBranchView
-                  key={creationContext?.parentBlockId || `load-${deepestBranch.branch_id}`}
+                  key={creationContext?.parentBlockId || `view-${deepestBranch.branch_id}`}
                   chatId={chatData.chat_id}
                   mainBranch={branchContext || deepestBranch}
                   initialActiveBranchId={!creationContext ? deepestBranch.branch_id : undefined}
                   initialCreationContext={creationContext}
-                  reload={() => fetchChat(id)}
+                  reload={handleReload}
                   onCloseAll={handleCloseSubBranch}
                   onBranch={handleSwitchToSub}
                 />

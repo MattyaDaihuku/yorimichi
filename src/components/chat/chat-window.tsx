@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { ArrowDown } from "lucide-react";
 import { ChatComposer } from "@/components/chat/chat-composer";
 import { BlockList } from "@/components/chat/block-list";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useChatStore } from "@/store/chat-store";
 import {
@@ -26,6 +28,7 @@ type ChatWindowProps = {
     branchId: string;
     streamingBlock?: StreamingBlock | null;
     onBranch?: (blockId: string) => void;
+    onMerge?: (blockId: string) => void;
     onSend: (message: string) => Promise<void>;
     inputPlaceholder?: string;
     inputAlwaysBorder?: boolean;
@@ -42,6 +45,7 @@ export function ChatWindow({
     branchId,
     streamingBlock,
     onBranch,
+    onMerge,
     onSend,
     inputPlaceholder = "メインブランチで会話する...",
     inputAlwaysBorder = true,
@@ -199,6 +203,14 @@ export function ChatWindow({
 
     const retryMessage = "しばらく時間をおいて再度お試しください。";
     const shouldShowRetryMessage = !errorMessage.includes(retryMessage);
+    const showRefocusButton = !!streamingBlock && !isStreamingAutoFollow;
+
+    const refocusStreamingResponse = () => {
+        if (!streamingBlock) return;
+        isAutoFollowUnlockedRef.current = false;
+        setIsStreamingAutoFollow(true);
+        latestBottomRef.current?.scrollIntoView({ behavior: "auto", block: "end" });
+    };
 
     return (
         <>
@@ -241,6 +253,7 @@ export function ChatWindow({
                         branchId={branchId}
                         streamingBlock={streamingBlock}
                         onBranch={onBranch}
+                        onMerge={onMerge}
                     />
                     <div
                         ref={latestBottomRef}
@@ -258,6 +271,33 @@ export function ChatWindow({
                         )}>
                             <div className="absolute -top-7 left-0 right-0 z-0 h-8 bg-gradient-to-b from-transparent to-background" />
                             <div className="relative z-10 mx-auto w-full max-w-4xl px-6 pt-0 pb-6">
+                                {showRefocusButton && (
+                                    <div className="pointer-events-none absolute -top-20 left-1/2 -translate-x-1/2">
+                                        <Button
+                                            type="button"
+                                            size="icon"
+                                            onClick={refocusStreamingResponse}
+                                            className={cn(
+                                                "pointer-events-auto h-11 w-11 rounded-full",
+                                                // 背景：極薄の白（または黒）で、透明度を高く設定
+                                                "bg-gray-400/30 dark:bg-slate-800/40", 
+                                                // ガラス効果：背後をぼかす（これがLiquid Glassの肝）
+                                                "backdrop-blur-md",
+                                                // 境界線：光が当たっているような細く明るい線
+                                                "border border-white/40 dark:border-slate-700/50",
+                                                // テキスト色
+                                                "text-slate-700 dark:text-slate-200",
+                                                // 影：ぼんやりと広がる柔らかい影
+                                                "shadow-lg",
+                                                // アニメーション：ホバーで下に沈む
+                                                "transition-all duration-300 hover:translate-y-0.5 hover:bg-gray-400/80 dark:hover:bg-slate-800/60"
+                                            )}
+                                            aria-label="最新のAI応答に戻る"
+                                        >
+                                            <ArrowDown className="h-5 w-5 text-gray-400" />
+                                        </Button>
+                                    </div>
+                                )}
                                 <div className="pointer-events-auto mx-auto w-full max-w-3xl">
                                     <ChatComposer
                                         value={input}
@@ -276,6 +316,19 @@ export function ChatWindow({
                         </div>
                     ) : (
                         <>
+                            {showRefocusButton && (
+                                <div className="pointer-events-none absolute bottom-30 left-1/2 z-10 -translate-x-1/2">
+                                    <Button
+                                        type="button"
+                                        size="icon"
+                                        onClick={refocusStreamingResponse}
+                                        className="pointer-events-auto h-10 w-10 rounded-full bg-gray-300 text-foreground shadow-md border border-border hover:bg-muted"
+                                        aria-label="最新のAI応答に戻る"
+                                    >
+                                        <ArrowDown className="h-5 w-5" />
+                                    </Button>
+                                </div>
+                            )}
                             <div className="mx-auto w-full max-w-3xl">
                                 <ChatComposer
                                     value={input}

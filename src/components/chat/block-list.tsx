@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { MessageBlock } from "@/components/chat/message-block";
 import { useChatStore } from "@/store/chat-store";
 
@@ -12,12 +13,14 @@ type BlockListProps = {
     branchId: string;
     streamingBlock?: StreamingBlock | null;
     onBranch?: (blockId: string) => void;
+    onMerge?: (blockId: string) => void;
 };
 
 export function BlockList({
     branchId,
     streamingBlock,
     onBranch,
+    onMerge,
 }: BlockListProps) {
     const chatData = useChatStore((state) => state.chatData);
 
@@ -34,9 +37,7 @@ export function BlockList({
     const allBlocks = chatData?.blocks ?? {};
     const parentBlock =
         targetBranch?.parent_block_id && targetBranch.depth > 0
-            ? (Array.isArray(allBlocks)
-                ? (allBlocks.find(b => b.block_id === targetBranch.parent_block_id) ?? null)
-                : (allBlocks[targetBranch.parent_block_id] ?? null))
+            ? (allBlocks[targetBranch.parent_block_id] ?? null)
             : null;
 
     const sourceBlocks = parentBlock
@@ -45,21 +46,15 @@ export function BlockList({
 
     const branchedBlockIds = new Set(
         Object.values(chatData?.branches ?? {})
+            .filter((branch) => branch.status === "active" || branch.status === "locked")
             .filter((branch) => typeof branch.parent_block_id === "string")
             .map((branch) => branch.parent_block_id as string)
     );
 
-    if (sourceBlocks.length === 0 && !streamingBlock) {
-        return (
-            <div className="rounded-lg border bg-muted/20 p-6 text-sm text-muted-foreground">
-                まだ会話がありません。下の入力欄からメッセージを送信してください。
-            </div>
-        );
-    }
-
     const displayBlocks = [...sourceBlocks, ...(streamingBlock ? [streamingBlock] : [])];
 
     return (
+        // <div className="space-y-4">
         <div>
             {displayBlocks.map((block, index) => {
                 const isLastBlock = index === displayBlocks.length - 1;
@@ -80,6 +75,7 @@ export function BlockList({
                         block={block}
                         connector={connector}
                         onBranch={onBranch}
+                        onMerge={onMerge}
                         isStreaming={streamingBlock?.block_id === block.block_id}
                     />
                 );

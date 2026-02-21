@@ -29,6 +29,7 @@ type ChatStore = {
     addBranch: (branch: SerializedBranch) => void;
     addBlock: (block: SerializedBlock) => void;
     removeBranch: (branchId: string) => void;
+    mergeBranch: (branchId: string) => void;
     clearChat: () => void;
     currentIds: {
         chatId: string | null;
@@ -106,6 +107,65 @@ export const useChatStore = create<ChatStore>((set) => ({
                     ...state.chatData,
                     branches: newBranches,
                     blocks: newBlocks
+                }
+            };
+        });
+    },
+
+    mergeBranch: (branchId) => {
+        set((state) => {
+            if (!state.chatData) return state;
+            const branch = state.chatData.branches[branchId];
+            if (!branch || !branch.parent_branch_id) return state;
+
+            const parentBranchId = branch.parent_branch_id;
+            const parentBlockId = branch.parent_block_id;
+            const newBranches = { ...state.chatData.branches };
+
+            // Helper to drop descendants recursively
+            const dropDescendants = (bid: string) => {
+                Object.keys(newBranches).forEach(id => {
+                    const b = newBranches[id];
+                    if (b.parent_branch_id === bid && (b.status === "active" || b.status === "locked")) {
+                        newBranches[id] = { ...b, status: "dropped" };
+                        dropDescendants(id);
+                    }
+                });
+            };
+
+            // 1. Update merged branch status
+            newBranches[branchId] = { ...branch, status: "merged" };
+
+            // 2. Drop descendants of the merged branch
+            dropDescendants(branchId);
+
+            // 3. Drop siblings and their descendants
+            Object.keys(newBranches).forEach(id => {
+                const b = newBranches[id];
+                if (
+                    b.parent_branch_id === parentBranchId &&
+                    b.parent_block_id === parentBlockId &&
+                    b.branch_id !== branchId &&
+                    (b.status === "active" || b.status === "locked")
+                ) {
+                    newBranches[id] = { ...b, status: "dropped" };
+                    dropDescendants(id);
+                }
+            });
+
+            // 4. Unlock parent
+            if (newBranches[parentBranchId]) {
+                newBranches[parentBranchId] = {
+                    ...newBranches[parentBranchId],
+                    status: "active"
+                };
+            }
+
+            return {
+                chatData: {
+                    ...state.chatData,
+                    branches: newBranches,
+                    blocks: state.chatData.blocks // Keep existing blocks, rely on reload for copies
                 }
             };
         });

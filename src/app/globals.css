@@ -192,3 +192,69 @@
 .skeleton-breathe {
   animation: skeleton-breathe 1.8s ease-in-out infinite;
 }
+
+@keyframes connector-comet-head-sweep {
+  0% {
+    stroke-dasharray: 12 220;
+    stroke-dashoffset: 0;
+    opacity: 0.45;
+  }
+  50% {
+    stroke-dasharray: 26 220;
+    stroke-dashoffset: -40;
+    opacity: 1;
+  }
+  100% {
+    stroke-dasharray: 10 220;
+    stroke-dashoffset: -88;
+    opacity: 0.4;
+  }
+}
+
+@keyframes connector-comet-tail-sweep {
+  0% {
+    stroke-dasharray: 22 220;
+    stroke-dashoffset: 8;
+    opacity: 0.18;
+  }
+  50% {
+    stroke-dasharray: 40 220;
+    stroke-dashoffset: -32;
+    opacity: 0.38;
+  }
+  100% {
+    stroke-dasharray: 20 220;
+    stroke-dashoffset: -80;
+    opacity: 0.15;
+  }
+}
+
+.connector-comet-head,
+.connector-comet-tail {
+  stroke-linecap: round;
+}
+
+.connector-comet-head {
+  animation: connector-comet-head-sweep 0.5s ease-in-out infinite;
+}
+
+.connector-comet-tail {
+  animation: connector-comet-tail-sweep 1.5s ease-in-out infinite;
+  animation-delay: -0.08s;
+}
+
+.connector-comet-shared.connector-comet-head {
+  animation-delay: -0.18s;
+}
+
+.connector-comet-shared.connector-comet-tail {
+  animation-delay: -0.26s;
+}
+
+.connector-comet-branch.connector-comet-head {
+  animation-delay: -0.04s;
+}
+
+.connector-comet-branch.connector-comet-tail {
+  animation-delay: -0.12s;
+}
