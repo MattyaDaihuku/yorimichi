@@ -58,8 +58,8 @@ export function Header({ title = "", className }: HeaderProps) {
 
         <div className="grid grid-cols-3 items-center h-16 w-full">
           {/* 左側: サービスロゴ */}
-          <div className="flex items-center justify-start gap-2 pl-12 md:pl-0 h-full">
-            <div className="relative h-8 w-32 md:h-10 md:w-40">
+          <div className="flex items-center justify-start gap-2 pl-10 md:pl-0 h-full">
+            <div className="relative h-8 w-32 md:h-18 md:w-50">
               <Image
                 src="/yorimichi_logo.png"
                 alt="Yorimichi Logo"
