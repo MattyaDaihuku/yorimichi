@@ -147,14 +147,8 @@ export function BranchTree({
       // スライドアウト
       if (panelState === "visible") {
         setPanelState("hidden-left");
-        if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
-        closeTimerRef.current = setTimeout(() => {
-          setPanelState("hidden-left");
-        }, 280);
-        // スライドイン
       } else {
         setSelectedBranchId(branchId);
-        if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
         setPanelState("visible");
       }
       return;
@@ -162,7 +156,6 @@ export function BranchTree({
 
     // 中身だけ切り替え
     setSelectedBranchId(branchId);
-    if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
     setPanelState("visible");
   };
 
@@ -192,7 +185,7 @@ export function BranchTree({
   const selectedBranch = selectedBranchId ? nodesMap[selectedBranchId] ?? null : null;
 
   if (isLoading) return <div className="p-4 text-center text-muted-foreground">読み込み中...</div>;
-  if (isLoading) return <div className="p-4 text-center text-red-500">エラーが発生しました</div>;
+  if (!chatData) return <div className="p-4 text-center text-red-500">データが見つかりません</div>;
   if (!chatData?.branches) return null;
 
   return (
@@ -216,18 +209,24 @@ export function BranchTree({
 
           <div
             className={cn(
-              "self-stretch overflow-hidden flex-1 min-w-0 opacity-100",
-              !isMobile && "transition-all duration-150 ease-out",
-              panelState === "visible" ? "translate-x-0" : "w-0 opacity-0 -translate-x-8"
+              "self-stretch overflow-hidden transition-all duration-300 linear",
+              isMobile
+                ? "flex-1 w-full"
+                : panelState === "visible"
+                  ? "w-[376px] opacity-100"
+                  : "w-0 opacity-0 pointer-events-none"
             )}
           >
-            <div className="h-full w-full shrink-0 overflow-hidden">
+            <div className={cn(
+              "h-full shrink-0 overflow-hidden",
+              isMobile ? "w-full" : "w-[376px]"
+            )}>
               <div
                 className={cn(
-                  !isMobile && "transition-all duration-150 ease-out",
+                  "transition-all duration-300 linear",
                   panelState === "visible"
-                    ? "opacity-100 translate-x-0 pointer-events-auto"
-                    : "opacity-0 -translate-x-5 pointer-events-none"
+                    ? "opacity-100 pointer-events-auto"
+                    : "opacity-0 pointer-events-none"
                 )}
               >
                 <BranchConversationPanel
