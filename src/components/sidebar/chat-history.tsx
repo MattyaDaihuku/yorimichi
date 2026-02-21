@@ -66,8 +66,8 @@ export function ChatHistory({ onClickItem }: { onClickItem?: () => void }) {
       <div className="pointer-events-none absolute top-0 left-0 right-0 z-10 h-8 bg-gradient-to-b from-[#E9EEF6] to-transparent" />
 
       <div className="h-full w-full min-w-0 box-border overflow-y-auto overscroll-contain hide-scrollbar px-4 pt-6 pb-4">
-        <div className="px-2 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-          Conversation History
+        <div className="px-2 mb-2 text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+          チャット履歴
         </div>
         <div className="flex w-full min-w-0 flex-col gap-1">
           {user ? (
@@ -117,14 +117,13 @@ export function ChatHistory({ onClickItem }: { onClickItem?: () => void }) {
               </div>
             ))
           ) : (
-            <div className="flex flex-col items-center justify-center py-8 px-2 text-center space-y-3">
+            <div className="flex flex-col items-center justify-center py-8 px-4 text-center space-y-4 bg-[#DDE3EA] rounded-2xl border border-gray-200/50 mx-2 mt-2">
               <p className="text-sm text-muted-foreground leading-relaxed">
-                ログインすると過去の<br />チャット履歴が表示されます
-              </p>
+                ログインすることでチャットの利用と<br />履歴の保存が可能になります</p>
               <Button
                 variant="outline"
                 size="sm"
-                className="w-full h-8 rounded-full text-xs bg-white shadow-sm border-gray-200"
+                className="w-full h-9 rounded-full text-xs bg-white border-gray-200 transition-colors"
                 onClick={() => openSignIn({
                   appearance: {
                     elements: {
