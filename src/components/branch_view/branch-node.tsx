@@ -55,7 +55,7 @@ export function BranchNode({
           type="button"
           onClick={() => onSelect(node.branch_id)}
           className={`
-            relative flex shrink-0 justify-center items-center rounded-2xl border-1 transition-all cursor-pointer
+            relative flex shrink-0 justify-center items-center rounded-full border-1 transition-all cursor-pointer
             w-10 
             ${isFloating
               ? "border-3 border-blue-300 text-gray-800 font-bold"
