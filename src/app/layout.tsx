@@ -34,15 +34,14 @@ export default function RootLayout({
         >
           <SignedIn>
             <UserSync />
-            <div className="flex min-h-screen">
-              <Sidebar />
-              <main className="flex-1 flex h-screen flex-col overflow-y-auto hide-scrollbar md:pl-[72px]">
-                {children}
-              </main>
-            </div>
           </SignedIn>
 
-          <SignedOut>{children}</SignedOut>
+          <div className="flex min-h-screen">
+            <Sidebar />
+            <main className="flex-1 flex h-screen flex-col overflow-y-auto hide-scrollbar md:pl-[72px]">
+              {children}
+            </main>
+          </div>
           <Toaster position="bottom-right" />
         </body>
       </html>

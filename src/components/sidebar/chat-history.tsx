@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import useSWR, { useSWRConfig } from "swr";
+import { useUser } from "@clerk/nextjs";
 import { Clock, Pin } from "lucide-react";
 import { Chatlist } from "@/generated/prisma"; // 型だけインポート
 import { cn } from "@/lib/utils";
@@ -22,14 +23,15 @@ const fetcher = async (
 };
 
 export function ChatHistory({ onClickItem }: { onClickItem?: () => void }) {
+  const { user, isLoaded: isUserLoaded } = useUser();
   const pathname = usePathname();
   const previousPathname = useRef(pathname);
   const { cache } = useSWRConfig();
-  const key = "/api/internal/chat/list";
-  const hasCachedChats = cache.get(key) !== undefined;
+  const key = isUserLoaded && user ? "/api/internal/chat/list" : null;
+  const hasCachedChats = key ? cache.get(key) !== undefined : false;
 
   const { data: chats = [], mutate } = useSWR(key, fetcher, {
-    revalidateOnMount: !hasCachedChats,
+    revalidateOnMount: !hasCachedChats && !!key,
     revalidateIfStale: false,
   });
 
@@ -66,50 +68,50 @@ export function ChatHistory({ onClickItem }: { onClickItem?: () => void }) {
           Conversation History
         </div>
         <div className="flex w-full min-w-0 flex-col gap-1">
-        {chats.map((chat) => (
-          <div
-            key={chat.chat_id}
-            className={cn(
-              "grid h-10 w-full min-w-0 max-w-full grid-cols-[minmax(0,1fr)_auto] items-center rounded-full hover:bg-[#DDE3EA] group transition-colors",
-              pathname === `/chat/${chat.chat_id}` && "bg-accent"
-            )}
-          >
-            <Link
-              href={`/chat/${chat.chat_id}`}
-              onClick={onClickItem}
-              className="flex h-10 min-w-0 max-w-full items-center pl-3 pr-1 overflow-hidden"
-            >
-              <div className="flex min-w-0 max-w-full flex-col items-start overflow-hidden w-full pr-2">
-                <span className="truncate w-full text-left text-sm font-medium">
-                  {chat.chat_title}
-                </span>
-              </div>
-            </Link>
-            <button
-              type="button"
-              aria-label={chat.is_pinned ? "Unpin chat" : "Pin chat"}
+          {chats.map((chat) => (
+            <div
+              key={chat.chat_id}
               className={cn(
-                "mr-2 shrink-0 rounded p-1 text-muted-foreground hover:text-foreground",
-                chat.is_pinned
-                  ? "opacity-100"
-                  : "opacity-0 group-hover:opacity-100 focus-visible:opacity-100"
+                "grid h-10 w-full min-w-0 max-w-full grid-cols-[minmax(0,1fr)_auto] items-center rounded-full hover:bg-[#DDE3EA] group transition-colors",
+                pathname === `/chat/${chat.chat_id}` && "bg-accent"
               )}
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                void togglePin(chat.chat_id, !chat.is_pinned);
-              }}
             >
-              <Pin
+              <Link
+                href={`/chat/${chat.chat_id}`}
+                onClick={onClickItem}
+                className="flex h-10 min-w-0 max-w-full items-center pl-3 pr-1 overflow-hidden"
+              >
+                <div className="flex min-w-0 max-w-full flex-col items-start overflow-hidden w-full pr-2">
+                  <span className="truncate w-full text-left text-sm font-medium">
+                    {chat.chat_title}
+                  </span>
+                </div>
+              </Link>
+              <button
+                type="button"
+                aria-label={chat.is_pinned ? "Unpin chat" : "Pin chat"}
                 className={cn(
-                  "h-4 w-4",
+                  "mr-2 shrink-0 rounded p-1 text-muted-foreground hover:text-foreground",
                   chat.is_pinned
-                    ? "text-primary fill-current"
-                    : "group-hover:text-primary"
+                    ? "opacity-100"
+                    : "opacity-0 group-hover:opacity-100 focus-visible:opacity-100"
                 )}
-              />
-            </button>
-          </div>
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  void togglePin(chat.chat_id, !chat.is_pinned);
+                }}
+              >
+                <Pin
+                  className={cn(
+                    "h-4 w-4",
+                    chat.is_pinned
+                      ? "text-primary fill-current"
+                      : "group-hover:text-primary"
+                  )}
+                />
+              </button>
+            </div>
           ))}
         </div>
       </div>
