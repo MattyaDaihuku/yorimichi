@@ -70,7 +70,7 @@ export function MessageBlock({ block, connector, onBranch, isStreaming = false, 
         }
     };
 
-    const BranchNode = ({ cy }: { cy: number }) => {
+    const BranchNode = ({ cy, className }: { cy: number; className?: string }) => {
         const spikes = 10;
         const outerRadius = 12;
         const innerRadius = 7;
@@ -87,7 +87,7 @@ export function MessageBlock({ block, connector, onBranch, isStreaming = false, 
         return (
             <g>
                 <circle cx="100" cy={cy} r={outerRadius} fill="white" />
-                <polygon points={points} fill="currentColor" className={LINE_COLOR} />
+                <polygon points={points} fill="currentColor" className={className || LINE_COLOR} />
                 <circle cx="100" cy={cy} r={5} fill="white" />
             </g>
         );
@@ -277,18 +277,24 @@ export function MessageBlock({ block, connector, onBranch, isStreaming = false, 
                             className={LINE_COLOR}
                         />
 
-                        {!isSplit &&
-                            (isBranched ? (
+                        {!isSplit ? (
+                            isBranched ? (
                                 <BranchNode cy={INTER_DOT_Y} />
                             ) : (
                                 <circle cx="100" cy={INTER_DOT_Y} r="4" fill="currentColor" className={LINE_COLOR} />
-                            ))}
-
-                        {isSplit && (
+                            )
+                        ) : (
                             <>
-                                {isBranched && <BranchNode cy={SPLIT_START_Y + 25} />}
+                                {isBranched ? (
+                                    <BranchNode cy={MAIN_NODE_Y} />
+                                ) : (
+                                    <circle cx="100" cy={MAIN_NODE_Y} r="5" fill="currentColor" className="text-black" />
+                                )}
 
-                                <circle cx="100" cy={MAIN_NODE_Y} r="5" fill="currentColor" className="text-black" />
+                                {isBranched && options?.showBranch === false && (
+                                    // 分岐線を表示しないモード（パネル内等）でも、起点となる太陽マークを優先
+                                    null
+                                )}
 
                                 {options?.showReturn && (
                                     <path

@@ -1,5 +1,6 @@
 "use client";
 
+import { useChatStore } from "@/store/chat-store";
 import { MessageBlock } from "../chat/message-block";
 import { Block, BranchNodeData } from "./types";
 
@@ -14,6 +15,13 @@ export function BranchConversationPanel({
   blocks,
   containerHeight,
 }: BranchConversationPanelProps) {
+  const branches = useChatStore((state) => state.chatData?.branches ?? {});
+  const branchedBlockIds = new Set(
+    Object.values(branches)
+      .filter((branch) => typeof branch.parent_block_id === "string")
+      .map((branch) => branch.parent_block_id as string)
+  );
+
   return (
     <aside
       className="w-full shrink-0 rounded-xl border bg-white overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
@@ -36,7 +44,7 @@ export function BranchConversationPanel({
               block={block}
               isCompact={true}
               connector={{
-                style: "straight",
+                style: branchedBlockIds.has(block.block_id) ? "branched" : "straight",
                 type: index === blocks.length - 1 ? "split" : "continue",
                 options: {
                   showBranch: false,
