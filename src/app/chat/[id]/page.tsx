@@ -163,7 +163,7 @@ export default function ChatPage({ params }: ChatPageProps) {
   const isMainView = !creationContext && (deepestBranch?.depth === 0);
 
   return (
-    <div className="flex flex-col h-screen w-full bg-gray-50/50">
+    <div className="flex flex-col h-screen w-full bg-background">
       <Header title={chatData?.chat_title ?? ""} className="bg-background" />
 
       {isLoading && <TopLinearLoader />}
