@@ -33,7 +33,7 @@ export function Header({ title = "", className }: HeaderProps) {
 
       <header
         className={cn(
-          "fixed inset-x-0 top-0 md:left-[72px] z-20 px-6 pt-[env(safe-area-inset-top)] h-[calc(4rem+env(safe-area-inset-top))] transition-colors duration-300",
+          "fixed inset-x-0 top-0 md:left-[72px] z-20 px-2.5 pt-[env(safe-area-inset-top)] h-[calc(4rem+env(safe-area-inset-top))] transition-colors duration-300",
           className || "bg-background"
         )}
       >
@@ -59,7 +59,7 @@ export function Header({ title = "", className }: HeaderProps) {
         <div className="grid grid-cols-3 items-center h-16 w-full">
           {/* 左側: サービスロゴ */}
           <div className="flex items-center justify-start gap-2 pl-10 md:pl-0 h-full">
-            <div className="relative h-8 w-32 md:h-18 md:w-50">
+            <div className="relative h-full md:w-50">
               <Image
                 src="/yorimichi_logo.png"
                 alt="Yorimichi Logo"
