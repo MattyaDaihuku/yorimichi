@@ -28,13 +28,24 @@ export function BranchTree({
   const [selectedBranchId, setSelectedBranchId] = useState<string | null>(null);
   const [panelState, setPanelState] = useState<"hidden-left" | "visible">("hidden-left");
   const [windowHeight, setWindowHeight] = useState(typeof window !== "undefined" ? window.innerHeight : 800);
+  const [isMobile, setIsMobile] = useState(false);
   const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    const handleResize = () => setWindowHeight(window.innerHeight);
+    const handleResize = () => {
+      setWindowHeight(window.innerHeight);
+      setIsMobile(window.innerWidth < 768);
+    };
+    handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+  useEffect(() => {
+    if (isMobile) {
+      setPanelState("visible");
+    }
+  }, [isMobile]);
 
   const availableHeight = useMemo(() => {
     // 画面全体の高さから、ヘッダーやパディング分を考慮した「表示可能領域」を計算
@@ -131,6 +142,8 @@ export function BranchTree({
     const isSame = branchId === selectedBranchId;
 
     if (isSame) {
+      if (isMobile) return; // モバイルは常時表示なので閉じない
+
       // スライドアウト
       if (panelState === "visible") {
         setPanelState("hidden-left");
@@ -174,7 +187,7 @@ export function BranchTree({
 
   return (
     <div className="p-3 mt-0 h-full flex flex-col min-h-0 bg-transparent">
-      <div className="overflow-y-auto overflow-x-hidden flex-1 min-h-0">
+      <div className="overflow-hidden overflow-x-hidden flex-1 min-h-0">
         <div className="inline-flex items-stretch gap-6 pt-2.5 min-w-0">
           <div className="flex flex-col items-start justify-start">
             {roots.map((rootNode) => (
@@ -193,14 +206,15 @@ export function BranchTree({
 
           <div
             className={cn(
-              "self-stretch overflow-hidden transition-all duration-150 ease-out",
-              panelState === "visible" ? "w-[340px] opacity-100 translate-x-0" : "w-0 opacity-0 -translate-x-8"
+              "self-stretch overflow-hidden",
+              !isMobile && "transition-all duration-150 ease-out",
+              panelState === "visible" ? "w-[calc(100vw-88px)] md:w-[340px] opacity-100 translate-x-0" : "w-0 opacity-0 -translate-x-8"
             )}
           >
             <div className="h-full w-full shrink-0 overflow-hidden">
               <div
                 className={cn(
-                  "transition-all duration-150 ease-out",
+                  !isMobile && "transition-all duration-150 ease-out",
                   panelState === "visible"
                     ? "opacity-100 translate-x-0 pointer-events-auto"
                     : "opacity-0 -translate-x-5 pointer-events-none"
@@ -216,6 +230,6 @@ export function BranchTree({
           </div>
         </div>
       </div>
-    </div>
+    </div >
   );
 }

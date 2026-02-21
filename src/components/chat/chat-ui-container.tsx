@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, Fragment, useEffect } from "react";
+import { useState, Fragment, useEffect, useRef } from "react";
 import { Plus, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
@@ -13,6 +13,8 @@ import { toast } from "sonner";
 import { sendMessageWithStreaming, type StreamingBlock } from "@/lib/chat-send";
 import { DeleteBranchButton } from "@/components/chat/delete-branch-button";
 import { AddBranchButton } from "@/components/chat/add-branch-button";
+import { BranchTree } from "@/components/branch_view/parent_track";
+import { type ChatDetailResponse } from "@/store/chat-store";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -33,6 +35,8 @@ export interface ChatUIContainerProps {
   reload: () => Promise<void>;
   onCloseAll: () => void;
   onBranch: (blockId: string) => void;
+  chatData: ChatDetailResponse | null;
+  isLoading: boolean;
 }
 
 type PaneConfig = {
@@ -286,8 +290,20 @@ const ChatPaneHelper = ({ pane, onRemove, chatId, reload, onPaneConfigUpdate, on
 
 // --- Main Container ---
 
-export function ChatUIContainer({ chatId, mainBranchId, initialActiveBranchId, initialCreationContext, reload, onCloseAll, onBranch }: ChatUIContainerProps) {
-  const chatData = useChatStore((state) => state.chatData);
+export function ChatUIContainer({ chatId, mainBranchId, initialActiveBranchId, initialCreationContext, reload, onCloseAll, onBranch, chatData, isLoading }: ChatUIContainerProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const firstChatRef = useRef<HTMLDivElement>(null);
+  const [isReady, setIsReady] = useState(false);
+
+  useEffect(() => {
+    // マウント時またはタブ切り替え時に最初のチャットペインまでスクロール
+    if (firstChatRef.current && chatData && !isReady) {
+      firstChatRef.current.scrollIntoView({ behavior: 'auto', inline: 'center' });
+      // スクロール完了後に表示（チラつき防止）
+      setIsReady(true);
+    }
+  }, [chatData, isReady]);
+
   const [activePanes, setActivePanes] = useState<PaneConfig[]>(() => {
     const panes: PaneConfig[] = [];
 
@@ -369,9 +385,28 @@ export function ChatUIContainer({ chatId, mainBranchId, initialActiveBranchId, i
   return (
     <div className="flex flex-1 h-full w-full overflow-hidden bg-transparent">
       {/* 1. Mobile Layout */}
-      <div className="flex md:hidden w-full h-full overflow-x-auto overflow-y-hidden snap-x snap-mandatory gap-2 p-2">
-        {activePanes.map((pane) => (
-          <div key={pane.id} className="min-w-[85vw] max-w-[85vw] snap-center h-full flex-shrink-0">
+      <div
+        ref={containerRef}
+        className={cn(
+          "flex md:hidden w-full h-full overflow-x-auto overflow-y-hidden snap-x snap-mandatory gap-2 p-2 scroll-smooth",
+          !isReady ? "opacity-0 invisible" : "opacity-100 visible"
+        )}
+      >
+        {/* Branch Tree slide at the beginning */}
+        <div className="min-w-full max-w-full snap-center h-full flex-shrink-0">
+          <BranchTree
+            chatId={chatId}
+            chatData={chatData}
+            isLoading={isLoading}
+          />
+        </div>
+
+        {activePanes.map((pane, index) => (
+          <div
+            key={pane.id}
+            ref={index === 0 ? firstChatRef : null}
+            className="min-w-full max-w-full snap-center h-full flex-shrink-0"
+          >
             <ChatPaneHelper
               pane={pane}
               onRemove={removePane}

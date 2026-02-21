@@ -45,13 +45,13 @@ export function SubBranchView({
                         : "shrink-0 w-auto basis-auto min-w-0 max-w-none"
                 )}
             >
-                <BranchTree 
+                <BranchTree
                     chatId={chatId}
                     chatData={chatData}
                     isLoading={isLoading}
                     onPanelStateChange={setPanelState}
-                    
-                    />
+
+                />
             </div>
 
             <div className="flex-1 min-w-0 h-full">
@@ -63,6 +63,8 @@ export function SubBranchView({
                     reload={reload}
                     onCloseAll={onCloseAll}
                     onBranch={onBranch}
+                    chatData={chatData}
+                    isLoading={isLoading}
                 />
             </div>
         </div>

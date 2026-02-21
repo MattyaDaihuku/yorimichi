@@ -15,7 +15,7 @@ export function BranchConversationPanel({
 }: BranchConversationPanelProps) {
   return (
     <aside
-      className="w-[250px] shrink-0 rounded-xl border bg-white p-4 overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+      className="w-full shrink-0 rounded-xl border bg-white p-4 overflow-y-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
       style={{ height: `${containerHeight}px` }}
     >
       <div className="mb-3 pb-3 border-b">
