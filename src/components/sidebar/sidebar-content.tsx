@@ -11,6 +11,7 @@ import {
 import { cn } from "@/lib/utils";
 import { NewChatButton } from "./new-chat-button";
 import { ChatHistory } from "./chat-history";
+import Link from "next/link";
 
 interface SidebarContentProps {
   isCollapsed: boolean;
@@ -76,8 +77,10 @@ export function SidebarContent({ isCollapsed, toggleSidebar }: SidebarContentPro
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent side="right" align="end" className="w-56">
-            <DropdownMenuItem>
-              パーソナライズ設定
+            <DropdownMenuItem asChild>
+              <Link href="/settings" className="w-full cursor-pointer">
+                パーソナライズ設定
+              </Link>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
