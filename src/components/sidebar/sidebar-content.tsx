@@ -2,12 +2,6 @@
 
 import { Button } from "@/components/ui/button";
 import { Menu, Settings } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { NewChatButton } from "./new-chat-button";
 import { ChatHistory } from "./chat-history";
@@ -63,27 +57,23 @@ export function SidebarContent({ isCollapsed, toggleSidebar }: SidebarContentPro
 
       {/* 設定ボタン */}
       <div className="p-4 mt-auto">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              className={cn(
-                "w-full flex items-center justify-start gap-2 h-10 hover:bg-muted font-normal text-muted-foreground",
-                isCollapsed ? "px-0 justify-center" : "px-4"
-              )}
-            >
-              <Settings className="h-5 w-5 shrink-0" />
-              {!isCollapsed && <span className="truncate">設定</span>}
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent side="right" align="end" className="w-56">
-            <DropdownMenuItem asChild>
-              <Link href="/settings" className="w-full cursor-pointer">
-                パーソナライズ設定
-              </Link>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <Button
+          variant="ghost"
+          className={cn(
+            "w-full h-10 hover:bg-muted font-normal text-muted-foreground",
+            isCollapsed ? "px-0" : "px-4"
+          )}
+          asChild
+        >
+          <Link 
+            href="/settings" 
+            className="flex items-center justify-start gap-2"
+            onClick={handleClose}
+          >
+            <Settings className="h-5 w-5 shrink-0" />
+            {!isCollapsed && <span className="truncate">設定</span>}
+          </Link>
+        </Button>
       </div>
     </div>
   );
