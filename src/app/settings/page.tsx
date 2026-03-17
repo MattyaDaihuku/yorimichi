@@ -71,9 +71,6 @@ export default function SettingsPage() {
                   placeholder="sk-..."
                   className="font-mono bg-background"
                 />
-                <div className="text-[0.8rem] text-muted-foreground">
-                  GPT-4 などの OpenAI モデルを利用する際に必要です。
-                </div>
               </div>
 
               <div className="grid gap-2">
@@ -83,21 +80,15 @@ export default function SettingsPage() {
                   placeholder="sk-ant-..."
                   className="font-mono bg-background"
                 />
-                <p className="text-[0.8rem] text-muted-foreground">
-                  Claude 3 などの Anthropic モデルを利用する際に必要です。
-                </p>
               </div>
 
               <div className="grid gap-2">
-                <Label htmlFor="gemini-key">Google Gemini API キー</Label>
+                <Label htmlFor="gemini-key">Gemini API キー</Label>
                 <PasswordInput
                   id="gemini-key"
                   placeholder="AIza..."
                   className="font-mono bg-background"
                 />
-                <p className="text-[0.8rem] text-muted-foreground">
-                  Gemini などの Google モデルを利用する際に必要です。
-                </p>
               </div>
             </div>
 
