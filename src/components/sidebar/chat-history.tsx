@@ -12,7 +12,17 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { EllipsisVertical, Pin } from "lucide-react";
+import { EllipsisVertical, Pin, Trash2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Chatlist } from "@/generated/prisma"; // 型だけインポート
 import { cn } from "@/lib/utils";
 
@@ -32,6 +42,7 @@ export function ChatHistory({ onClickItem }: { onClickItem?: () => void }) {
   const { openSignIn } = useClerk();
   const pathname = usePathname();
   const [openMenuChatId, setOpenMenuChatId] = useState<string | null>(null);
+  const [deletingChatId, setDeletingChatId] = useState<string | null>(null);
   const previousPathname = useRef(pathname);
   const { cache } = useSWRConfig();
   const key = isUserLoaded && user ? "/api/internal/chat/list" : null;
@@ -63,6 +74,24 @@ export function ChatHistory({ onClickItem }: { onClickItem?: () => void }) {
       await mutate();
     } catch (error) {
       console.error(error);
+    }
+  };
+
+  const deleteChat = async (chatId: string) => {
+    try {
+      const res = await fetch(`/api/internal/chat/${chatId}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!res.ok) throw new Error("Failed to delete chat");
+      setDeletingChatId(null);
+      await mutate();
+    } catch (error) {
+      console.error(error);
+      setDeletingChatId(null);
     }
   };
 
@@ -150,6 +179,16 @@ export function ChatHistory({ onClickItem }: { onClickItem?: () => void }) {
                         {chat.is_pinned ? "ピン留めを解除" : "ピン留めする"}
                       </span>
                     </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="cursor-pointer rounded-md px-3 py-2 text-sm text-gray-700 focus:bg-gray-50"
+                      onSelect={() => {
+                        setOpenMenuChatId(null);
+                        setDeletingChatId(chat.chat_id);
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      <span>会話を削除する</span>
+                    </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
@@ -191,6 +230,35 @@ export function ChatHistory({ onClickItem }: { onClickItem?: () => void }) {
           )}
         </div>
       </div>
+
+      <AlertDialog
+        open={deletingChatId !== null}
+        onOpenChange={(open) => {
+          if (!open) setDeletingChatId(null);
+        }}
+      >
+        <AlertDialogContent className="min-w-0 w-[400px] sm:max-w-[400px]">
+          <AlertDialogHeader>
+            <AlertDialogTitle>会話削除の確認</AlertDialogTitle>
+            <AlertDialogDescription>
+              本当にこの会話を削除しますか？この操作は取り消せません。
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="!flex-row justify-end gap-2">
+            <AlertDialogCancel className="mt-0">キャンセル</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (deletingChatId) {
+                  void deleteChat(deletingChatId);
+                }
+              }}
+              variant="destructive"
+            >
+              削除
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
