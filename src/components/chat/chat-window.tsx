@@ -29,6 +29,7 @@ type ChatWindowProps = {
     streamingBlock?: StreamingBlock | null;
     onBranch?: (blockId: string) => void;
     onMerge?: (blockId: string) => void;
+    onEdit?: (params: { blockId: string; message: string }) => Promise<void>;
     onSend: (message: string) => Promise<void>;
     inputPlaceholder?: string;
     inputAlwaysBorder?: boolean;
@@ -46,6 +47,7 @@ export function ChatWindow({
     streamingBlock,
     onBranch,
     onMerge,
+    onEdit,
     onSend,
     inputPlaceholder = "会話してみましょう",
     inputAlwaysBorder = true,
@@ -261,6 +263,7 @@ export function ChatWindow({
                         streamingBlock={streamingBlock}
                         onBranch={onBranch}
                         onMerge={onMerge}
+                        onEdit={onEdit}
                     />
                     <div
                         ref={latestBottomRef}

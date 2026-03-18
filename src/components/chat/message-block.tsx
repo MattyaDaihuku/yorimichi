@@ -1,6 +1,6 @@
 "use client";
 
-import { lazy, memo, Suspense, useCallback, useState } from "react";
+import { lazy, memo, Suspense, useCallback, useState, useEffect } from "react";
 import { Bot, Copy, MessageCircleQuestionMark, Check, ChevronDown, ChevronUp } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -37,8 +37,10 @@ interface MessageBlockProps {
     connector: ConnectorConfig;
     onBranch?: (blockId: string) => void;
     onMerge?: (blockId: string) => void;
+    onEdit?: (params: { blockId: string; message: string }) => Promise<void>;
     isStreaming?: boolean;
     isCompact?: boolean;
+    isLast?: boolean;
 }
 
 interface AiMarkdownContentProps {
@@ -161,7 +163,7 @@ const AiMarkdownContent = memo(function AiMarkdownContent({
     );
 });
 
-export function MessageBlock({ block, connector, onBranch, onMerge, isStreaming = false, isCompact = false }: MessageBlockProps) {
+export function MessageBlock({ block, connector, onBranch, onMerge, onEdit, isStreaming = false, isCompact = false, isLast = false }: MessageBlockProps) {
     const [copiedTarget, setCopiedTarget] = useState<string | null>(null);
     const [hoveredConnectorAction, setHoveredConnectorAction] = useState<"return" | "branch" | null>(null);
     const [isExpanded, setIsExpanded] = useState(false);
@@ -186,6 +188,43 @@ export function MessageBlock({ block, connector, onBranch, onMerge, isStreaming 
     const hasAiContent = block.ai_content.trim().length > 0;
     const showThinking = isStreaming && !hasAiContent;
     const aiContent = showThinking ? "Thinking..." : block.ai_content;
+
+    const [isEditing, setIsEditing] = useState(false);
+    const [editText, setEditText] = useState(block.user_content);
+    const [originalText, setOriginalText] = useState(block.user_content);
+    const [isSubmittingEdit, setIsSubmittingEdit] = useState(false);
+
+    useEffect(() => {
+        setEditText(block.user_content);
+        setOriginalText(block.user_content);
+    }, [block.user_content]);
+
+    const handleSubmit = async () => {
+        const nextText = editText.trim();
+        if (!nextText || !onEdit) {
+            setIsEditing(false);
+            return;
+        }
+
+        if (nextText === originalText.trim()) {
+            setIsEditing(false);
+            return;
+        }
+
+        setIsSubmittingEdit(true);
+        try {
+            await onEdit({ blockId: block.block_id, message: nextText });
+            setIsEditing(false);
+        } catch (error) {
+            const message =
+                error instanceof Error && error.message
+                    ? error.message
+                    : "メッセージの再生成に失敗しました。";
+            toast.error(message);
+        } finally {
+            setIsSubmittingEdit(false);
+        }
+    };
 
     const copyToClipboard = useCallback(async (text: string, target: string) => {
         try {
@@ -246,10 +285,29 @@ export function MessageBlock({ block, connector, onBranch, onMerge, isStreaming 
 
                             <div className={`w-fit overflow-hidden rounded-4xl rounded-tr-sm bg-[#E6F0FF] pl-6 ${isLongMessage ? "pr-3" : "pr-6"} py-4 text-foreground/90 transition-all duration-200`}>
                                 <div className="flex items-start gap-2">
-                                    <p className={`whitespace-pre-wrap break-all text-sm leading-relaxed md:text-base ${!isExpanded && isLongMessage ? "line-clamp-2" : ""
-                                        }`}>
-                                        {block.user_content}
-                                    </p>
+                                    {isEditing ? (
+                                        <textarea
+                                            value={editText}
+                                            onChange={(e) => setEditText(e.target.value)}
+                                            disabled={isSubmittingEdit}
+                                            className="w-full min-w-[220px] rounded-2xl border border-slate-300 bg-white px-3 py-2 text-sm leading-relaxed text-slate-900 outline-none ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-base"
+                                            onKeyDown={(e) => {
+                                                if (e.key === "Escape") {
+                                                    setEditText(originalText);
+                                                    setIsEditing(false);
+                                                }
+                                                if (e.key === "Enter" && !e.shiftKey) {
+                                                    e.preventDefault();
+                                                    void handleSubmit();
+                                                }
+                                            }}
+                                        />
+                                    ) : (
+                                        <p className={`whitespace-pre-wrap break-all text-sm leading-relaxed md:text-base ${!isExpanded && isLongMessage ? "line-clamp-2" : ""
+                                            }`}>
+                                            {block.user_content}
+                                        </p>
+                                    )}
                                     {isLongMessage && (
                                         <Button
                                             variant="ghost"
@@ -303,7 +361,7 @@ export function MessageBlock({ block, connector, onBranch, onMerge, isStreaming 
                                     onCopy={copyToClipboard}
                                 />
                                 {!isStreaming && (
-                                    <div className="flex justify-start">
+                                    <div className="flex gap-2">
                                         <CopyButton
                                             isCopied={copiedTarget === "ai"}
                                             onCopy={() => void copyToClipboard(block.ai_content, "ai")}
@@ -311,6 +369,26 @@ export function MessageBlock({ block, connector, onBranch, onMerge, isStreaming 
                                             ariaLabel="Copy AI message"
                                             className="h-10 w-10"
                                         />
+                                        {isLast && (
+                                            <Button
+                                                variant="outline"
+                                                size="icon-lg"
+                                                onClick={() => setIsEditing(true)}
+                                                disabled={isEditing || isSubmittingEdit}
+                                            >
+                                                ✏
+                                            </Button>
+                                        )}
+                                        {isEditing && (
+                                            <Button
+                                                variant="outline"
+                                                size="icon-lg"
+                                                onClick={() => void handleSubmit()}
+                                                disabled={isSubmittingEdit || editText.trim().length === 0}
+                                            >
+                                                {isSubmittingEdit ? "..." : "送信"}
+                                            </Button>
+                                        )}
                                     </div>
                                 )}
                             </div>

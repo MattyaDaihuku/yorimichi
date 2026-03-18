@@ -1,4 +1,3 @@
-import { useMemo } from "react";
 import { MessageBlock } from "@/components/chat/message-block";
 import { useChatStore } from "@/store/chat-store";
 
@@ -14,6 +13,7 @@ type BlockListProps = {
     streamingBlock?: StreamingBlock | null;
     onBranch?: (blockId: string) => void;
     onMerge?: (blockId: string) => void;
+    onEdit?: (params: { blockId: string; message: string }) => Promise<void>;
 };
 
 export function BlockList({
@@ -21,6 +21,7 @@ export function BlockList({
     streamingBlock,
     onBranch,
     onMerge,
+    onEdit,
 }: BlockListProps) {
     const chatData = useChatStore((state) => state.chatData);
 
@@ -76,7 +77,9 @@ export function BlockList({
                         connector={connector}
                         onBranch={onBranch}
                         onMerge={onMerge}
+                        onEdit={onEdit}
                         isStreaming={streamingBlock?.block_id === block.block_id}
+                        isLast={isLastBlock}
                     />
                 );
             })}

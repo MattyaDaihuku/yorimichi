@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Menu, User } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Menu } from "lucide-react";
 import Image from "next/image";
 import { UserButton, useUser, useClerk } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
@@ -22,6 +22,11 @@ export function Header({ title = "", className }: HeaderProps) {
   const { user, isLoaded } = useUser();
   const { openSignIn } = useClerk();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   return (
     <>
@@ -79,7 +84,7 @@ export function Header({ title = "", className }: HeaderProps) {
 
           {/* 右側: ユーザーアイコン */}
           <div className="flex justify-end">
-            {!isLoaded ? (
+            {!isMounted || !isLoaded ? (
               <div className="h-9 w-9 rounded-full flex items-center justify-center">
                 <Skeleton className="h-9 w-9 rounded-full skeleton-breathe" />
               </div>
