@@ -264,6 +264,7 @@ const UserMessageDisplay = memo(function UserMessageDisplay({
 interface UserMessageEditorProps {
     editText: string;
     isSubmittingEdit: boolean;
+    isSubmitDisabled: boolean;
     onChange: (value: string) => void;
     onSubmit: () => void;
     onCancel: () => void;
@@ -273,6 +274,7 @@ interface UserMessageEditorProps {
 const UserMessageEditor = memo(function UserMessageEditor({
     editText,
     isSubmittingEdit,
+    isSubmitDisabled,
     onChange,
     onSubmit,
     onCancel,
@@ -294,7 +296,9 @@ const UserMessageEditor = memo(function UserMessageEditor({
                             }
                             if (e.key === "Enter" && !e.shiftKey) {
                                 e.preventDefault();
-                                onSubmit();
+                                if (!isSubmitDisabled) {
+                                    onSubmit();
+                                }
                             }
                         }}
                     />
@@ -313,9 +317,14 @@ const UserMessageEditor = memo(function UserMessageEditor({
                             variant="default"
                             size="sm"
                             onClick={onSubmit}
-                            disabled={isSubmittingEdit || editText.trim().length === 0}
+                            disabled={isSubmitDisabled}
                             aria-label="Submit edit"
-                            className="h-9 rounded-full bg-blue-600 px-6 text-sm font-medium text-white hover:bg-blue-700"
+                            className={cn(
+                                "h-9 rounded-full px-6 text-sm font-medium disabled:opacity-100",
+                                isSubmitDisabled
+                                    ? "bg-gray-300 text-gray-400 cursor-not-allowed"
+                                    : "bg-blue-600 text-white hover:bg-blue-700"
+                            )}
                         >
                             更新
                         </Button>
@@ -357,6 +366,8 @@ export function MessageBlock({ block, connector, onBranch, onMerge, onEdit, isSt
     const [originalText, setOriginalText] = useState(block.user_content);
     const [isSubmittingEdit, setIsSubmittingEdit] = useState(false);
     const editTextareaRef = useRef<HTMLTextAreaElement | null>(null);
+    const isSubmitDisabled =
+        isSubmittingEdit || editText.trim().length === 0 || editText.trim() === originalText.trim();
 
     useEffect(() => {
         setEditText(block.user_content);
@@ -472,6 +483,7 @@ export function MessageBlock({ block, connector, onBranch, onMerge, onEdit, isSt
                             <UserMessageEditor
                                 editText={editText}
                                 isSubmittingEdit={isSubmittingEdit}
+                                isSubmitDisabled={isSubmitDisabled}
                                 onChange={setEditText}
                                 onSubmit={() => void handleSubmit()}
                                 onCancel={handleCancelEdit}
