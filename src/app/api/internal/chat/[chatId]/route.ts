@@ -36,6 +36,7 @@ export async function GET(
         chat_title: true,
         created_at: true,
         user_id: true,
+        is_pinned: true,
       },
     });
 
@@ -127,6 +128,7 @@ export async function GET(
           branch_id: block.branch_id,
           user_content: block.user_content,
           ai_content: block.ai_content,
+          is_stopped: block.is_stopped,
           created_at: block.created_at,
           update_at: block.update_at,
         };
@@ -149,6 +151,7 @@ export async function GET(
     const responseData = {
       chat_id: chat.chat_id,
       chat_title: chat.chat_title,
+      is_pinned: chat.is_pinned,
       created_at: chat.created_at,
       branches: branchMap,
       blocks: blockMap,
@@ -179,27 +182,6 @@ export async function PATCH(
       });
     }
 
-        // 4. Construct Response Data (Only reachable nodes)
-        const branchMap: Record<string, any> = {};
-        const blockMap: Record<string, any> = {};
-
-        for (const branch of allBranches) {
-            if (!reachableBranchIds.has(branch.branch_id)) continue;
-
-            // Add reachable blocks of this branch
-            for (const block of branch.blocks) {
-                // Technically all blocks of a reachable branch are reachable (linear history),
-                // but we double check logic if needed. Here we just add them.
-                blockMap[block.block_id] = {
-                    block_id: block.block_id,
-                    branch_id: block.branch_id,
-                    user_content: block.user_content,
-                    ai_content: block.ai_content,
-                    is_stopped: block.is_stopped,
-                    created_at: block.created_at,
-                    update_at: block.update_at
-                };
-            }
     const dataToUpdate: { is_pinned?: boolean; chat_title?: string } = {};
 
     if (validation.data.is_pinned !== undefined) {
