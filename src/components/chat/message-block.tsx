@@ -192,14 +192,25 @@ const UserMessageDisplay = memo(function UserMessageDisplay({
 }: UserMessageDisplayProps) {
     return (
         <div className="group flex items-start justify-end gap-3">
-            <div className="flex translate-x-1 items-center gap-2 opacity-100 transition-opacity">
-                <CopyButton
-                    isCopied={copiedTarget === "user"}
-                    onCopy={onCopyUser}
-                    size="icon-lg"
-                    ariaLabel="Copy user message"
-                    className="h-10 w-10"
-                />
+            <div className="flex translate-x-1 items-center gap-0.5 opacity-100 transition-opacity">
+                <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <span className="inline-flex">
+                                <CopyButton
+                                    isCopied={copiedTarget === "user"}
+                                    onCopy={onCopyUser}
+                                    size="icon-lg"
+                                    ariaLabel="Copy user message"
+                                    className="h-10 w-10"
+                                />
+                            </span>
+                        </TooltipTrigger>
+                        <TooltipContent className="bg-black text-white border-transparent">
+                            <p>コピーする</p>
+                        </TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
                 {!isStreaming && isLast && (
                     <TooltipProvider>
                         <Tooltip>
@@ -519,14 +530,25 @@ export function MessageBlock({ block, connector, onBranch, onMerge, onEdit, isSt
                                     </div>
                                 )}
                                 {!isStreaming && (
-                                    <div className="flex gap-2">
-                                        <CopyButton
-                                            isCopied={copiedTarget === "ai"}
-                                            onCopy={() => void copyToClipboard(block.ai_content, "ai")}
-                                            size="icon-lg"
-                                            ariaLabel="Copy AI message"
-                                            className="h-10 w-10"
-                                        />
+                                    <div className="flex gap-0.5">
+                                        <TooltipProvider>
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    <span className="inline-flex">
+                                                        <CopyButton
+                                                            isCopied={copiedTarget === "ai"}
+                                                            onCopy={() => void copyToClipboard(block.ai_content, "ai")}
+                                                            size="icon-lg"
+                                                            ariaLabel="Copy AI message"
+                                                            className="h-10 w-10"
+                                                        />
+                                                    </span>
+                                                </TooltipTrigger>
+                                                <TooltipContent className="bg-black text-white border-transparent">
+                                                    <p>コピーする</p>
+                                                </TooltipContent>
+                                            </Tooltip>
+                                        </TooltipProvider>
                                         {!isEditing && isLast && onEdit && (
                                             <TooltipProvider>
                                                 <Tooltip>
