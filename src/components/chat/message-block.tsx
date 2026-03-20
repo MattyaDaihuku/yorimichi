@@ -695,7 +695,7 @@ export function MessageBlock({ block, connector, onBranch, onMerge, onEdit, isSt
                                                     <Check className="h-5 w-5 text-black" />
                                                 </Button>
                                             </TooltipTrigger>
-                                            <TooltipContent className="bg-black text-white border-transparent">
+                                            <TooltipContent side="bottom" className="bg-black text-white border-transparent">
                                                 <p>本筋に合流する</p>
                                             </TooltipContent>
                                         </Tooltip>
@@ -725,7 +725,7 @@ export function MessageBlock({ block, connector, onBranch, onMerge, onEdit, isSt
                                                     />
                                                 </Button>
                                             </TooltipTrigger>
-                                            <TooltipContent className="bg-black text-white border-transparent">
+                                            <TooltipContent side="bottom" className="bg-black text-white border-transparent">
                                                 <p>ヨリミチする</p>
                                             </TooltipContent>
                                         </Tooltip>
