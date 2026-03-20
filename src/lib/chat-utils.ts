@@ -173,16 +173,22 @@ export async function processChatInteraction(
                         console.log(`[Chat] Saving partial response for block: ${blockId}`);
                         await prisma.block.upsert({
                             where: { block_id: blockId },
-                            update: { ai_content: accText },
+                            update: { ai_content: accText, is_stopped: true },
                             create: {
                                 block_id: blockId,
                                 branch_id: branchId,
                                 user_content: lastUserMessage?.content ?? '',
                                 ai_content: accText,
+                                is_stopped: true,
                             },
                         });
+                    } else if (blockId) {
+                        // No AI content yet — mark as stopped with empty ai_content
+                        await prisma.block.update({
+                            where: { block_id: blockId },
+                            data: { is_stopped: true },
+                        });
                     }
-                    // If accText is empty, keep the block as-is (user prompt with empty ai_content)
                 } catch (cancelError) {
                     console.error('[Chat] Failed to save partial response:', cancelError);
                 }

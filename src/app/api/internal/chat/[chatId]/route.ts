@@ -114,6 +114,7 @@ export async function GET(
                     branch_id: block.branch_id,
                     user_content: block.user_content,
                     ai_content: block.ai_content,
+                    is_stopped: block.is_stopped,
                     created_at: block.created_at,
                     update_at: block.update_at
                 };
