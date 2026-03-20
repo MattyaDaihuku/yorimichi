@@ -170,7 +170,7 @@ export function ChatComposer({
                             <Button
                                 onClick={onStop}
                                 size="icon"
-                                className="rounded-full transition-all bg-gray-800 hover:bg-gray-900 text-white"
+                                className="rounded-full transition-all bg-blue-50 hover:bg-blue-200 text-blue-600"
                                 aria-label="生成を停止"
                             >
                                 <Square className="h-3.5 w-3.5 fill-current" />

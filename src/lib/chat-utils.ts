@@ -181,11 +181,8 @@ export async function processChatInteraction(
                                 ai_content: accText,
                             },
                         });
-                    } else if (blockId) {
-                        // No content generated yet, clean up empty block
-                        console.log(`[Chat] Cleaning up empty block: ${blockId}`);
-                        await prisma.block.deleteMany({ where: { block_id: blockId } });
                     }
+                    // If accText is empty, keep the block as-is (user prompt with empty ai_content)
                 } catch (cancelError) {
                     console.error('[Chat] Failed to save partial response:', cancelError);
                 }

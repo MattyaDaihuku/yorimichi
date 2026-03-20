@@ -315,7 +315,7 @@ export function ChatWindow({
                                         onStop={onStop}
                                         placeholder={inputPlaceholder}
                                         disabled={disabled}
-                                        isSending={isSending}
+                                        isSending={isSending || !!streamingBlock}
                                         alwaysBorder={inputAlwaysBorder}
                                     />
                                 </div>
@@ -347,7 +347,7 @@ export function ChatWindow({
                                     onStop={onStop}
                                     placeholder={inputPlaceholder}
                                     disabled={disabled}
-                                    isSending={isSending}
+                                    isSending={isSending || !!streamingBlock}
                                     alwaysBorder={inputAlwaysBorder}
                                 />
                             </div>
