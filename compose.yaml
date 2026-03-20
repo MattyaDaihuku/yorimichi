@@ -33,7 +33,6 @@ services:
     environment:
       # Windows / WSL2 環境でのファイル変更検知にポーリングを使用
       - WATCHPACK_POLLING=true
-      - NODE_ENV=development
 
     # 手動停止以外で異常終了した場合は自動再起動
     restart: unless-stopped
