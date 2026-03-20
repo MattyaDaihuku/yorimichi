@@ -92,6 +92,7 @@ export function ChatHistory({ onClickItem }: { onClickItem?: () => void }) {
       setDeletingChatId(null);
       if (isCurrentChatPage) {
         router.replace("/");
+        onClickItem?.();
       }
       await mutate();
     } catch (error) {
