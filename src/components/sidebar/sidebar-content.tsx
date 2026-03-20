@@ -6,6 +6,11 @@ import { cn } from "@/lib/utils";
 import { NewChatButton } from "./new-chat-button";
 import { ChatHistory } from "./chat-history";
 import Link from "next/link";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface SidebarContentProps {
   isCollapsed: boolean;
@@ -28,14 +33,21 @@ export function SidebarContent({ isCollapsed, toggleSidebar }: SidebarContentPro
     >
       {/* ヘッダーエリア */}
       <div className="flex items-center h-16 transition-all duration-300 pl-4">
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          onClick={toggleSidebar}
-          className="h-10 w-10 rounded-full shrink-0 text-muted-foreground hover:text-foreground hover:bg-muted"
-        >
-          <Menu className="h-5 w-5" />
-        </Button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleSidebar}
+              className="h-10 w-10 rounded-full shrink-0 text-muted-foreground hover:text-foreground hover:bg-muted"
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent className="bg-black text-white border-transparent" side="right" sideOffset={10}>
+            <p>{isCollapsed ? "メニューを開く" : "メニューを閉じる"}</p>
+          </TooltipContent>
+        </Tooltip>
       </div>
 
       {/* 新規チャットボタン */}
@@ -57,23 +69,30 @@ export function SidebarContent({ isCollapsed, toggleSidebar }: SidebarContentPro
 
       {/* 設定ボタン */}
       <div className="p-4 mt-auto">
-        <Button
-          variant="ghost"
-          className={cn(
-            "w-full h-10 hover:bg-muted font-normal text-muted-foreground",
-            isCollapsed ? "px-0" : "px-4"
-          )}
-          asChild
-        >
-          <Link 
-            href="/settings" 
-            className="flex items-center justify-start gap-2"
-            onClick={handleClose}
-          >
-            <Settings className="h-5 w-5 shrink-0" />
-            {!isCollapsed && <span className="truncate">設定</span>}
-          </Link>
-        </Button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              className={cn(
+                "w-full h-10 hover:bg-muted font-normal text-muted-foreground",
+                isCollapsed ? "px-0" : "px-4"
+              )}
+              asChild
+            >
+              <Link
+                href="/settings"
+                className="flex items-center justify-start gap-2"
+                onClick={handleClose}
+              >
+                <Settings className="h-5 w-5 shrink-0" />
+                {!isCollapsed && <span className="truncate">設定</span>}
+              </Link>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent className="bg-black text-white border-transparent" side="right" sideOffset={10}>
+            <p>設定とヘルプ</p>
+          </TooltipContent>
+        </Tooltip>
       </div>
     </div>
   );

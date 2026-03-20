@@ -5,6 +5,7 @@ import { ClerkProvider, SignedIn, SignedOut } from "@clerk/nextjs";
 import { UserSync } from "@/components/auth/user-sync";
 import { Sidebar } from "@/components/sidebar";
 import { Toaster } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -39,17 +40,19 @@ export default function RootLayout({
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
-          <SignedIn>
-            <UserSync />
-          </SignedIn>
+          <TooltipProvider delayDuration={300}>
+            <SignedIn>
+              <UserSync />
+            </SignedIn>
 
-          <div className="flex min-h-screen">
-            <Sidebar />
-            <main className="flex-1 flex h-screen flex-col overflow-y-auto hide-scrollbar md:pl-[72px]">
-              {children}
-            </main>
-          </div>
-          <Toaster position="bottom-right" />
+            <div className="flex min-h-screen">
+              <Sidebar />
+              <main className="flex-1 flex h-screen flex-col overflow-y-auto hide-scrollbar md:pl-[72px]">
+                {children}
+              </main>
+            </div>
+            <Toaster position="bottom-right" />
+          </TooltipProvider>
         </body>
       </html>
     </ClerkProvider>
