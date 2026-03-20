@@ -12,7 +12,7 @@ export async function GET(req: Request) {
             where: { user_id: userId },
             orderBy: [
                 { is_pinned: 'desc' },
-                { update_at: 'desc' }
+                { created_at: 'desc' }
             ],
             include: {
                 branches: {
