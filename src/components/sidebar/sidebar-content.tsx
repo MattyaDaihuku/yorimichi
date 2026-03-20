@@ -1,10 +1,11 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Menu } from "lucide-react";
+import { Menu, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NewChatButton } from "./new-chat-button";
 import { ChatHistory } from "./chat-history";
+import Link from "next/link";
 
 interface SidebarContentProps {
   isCollapsed: boolean;
@@ -54,7 +55,26 @@ export function SidebarContent({ isCollapsed, toggleSidebar }: SidebarContentPro
         </div>
       </div>
 
-      <div className="pb-4" />
+      {/* 設定ボタン */}
+      <div className="p-4 mt-auto">
+        <Button
+          variant="ghost"
+          className={cn(
+            "w-full h-10 hover:bg-muted font-normal text-muted-foreground",
+            isCollapsed ? "px-0" : "px-4"
+          )}
+          asChild
+        >
+          <Link 
+            href="/settings" 
+            className="flex items-center justify-start gap-2"
+            onClick={handleClose}
+          >
+            <Settings className="h-5 w-5 shrink-0" />
+            {!isCollapsed && <span className="truncate">設定</span>}
+          </Link>
+        </Button>
+      </div>
     </div>
   );
 }

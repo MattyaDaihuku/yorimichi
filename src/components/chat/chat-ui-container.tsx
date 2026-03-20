@@ -160,6 +160,7 @@ const ChatPaneHelper = ({ pane, onRemove, chatId, reload, onPaneConfigUpdate, on
 
   const selectedModel = useModelStore((state) => state.selectedModel);
   const autoSentRef = useRef(false);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const handleSend = async (message: string) => {
     if (!pane.branchId || !chatData) return;
@@ -181,15 +182,28 @@ const ChatPaneHelper = ({ pane, onRemove, chatId, reload, onPaneConfigUpdate, on
       }
     }
 
-    await sendMessageWithStreaming({
-      chatId,
-      branchId: pane.branchId,
-      message,
-      model: selectedModel,
-      history: history as any,
-      reload,
-      setStreamingBlock,
-    });
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
+    try {
+      await sendMessageWithStreaming({
+        chatId,
+        branchId: pane.branchId,
+        message,
+        model: selectedModel,
+        history: history as any,
+        reload,
+        setStreamingBlock,
+        signal: controller.signal,
+      });
+    } finally {
+      abortControllerRef.current = null;
+    }
+  };
+
+  const handleStop = () => {
+    abortControllerRef.current?.abort();
+    abortControllerRef.current = null;
   };
 
   const handleEdit = async ({ blockId, message }: { blockId: string; message: string }) => {
@@ -349,6 +363,7 @@ const ChatPaneHelper = ({ pane, onRemove, chatId, reload, onPaneConfigUpdate, on
               streamingBlock={streamingBlock}
               onSend={handleSend}
               onEdit={handleEdit}
+              onStop={handleStop}
               onBranch={onBranch}
               onMerge={handleMerge}
               flexLayout={true}

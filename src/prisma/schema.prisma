@@ -18,6 +18,7 @@ model Users {
 
   // Relations
   chatlists Chatlist[]
+  api_keys  UserApiKey[]
 
   @@map("USERS")
 }
@@ -67,6 +68,7 @@ model Block {
   branch_id    String   @db.Uuid
   user_content String
   ai_content   String
+  is_stopped   Boolean  @default(false)
   created_at   DateTime @default(now()) @db.Timestamp
   update_at    DateTime @updatedAt @db.Timestamp
 
@@ -75,4 +77,20 @@ model Block {
   forked_branches Branches[] @relation("BlockFork") // このブロックから派生したブランチ一覧
 
   @@map("BLOCK")
+}
+
+model UserApiKey {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id        String   @db.VarChar
+  provider       String   @db.VarChar
+  encrypted_key  String   @db.Text
+  iv             String   @db.VarChar
+  auth_tag       String   @db.VarChar
+  created_at     DateTime @default(now()) @db.Timestamp
+  update_at      DateTime @updatedAt @db.Timestamp
+
+  user           Users    @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+
+  @@unique([user_id, provider])
+  @@map("USER_API_KEY")
 }

@@ -31,6 +31,7 @@ export function MainBranchView({
     const [streamingBlock, setStreamingBlock] = useState<StreamingBlock | null>(null);
     const [isInitialSending, setIsInitialSending] = useState(false);
     const autoSentRef = useRef(false);
+    const abortControllerRef = useRef<AbortController | null>(null);
     const chatData = useChatStore((state) => state.chatData);
     const selectedModel = useModelStore((state) => state.selectedModel);
 
@@ -47,15 +48,28 @@ export function MainBranchView({
             { role: "assistant" as const, content: block.ai_content },
         ]);
 
-        await sendMessageWithStreaming({
-            chatId,
-            branchId: branch.branch_id,
-            message,
-            model: selectedModel,
-            history,
-            reload,
-            setStreamingBlock,
-        });
+        const controller = new AbortController();
+        abortControllerRef.current = controller;
+
+        try {
+            await sendMessageWithStreaming({
+                chatId,
+                branchId: branch.branch_id,
+                message,
+                model: selectedModel,
+                history,
+                reload,
+                setStreamingBlock,
+                signal: controller.signal,
+            });
+        } finally {
+            abortControllerRef.current = null;
+        }
+    };
+
+    const handleStop = () => {
+        abortControllerRef.current?.abort();
+        abortControllerRef.current = null;
     };
 
     const handleEdit = async ({ blockId, message }: { blockId: string; message: string }) => {
@@ -153,6 +167,7 @@ export function MainBranchView({
                 streamingBlock={streamingBlock}
                 onSend={handleSend}
                 onEdit={handleEdit}
+                onStop={handleStop}
                 onBranch={handleBranch}
                 disabled={isInitialSending}
                 fixedInput

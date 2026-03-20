@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ChevronDown, Image as ImageIcon, Mic, Paperclip, Send, Plus } from "lucide-react";
+import { ChevronDown, Image as ImageIcon, Mic, Paperclip, Send, Square, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { AVAILABLE_MODELS } from "@/lib/ai-active-model";
 import { useModelStore } from "@/store/model-store";
+import { AVAILABLE_MODELS, type AiModel } from "@/lib/ai-active-model";
 import {
     Tooltip,
     TooltipContent,
@@ -23,6 +23,7 @@ type ChatComposerProps = {
     value: string;
     onChange: (value: string) => void;
     onSubmit: () => Promise<void>;
+    onStop?: () => void;
     placeholder?: string;
     disabled?: boolean;
     isSending?: boolean;
@@ -34,6 +35,7 @@ export function ChatComposer({
     value,
     onChange,
     onSubmit,
+    onStop,
     placeholder = "会話してみましょう",
     disabled = false,
     isSending = false,
@@ -43,6 +45,34 @@ export function ChatComposer({
     const canSubmit = !!value.trim() && !disabled && !isSending;
     const selectedModel = useModelStore((state) => state.selectedModel);
     const setSelectedModel = useModelStore((state) => state.setSelectedModel);
+
+    const [availableModels, setAvailableModels] = useState<AiModel[]>([]);
+
+    useEffect(() => {
+        fetch("/api/user/apikeys")
+            .then((res) => res.json())
+            .then((data) => {
+                if (data.keys) {
+                    const models = AVAILABLE_MODELS.filter((model: AiModel) => {
+                        if (model.startsWith("gpt-")) return !!data.keys.openai;
+                        if (model.startsWith("claude-")) return !!data.keys.anthropic;
+                        if (model.startsWith("gemini-") || model.startsWith("gemma-")) return !!data.keys.google;
+                        return false;
+                    });
+                    
+                    // APIキーが何も登録されていない場合は初期モデルをフォールバックとして1つだけ表示するか空にする
+                    setAvailableModels(models.length > 0 ? models : [AVAILABLE_MODELS[0]]);
+                }
+            })
+            .catch((err) => console.error("Failed to fetch API keys status:", err));
+    }, []);
+
+    useEffect(() => {
+        // availableModelsの一覧に現在の選択モデルが含まれていなければ、一番上のモデルに切り替える
+        if (availableModels.length > 0 && !availableModels.some(m => m === selectedModel)) {
+            setSelectedModel(availableModels[0]);
+        }
+    }, [availableModels, selectedModel, setSelectedModel]);
 
     return (
         <div className={className}>
@@ -145,7 +175,7 @@ export function ChatComposer({
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-[170px] bg-white z-50 rounded-xl shadow-lg border border-gray-200 p-1.5 flex flex-col gap-1">
-                                {AVAILABLE_MODELS.map((model) => {
+                                {availableModels.map((model) => {
                                     const isSelected = model === selectedModel;
 
                                     return (
@@ -164,20 +194,31 @@ export function ChatComposer({
                             </DropdownMenuContent>
                         </DropdownMenu>
 
-                        <Button
-                            onClick={() => {
-                                if (canSubmit) {
-                                    void onSubmit();
-                                }
-                            }}
-                            size="icon"
-                            className={`rounded-full transition-all ${canSubmit
-                                ? "bg-blue-600 hover:bg-blue-700 text-white"
-                                : "bg-gray-100 text-gray-400 hover:bg-gray-100 cursor-default"
-                                }`}
-                        >
-                            <Send className="h-4 w-4 rotate-45 -translate-x-[1px]" />
-                        </Button>
+                        {isSending && onStop ? (
+                            <Button
+                                onClick={onStop}
+                                size="icon"
+                                className="rounded-full transition-all bg-blue-50 hover:bg-blue-200 text-blue-600"
+                                aria-label="生成を停止"
+                            >
+                                <Square className="h-3.5 w-3.5 fill-current" />
+                            </Button>
+                        ) : (
+                            <Button
+                                onClick={() => {
+                                    if (canSubmit) {
+                                        void onSubmit();
+                                    }
+                                }}
+                                size="icon"
+                                className={`rounded-full transition-all ${canSubmit
+                                    ? "bg-blue-600 hover:bg-blue-700 text-white"
+                                    : "bg-gray-100 text-gray-400 hover:bg-gray-100 cursor-default"
+                                    }`}
+                            >
+                                <Send className="h-4 w-4 rotate-45 -translate-x-[1px]" />
+                            </Button>
+                        )}
                     </div>
                 </div>
             </div>

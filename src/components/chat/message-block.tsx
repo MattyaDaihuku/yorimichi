@@ -1,5 +1,6 @@
 "use client";
 
+
 import { lazy, memo, Suspense, useCallback, useState, useEffect, useRef } from "react";
 import { Bot, Copy, MessageCircleQuestionMark, Check, ChevronDown, ChevronUp, Pencil, RotateCcw } from "lucide-react";
 import ReactMarkdown from "react-markdown";
@@ -29,6 +30,7 @@ type BlockViewModel = {
     block_id: string;
     user_content: string;
     ai_content: string;
+    is_stopped?: boolean;
     created_at: string;
 };
 
@@ -511,6 +513,11 @@ export function MessageBlock({ block, connector, onBranch, onMerge, onEdit, isSt
                                     copiedTarget={copiedTarget}
                                     onCopy={copyToClipboard}
                                 />
+                                {block.is_stopped && !isStreaming && (
+                                    <div className="mb-2 italic text-muted-foreground/80">
+                                        この回答を停止しました
+                                    </div>
+                                )}
                                 {!isStreaming && (
                                     <div className="flex gap-2">
                                         <CopyButton
