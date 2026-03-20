@@ -1,7 +1,7 @@
 "use client";
 
 import { lazy, memo, Suspense, useCallback, useState, useEffect } from "react";
-import { Bot, Copy, MessageCircleQuestionMark, Check, ChevronDown, ChevronUp } from "lucide-react";
+import { Bot, Copy, MessageCircleQuestionMark, Check, ChevronDown, ChevronUp, Pencil } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { toast } from "sonner";
@@ -273,7 +273,7 @@ export function MessageBlock({ block, connector, onBranch, onMerge, onEdit, isSt
                 <>
                     <div className="sticky -top-2 z-20 ml-auto mr-2 w-fit max-w-[75%] rounded-[24px] bg-white/60 pl-2 pr-4 pt-4 pb-4 backdrop-blur-xl">
                         <div className="group flex items-start justify-end gap-3">
-                            <div className="flex translate-x-1 flex-col gap-3 opacity-100 transition-opacity">
+                            <div className="flex translate-x-1 items-center gap-2 opacity-100 transition-opacity">
                                 <CopyButton
                                     isCopied={copiedTarget === "user"}
                                     onCopy={() => void copyToClipboard(block.user_content, "user")}
@@ -281,6 +281,36 @@ export function MessageBlock({ block, connector, onBranch, onMerge, onEdit, isSt
                                     ariaLabel="Copy user message"
                                     className="h-10 w-10"
                                 />
+                                {!isStreaming && isLast && (
+                                    <TooltipProvider>
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
+                                                <Button
+                                                    variant="outline"
+                                                    size="icon-lg"
+                                                    onClick={() => setIsEditing(true)}
+                                                    disabled={isEditing || isSubmittingEdit}
+                                                    aria-label="Edit message"
+                                                >
+                                                    <Pencil className="h-4 w-4" />
+                                                </Button>
+                                            </TooltipTrigger>
+                                            <TooltipContent className="bg-black text-white border-transparent">
+                                                <p>編集する</p>
+                                            </TooltipContent>
+                                        </Tooltip>
+                                    </TooltipProvider>
+                                )}
+                                {isEditing && (
+                                    <Button
+                                        variant="outline"
+                                        size="icon-lg"
+                                        onClick={() => void handleSubmit()}
+                                        disabled={isSubmittingEdit || editText.trim().length === 0}
+                                    >
+                                        {isSubmittingEdit ? "..." : "送信"}
+                                    </Button>
+                                )}
                             </div>
 
                             <div className={`w-fit overflow-hidden rounded-4xl rounded-tr-sm bg-[#E6F0FF] pl-6 ${isLongMessage ? "pr-3" : "pr-6"} py-4 text-foreground/90 transition-all duration-200`}>
@@ -369,26 +399,6 @@ export function MessageBlock({ block, connector, onBranch, onMerge, onEdit, isSt
                                             ariaLabel="Copy AI message"
                                             className="h-10 w-10"
                                         />
-                                        {isLast && (
-                                            <Button
-                                                variant="outline"
-                                                size="icon-lg"
-                                                onClick={() => setIsEditing(true)}
-                                                disabled={isEditing || isSubmittingEdit}
-                                            >
-                                                ✏
-                                            </Button>
-                                        )}
-                                        {isEditing && (
-                                            <Button
-                                                variant="outline"
-                                                size="icon-lg"
-                                                onClick={() => void handleSubmit()}
-                                                disabled={isSubmittingEdit || editText.trim().length === 0}
-                                            >
-                                                {isSubmittingEdit ? "..." : "送信"}
-                                            </Button>
-                                        )}
                                     </div>
                                 )}
                             </div>
