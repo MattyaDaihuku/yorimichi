@@ -64,6 +64,13 @@ function normalizeAiError(error: unknown): { status: number; message: string } {
         };
     }
 
+    if (message.includes('api_key_not_found')) {
+        return {
+            status: 400,
+            message: 'APIキーが設定されていません。設定画面からAPIキーを登録してください。',
+        };
+    }
+
     return {
         status: typeof status === 'number' ? status : 500,
         message: defaultMessage,
@@ -72,25 +79,25 @@ function normalizeAiError(error: unknown): { status: number; message: string } {
 
 function getProviderAndModel(model: AiModel, keys?: ApiKeys) {
     if (model.startsWith('gpt-')) {
-        const apiKey = keys?.openai || process.env.NEXT_PUBLIC_TEMP_OPENAI_API_KEY;
+        const apiKey = keys?.openai;
         if (!apiKey) {
-            throw new Error('OpenAI APIキーが設定されていません。');
+            throw new Error('API_KEY_NOT_FOUND: OpenAI APIキーが設定されていません。設定画面から登録してください。');
         }
         return createOpenAI({ apiKey })(model);
     }
     
     if (model.startsWith('claude-')) {
-        const apiKey = keys?.anthropic || process.env.NEXT_PUBLIC_TEMP_ANTHROPIC_API_KEY;
+        const apiKey = keys?.anthropic;
         if (!apiKey) {
-            throw new Error('Anthropic APIキーが設定されていません。');
+            throw new Error('API_KEY_NOT_FOUND: Anthropic APIキーが設定されていません。設定画面から登録してください。');
         }
         return createAnthropic({ apiKey })(model);
     }
 
     // Default to Google
-    const apiKey = keys?.google || process.env.NEXT_PUBLIC_TEMP_GOOGLE_API_KEY;
+    const apiKey = keys?.google;
     if (!apiKey) {
-        throw new Error('Google APIキーが設定されていません。');
+        throw new Error('API_KEY_NOT_FOUND: Google APIキーが設定されていません。設定画面から登録してください。');
     }
     return createGoogleGenerativeAI({ apiKey })(model);
 }

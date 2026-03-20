@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getAuthUserId } from '@/lib/auth-utils';
-import { encryptApiKey } from '@/lib/encryption';
+import { encryptApiKey, decryptApiKey } from '@/lib/encryption';
 import { z } from 'zod';
 
 const postSchema = z.object({
@@ -18,12 +18,27 @@ export async function GET(req: Request) {
         }
 
         const keys = await prisma.userApiKey.findMany({
-            where: { user_id: userId },
-            select: { provider: true }
+            where: { user_id: userId }
         });
 
-        const configuredProviders = keys.map(k => k.provider);
-        return NextResponse.json({ configuredProviders });
+        const decryptedKeys: Record<string, string> = {
+            openai: "",
+            anthropic: "",
+            google: ""
+        };
+
+        for (const k of keys) {
+            try {
+                const plaintext = decryptApiKey(k.encrypted_key, k.iv, k.auth_tag);
+                if (k.provider === 'openai') decryptedKeys.openai = plaintext;
+                if (k.provider === 'anthropic') decryptedKeys.anthropic = plaintext;
+                if (k.provider === 'google') decryptedKeys.google = plaintext;
+            } catch (err) {
+                console.error(`Failed to decrypt key for provider ${k.provider}`, err);
+            }
+        }
+
+        return NextResponse.json({ keys: decryptedKeys });
     } catch(err) {
         console.error("[GET /api/user/apikeys]", err);
         return NextResponse.json({ error: "Failed to fetch API keys" }, { status: 500 });
@@ -55,11 +70,6 @@ export async function POST(req: Request) {
                     await tx.userApiKey.deleteMany({
                         where: { user_id: userId, provider }
                     });
-                    return;
-                }
-
-                // If UI sent placeholder dots, skip updating
-                if (keyVal.includes('••••') || keyVal.includes('****')) {
                     return;
                 }
 

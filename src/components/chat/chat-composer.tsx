@@ -50,11 +50,11 @@ export function ChatComposer({
         fetch("/api/user/apikeys")
             .then((res) => res.json())
             .then((data) => {
-                if (data.configuredProviders) {
+                if (data.keys) {
                     const models = AVAILABLE_MODELS.filter((model: AiModel) => {
-                        if (model.startsWith("gpt-")) return data.configuredProviders.includes("openai");
-                        if (model.startsWith("claude-")) return data.configuredProviders.includes("anthropic");
-                        if (model.startsWith("gemini-") || model.startsWith("gemma-")) return data.configuredProviders.includes("google");
+                        if (model.startsWith("gpt-")) return !!data.keys.openai;
+                        if (model.startsWith("claude-")) return !!data.keys.anthropic;
+                        if (model.startsWith("gemini-") || model.startsWith("gemma-")) return !!data.keys.google;
                         return false;
                     });
                     

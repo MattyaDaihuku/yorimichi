@@ -47,11 +47,11 @@ export default function SettingsPage() {
     fetch("/api/user/apikeys")
       .then((res) => res.json())
       .then((data) => {
-        if (data.configuredProviders) {
+        if (data.keys) {
           setKeys({
-            openai: data.configuredProviders.includes("openai") ? "••••••••••••••••••••••••••••••••" : "",
-            anthropic: data.configuredProviders.includes("anthropic") ? "••••••••••••••••••••••••••••••••" : "",
-            google: data.configuredProviders.includes("google") ? "••••••••••••••••••••••••••••••••" : "",
+            openai: data.keys.openai || "",
+            anthropic: data.keys.anthropic || "",
+            google: data.keys.google || "",
           });
         }
       })
