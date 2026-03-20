@@ -7,9 +7,17 @@ import { z } from "zod";
 // Type definitions to help with the recursive structure (internally)
 type BranchWithBlocks = Branches & { blocks: Block[] };
 
-const patchSchema = z.object({
-  is_pinned: z.boolean(),
-});
+const patchSchema = z
+  .object({
+    is_pinned: z.boolean().optional(),
+    chat_title: z.string().trim().min(1).max(255).optional(),
+  })
+  .refine(
+    (data) => data.is_pinned !== undefined || data.chat_title !== undefined,
+    {
+      message: "Either is_pinned or chat_title is required",
+    },
+  );
 
 export async function GET(
   req: Request,
@@ -104,8 +112,8 @@ export async function GET(
     }
 
     // 4. Construct Response Data (Only reachable nodes)
-    const branchMap: Record<string, any> = {};
-    const blockMap: Record<string, any> = {};
+    const branchMap: Record<string, unknown> = {};
+    const blockMap: Record<string, unknown> = {};
 
     for (const branch of allBranches) {
       if (!reachableBranchIds.has(branch.branch_id)) continue;
@@ -171,14 +179,22 @@ export async function PATCH(
       });
     }
 
+    const dataToUpdate: { is_pinned?: boolean; chat_title?: string } = {};
+
+    if (validation.data.is_pinned !== undefined) {
+      dataToUpdate.is_pinned = validation.data.is_pinned;
+    }
+
+    if (validation.data.chat_title !== undefined) {
+      dataToUpdate.chat_title = validation.data.chat_title;
+    }
+
     const updated = await prisma.chatlist.updateMany({
       where: {
         chat_id: chatId,
         user_id: userId,
       },
-      data: {
-        is_pinned: validation.data.is_pinned,
-      },
+      data: dataToUpdate,
     });
 
     if (updated.count === 0) {
@@ -187,7 +203,12 @@ export async function PATCH(
 
     return NextResponse.json({
       chat_id: chatId,
-      is_pinned: validation.data.is_pinned,
+      ...(validation.data.is_pinned !== undefined
+        ? { is_pinned: validation.data.is_pinned }
+        : {}),
+      ...(validation.data.chat_title !== undefined
+        ? { chat_title: validation.data.chat_title }
+        : {}),
     });
   } catch (error) {
     console.error("[CHAT_PATCH]", error);
