@@ -206,6 +206,52 @@ const ChatPaneHelper = ({ pane, onRemove, chatId, reload, onPaneConfigUpdate, on
     abortControllerRef.current = null;
   };
 
+  const handleEdit = async ({ blockId, message }: { blockId: string; message: string }) => {
+    if (!pane.branchId || !chatData) return;
+
+    const branchBlocks = Object.values(chatData.blocks)
+      .filter((block) => block.branch_id === pane.branchId)
+      .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+
+    const targetIndex = branchBlocks.findIndex((block) => block.block_id === blockId);
+    if (targetIndex === -1) {
+      throw new Error("編集対象のメッセージが見つかりませんでした。");
+    }
+
+    const previousBlock = targetIndex > 0 ? branchBlocks[targetIndex - 1] : null;
+    const branch = chatData.branches[pane.branchId];
+
+    let history: { role: "user" | "assistant"; content: string }[] = [];
+    if (previousBlock) {
+      history = getHistoryFromChatData(chatData, previousBlock.block_id);
+    } else if (branch?.parent_block_id) {
+      history = getHistoryFromChatData(chatData, branch.parent_block_id);
+    }
+
+    const revertRes = await fetch("/api/internal/message/revert", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ block_id: blockId }),
+    });
+
+    if (!revertRes.ok) {
+      const payload = await revertRes.json().catch(() => ({}));
+      throw new Error(payload.error || "メッセージの更新に失敗しました。");
+    }
+
+    await reload();
+
+    await sendMessageWithStreaming({
+      chatId,
+      branchId: pane.branchId,
+      message,
+      model: selectedModel,
+      history: history as any,
+      reload,
+      setStreamingBlock,
+    });
+  };
+
   useEffect(() => {
     if (pane.initialMessage && !autoSentRef.current && pane.branchId) {
       autoSentRef.current = true;
@@ -316,6 +362,7 @@ const ChatPaneHelper = ({ pane, onRemove, chatId, reload, onPaneConfigUpdate, on
               fixedOffsetClassName="relative left-auto right-auto top-auto bottom-auto"
               streamingBlock={streamingBlock}
               onSend={handleSend}
+              onEdit={handleEdit}
               onStop={handleStop}
               onBranch={onBranch}
               onMerge={handleMerge}

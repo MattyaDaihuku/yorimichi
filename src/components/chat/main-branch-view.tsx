@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { ChatDetailResponse } from "@/store/chat-store";
 import { ChatWindow } from "@/components/chat/chat-window";
-import { useChatStore } from "@/store/chat-store";
+import { getHistoryFromChatData, useChatStore } from "@/store/chat-store";
 import { sendMessageWithStreaming, type StreamingBlock } from "@/lib/chat-send";
 import { useModelStore } from "@/store/model-store";
 
@@ -72,6 +72,47 @@ export function MainBranchView({
         abortControllerRef.current = null;
     };
 
+    const handleEdit = async ({ blockId, message }: { blockId: string; message: string }) => {
+        const targetIndex = currentBranchBlocks.findIndex((block) => block.block_id === blockId);
+        if (targetIndex === -1) {
+            throw new Error("編集対象のメッセージが見つかりませんでした。");
+        }
+
+        const previousBlock = targetIndex > 0 ? currentBranchBlocks[targetIndex - 1] : null;
+        let history: { role: "user" | "assistant"; content: string }[] = [];
+
+        if (chatData) {
+            if (previousBlock) {
+                history = getHistoryFromChatData(chatData, previousBlock.block_id);
+            } else if (branch.parent_block_id) {
+                history = getHistoryFromChatData(chatData, branch.parent_block_id);
+            }
+        }
+
+        const revertRes = await fetch("/api/internal/message/revert", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ block_id: blockId }),
+        });
+
+        if (!revertRes.ok) {
+            const payload = await revertRes.json().catch(() => ({}));
+            throw new Error(payload.error || "メッセージの更新に失敗しました。");
+        }
+
+        await reload();
+
+        await sendMessageWithStreaming({
+            chatId,
+            branchId: branch.branch_id,
+            message,
+            model: selectedModel,
+            history,
+            reload,
+            setStreamingBlock,
+        });
+    };
+
     const handleBranch = (blockId: string) => {
         onSwitchToSubBranch(blockId);
     };
@@ -125,6 +166,7 @@ export function MainBranchView({
                 branchId={branch.branch_id}
                 streamingBlock={streamingBlock}
                 onSend={handleSend}
+                onEdit={handleEdit}
                 onStop={handleStop}
                 onBranch={handleBranch}
                 disabled={isInitialSending}

@@ -1,7 +1,8 @@
 "use client";
 
-import { lazy, memo, Suspense, useCallback, useState } from "react";
-import { Bot, Copy, MessageCircleQuestionMark, Check, ChevronDown, ChevronUp, CircleStop } from "lucide-react";
+
+import { lazy, memo, Suspense, useCallback, useState, useEffect, useRef } from "react";
+import { Bot, Copy, MessageCircleQuestionMark, Check, ChevronDown, ChevronUp, Pencil, RotateCcw } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { toast } from "sonner";
@@ -38,8 +39,10 @@ interface MessageBlockProps {
     connector: ConnectorConfig;
     onBranch?: (blockId: string) => void;
     onMerge?: (blockId: string) => void;
+    onEdit?: (params: { blockId: string; message: string }) => Promise<void>;
     isStreaming?: boolean;
     isCompact?: boolean;
+    isLast?: boolean;
 }
 
 interface AiMarkdownContentProps {
@@ -162,7 +165,157 @@ const AiMarkdownContent = memo(function AiMarkdownContent({
     );
 });
 
-export function MessageBlock({ block, connector, onBranch, onMerge, isStreaming = false, isCompact = false }: MessageBlockProps) {
+interface UserMessageDisplayProps {
+    userContent: string;
+    isLongMessage: boolean;
+    isExpanded: boolean;
+    onToggleExpanded: () => void;
+    copiedTarget: string | null;
+    onCopyUser: () => void;
+    isStreaming: boolean;
+    isLast: boolean;
+    isSubmittingEdit: boolean;
+    onStartEdit: () => void;
+}
+
+const UserMessageDisplay = memo(function UserMessageDisplay({
+    userContent,
+    isLongMessage,
+    isExpanded,
+    onToggleExpanded,
+    copiedTarget,
+    onCopyUser,
+    isStreaming,
+    isLast,
+    isSubmittingEdit,
+    onStartEdit,
+}: UserMessageDisplayProps) {
+    return (
+        <div className="group flex items-start justify-end gap-3">
+            <div className="flex translate-x-1 items-center gap-2 opacity-100 transition-opacity">
+                <CopyButton
+                    isCopied={copiedTarget === "user"}
+                    onCopy={onCopyUser}
+                    size="icon-lg"
+                    ariaLabel="Copy user message"
+                    className="h-10 w-10"
+                />
+                {!isStreaming && isLast && (
+                    <TooltipProvider>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button
+                                    variant="ghost"
+                                    size="icon-lg"
+                                    onClick={onStartEdit}
+                                    disabled={isSubmittingEdit}
+                                    aria-label="Edit message"
+                                    className="h-10 w-10 rounded-full p-0 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                                >
+                                    <Pencil className="h-4 w-4" />
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent className="bg-black text-white border-transparent">
+                                <p>編集する</p>
+                            </TooltipContent>
+                        </Tooltip>
+                    </TooltipProvider>
+                )}
+            </div>
+
+            <div className={`w-fit overflow-hidden rounded-4xl rounded-tr-sm bg-[#E6F0FF] pl-6 ${isLongMessage ? "pr-3" : "pr-6"} py-4 text-foreground/90 transition-all duration-200`}>
+                <div className="flex items-start gap-2">
+                    <p className={`whitespace-pre-wrap break-all text-sm leading-relaxed md:text-base ${!isExpanded && isLongMessage ? "line-clamp-2" : ""}`}>
+                        {userContent}
+                    </p>
+                    {isLongMessage && (
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={onToggleExpanded}
+                            className="-mt-1 h-10 w-10 shrink-0 rounded-full text-slate-500 hover:text-slate-900 toggle-ripple"
+                            data-expanded={isExpanded}
+                            aria-label={isExpanded ? "折りたたむ" : "もっと見る"}
+                        >
+                            {isExpanded ? (
+                                <ChevronUp className="h-4 w-4" />
+                            ) : (
+                                <ChevronDown className="h-4 w-4" />
+                            )}
+                        </Button>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+});
+
+interface UserMessageEditorProps {
+    editText: string;
+    isSubmittingEdit: boolean;
+    onChange: (value: string) => void;
+    onSubmit: () => void;
+    onCancel: () => void;
+    textareaRef: { current: HTMLTextAreaElement | null };
+}
+
+const UserMessageEditor = memo(function UserMessageEditor({
+    editText,
+    isSubmittingEdit,
+    onChange,
+    onSubmit,
+    onCancel,
+    textareaRef,
+}: UserMessageEditorProps) {
+    return (
+        <div className="flex w-full justify-end">
+            <div className="w-full max-w-[calc(100%-80px)] rounded-[24px] rounded-tr-sm bg-[#E6F0FF] px-4 py-4 text-foreground/90">
+                <div className="flex flex-col gap-3">
+                    <textarea
+                        ref={textareaRef}
+                        value={editText}
+                        onChange={(e) => onChange(e.target.value)}
+                        disabled={isSubmittingEdit}
+                        className="w-full resize-none overflow-hidden rounded-2xl border border-slate-300 bg-white px-3 py-2 text-sm leading-relaxed text-slate-900 outline-none ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-base"
+                        onKeyDown={(e) => {
+                            if (e.key === "Escape") {
+                                onCancel();
+                            }
+                            if (e.key === "Enter" && !e.shiftKey) {
+                                e.preventDefault();
+                                onSubmit();
+                            }
+                        }}
+                    />
+                    <div className="flex justify-end gap-6">
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={onCancel}
+                            disabled={isSubmittingEdit}
+                            aria-label="Cancel edit"
+                            className="h-9 rounded-full border border-transparent px-4 text-sm font-medium text-muted-foreground hover:border-gray-300 hover:bg-muted hover:text-foreground"
+                        >
+                            キャンセル
+                        </Button>
+                        <Button
+                            variant="default"
+                            size="sm"
+                            onClick={onSubmit}
+                            disabled={isSubmittingEdit || editText.trim().length === 0}
+                            aria-label="Submit edit"
+                            className="h-9 rounded-full bg-blue-600 px-6 text-sm font-medium text-white hover:bg-blue-700"
+                        >
+                            更新
+                        </Button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+});
+
+export function MessageBlock({ block, connector, onBranch, onMerge, onEdit, isStreaming = false, isCompact = false, isLast = false }: MessageBlockProps) {
     const [copiedTarget, setCopiedTarget] = useState<string | null>(null);
     const [hoveredConnectorAction, setHoveredConnectorAction] = useState<"return" | "branch" | null>(null);
     const [isExpanded, setIsExpanded] = useState(false);
@@ -187,6 +340,73 @@ export function MessageBlock({ block, connector, onBranch, onMerge, isStreaming 
     const hasAiContent = block.ai_content.trim().length > 0;
     const showThinking = isStreaming && !hasAiContent;
     const aiContent = showThinking ? "Thinking..." : block.ai_content;
+
+    const [isEditing, setIsEditing] = useState(false);
+    const [editText, setEditText] = useState(block.user_content);
+    const [originalText, setOriginalText] = useState(block.user_content);
+    const [isSubmittingEdit, setIsSubmittingEdit] = useState(false);
+    const editTextareaRef = useRef<HTMLTextAreaElement | null>(null);
+
+    useEffect(() => {
+        setEditText(block.user_content);
+        setOriginalText(block.user_content);
+    }, [block.user_content]);
+
+    useEffect(() => {
+        if (!isEditing || !editTextareaRef.current) return;
+        editTextareaRef.current.style.height = "0px";
+        editTextareaRef.current.style.height = `${editTextareaRef.current.scrollHeight}px`;
+    }, [editText, isEditing]);
+
+    const handleSubmit = async () => {
+        const nextText = editText.trim();
+        if (!nextText || !onEdit) {
+            setIsEditing(false);
+            return;
+        }
+
+        if (nextText === originalText.trim()) {
+            setIsEditing(false);
+            return;
+        }
+
+        setIsSubmittingEdit(true);
+        try {
+            await onEdit({ blockId: block.block_id, message: nextText });
+            setIsEditing(false);
+        } catch (error) {
+            const message =
+                error instanceof Error && error.message
+                    ? error.message
+                    : "メッセージの再生成に失敗しました。";
+            toast.error(message);
+        } finally {
+            setIsSubmittingEdit(false);
+        }
+    };
+
+    const handleCancelEdit = () => {
+        setEditText(originalText);
+        setIsEditing(false);
+    };
+
+    const handleRegenerate = async () => {
+        const message = block.user_content.trim();
+        if (!message || !onEdit) return;
+
+        setIsSubmittingEdit(true);
+        try {
+            await onEdit({ blockId: block.block_id, message });
+        } catch (error) {
+            const messageText =
+                error instanceof Error && error.message
+                    ? error.message
+                    : "再生成に失敗しました。";
+            toast.error(messageText);
+        } finally {
+            setIsSubmittingEdit(false);
+        }
+    };
 
     const copyToClipboard = useCallback(async (text: string, target: string) => {
         try {
@@ -233,43 +453,33 @@ export function MessageBlock({ block, connector, onBranch, onMerge, isStreaming 
             )}>
                 {/* Sticky user prompt — liquid glass */}
                 <>
-                    <div className="sticky -top-2 z-20 ml-auto mr-2 w-fit max-w-[75%] rounded-[24px] bg-white/60 pl-2 pr-4 pt-4 pb-4 backdrop-blur-xl">
-                        <div className="group flex items-start justify-end gap-3">
-                            <div className="flex translate-x-1 flex-col gap-3 opacity-100 transition-opacity">
-                                <CopyButton
-                                    isCopied={copiedTarget === "user"}
-                                    onCopy={() => void copyToClipboard(block.user_content, "user")}
-                                    size="icon-lg"
-                                    ariaLabel="Copy user message"
-                                    className="h-10 w-10"
-                                />
-                            </div>
-
-                            <div className={`w-fit overflow-hidden rounded-4xl rounded-tr-sm bg-[#E6F0FF] pl-6 ${isLongMessage ? "pr-3" : "pr-6"} py-4 text-foreground/90 transition-all duration-200`}>
-                                <div className="flex items-start gap-2">
-                                    <p className={`whitespace-pre-wrap break-all text-sm leading-relaxed md:text-base ${!isExpanded && isLongMessage ? "line-clamp-2" : ""
-                                        }`}>
-                                        {block.user_content}
-                                    </p>
-                                    {isLongMessage && (
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            onClick={() => setIsExpanded(!isExpanded)}
-                                            className="-mt-1 h-10 w-10 shrink-0 rounded-full text-slate-500 hover:text-slate-900 toggle-ripple"
-                                            data-expanded={isExpanded}
-                                            aria-label={isExpanded ? "折りたたむ" : "もっと見る"}
-                                        >
-                                            {isExpanded ? (
-                                                <ChevronUp className="h-4 w-4" />
-                                            ) : (
-                                                <ChevronDown className="h-4 w-4" />
-                                            )}
-                                        </Button>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
+                    <div className={cn(
+                        "sticky -top-2 z-20 ml-auto mr-2 rounded-[24px] bg-white/60 pl-2 pr-4 pt-4 pb-4 backdrop-blur-xl",
+                        isEditing ? "w-full max-w-none" : "w-fit max-w-[75%]"
+                    )}>
+                        {isEditing ? (
+                            <UserMessageEditor
+                                editText={editText}
+                                isSubmittingEdit={isSubmittingEdit}
+                                onChange={setEditText}
+                                onSubmit={() => void handleSubmit()}
+                                onCancel={handleCancelEdit}
+                                textareaRef={editTextareaRef}
+                            />
+                        ) : (
+                            <UserMessageDisplay
+                                userContent={block.user_content}
+                                isLongMessage={isLongMessage}
+                                isExpanded={isExpanded}
+                                onToggleExpanded={() => setIsExpanded(!isExpanded)}
+                                copiedTarget={copiedTarget}
+                                onCopyUser={() => void copyToClipboard(block.user_content, "user")}
+                                isStreaming={isStreaming}
+                                isLast={isLast}
+                                isSubmittingEdit={isSubmittingEdit}
+                                onStartEdit={() => setIsEditing(true)}
+                            />
+                        )}
                     </div>
 
                     {/* AI response */}
@@ -309,7 +519,7 @@ export function MessageBlock({ block, connector, onBranch, onMerge, isStreaming 
                                     </div>
                                 )}
                                 {!isStreaming && (
-                                    <div className="flex items-center gap-2">
+                                    <div className="flex gap-2">
                                         <CopyButton
                                             isCopied={copiedTarget === "ai"}
                                             onCopy={() => void copyToClipboard(block.ai_content, "ai")}
@@ -317,6 +527,28 @@ export function MessageBlock({ block, connector, onBranch, onMerge, isStreaming 
                                             ariaLabel="Copy AI message"
                                             className="h-10 w-10"
                                         />
+                                        {!isEditing && isLast && onEdit && (
+                                            <TooltipProvider>
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon-lg"
+                                                            type="button"
+                                                            aria-label="Regenerate message"
+                                                            className="h-10 w-10 rounded-full p-0 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                                                            onClick={() => void handleRegenerate()}
+                                                            disabled={isSubmittingEdit}
+                                                        >
+                                                            <RotateCcw className="h-4 w-4" />
+                                                        </Button>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent className="bg-black text-white border-transparent">
+                                                        <p>やりなおす</p>
+                                                    </TooltipContent>
+                                                </Tooltip>
+                                            </TooltipProvider>
+                                        )}
                                     </div>
                                 )}
                             </div>

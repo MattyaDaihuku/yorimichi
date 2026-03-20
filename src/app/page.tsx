@@ -21,6 +21,7 @@ import {
 export default function Home() {
   const [input, setInput] = useState("");
   const [isSending, setIsSending] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
   const [errorOpen, setErrorOpen] = useState(false);
   const [errorCode, setErrorCode] = useState<number | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
@@ -46,6 +47,10 @@ export default function Home() {
 
     return { parsedCode, parsedMessage };
   };
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   useEffect(() => {
     const raw = sessionStorage.getItem("chat-init-error");
@@ -202,7 +207,7 @@ export default function Home() {
           {/* 挨拶エリア */}
           <div className="space-y-0">
             <h1 className="text-3xl md:text-4xl leading-[1.2] font-medium tracking-tight">
-              {!isLoaded ? (
+              {!isMounted || !isLoaded ? (
                 <span className="inline-flex h-[1.2em] items-center">
                   <Spinner className="block h-8 w-8" />
                 </span>
