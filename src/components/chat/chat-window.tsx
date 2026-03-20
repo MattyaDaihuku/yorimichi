@@ -30,6 +30,7 @@ type ChatWindowProps = {
     onBranch?: (blockId: string) => void;
     onMerge?: (blockId: string) => void;
     onSend: (message: string) => Promise<void>;
+    onStop?: () => void;
     inputPlaceholder?: string;
     inputAlwaysBorder?: boolean;
     disabled?: boolean;
@@ -47,6 +48,7 @@ export function ChatWindow({
     onBranch,
     onMerge,
     onSend,
+    onStop,
     inputPlaceholder = "会話してみましょう",
     inputAlwaysBorder = true,
     disabled = false,
@@ -310,9 +312,10 @@ export function ChatWindow({
                                         value={input}
                                         onChange={setInput}
                                         onSubmit={send}
+                                        onStop={onStop}
                                         placeholder={inputPlaceholder}
                                         disabled={disabled}
-                                        isSending={isSending}
+                                        isSending={isSending || !!streamingBlock}
                                         alwaysBorder={inputAlwaysBorder}
                                     />
                                 </div>
@@ -341,9 +344,10 @@ export function ChatWindow({
                                     value={input}
                                     onChange={setInput}
                                     onSubmit={send}
+                                    onStop={onStop}
                                     placeholder={inputPlaceholder}
                                     disabled={disabled}
-                                    isSending={isSending}
+                                    isSending={isSending || !!streamingBlock}
                                     alwaysBorder={inputAlwaysBorder}
                                 />
                             </div>

@@ -21,6 +21,7 @@ type SendMessageParams = {
     history: ChatHistoryItem[];
     reload: () => Promise<void>;
     setStreamingBlock: (value: StreamingBlock | null | ((prev: StreamingBlock | null) => StreamingBlock | null)) => void;
+    signal?: AbortSignal;
 };
 
 export async function sendMessageWithStreaming({
@@ -31,6 +32,7 @@ export async function sendMessageWithStreaming({
     history,
     reload,
     setStreamingBlock,
+    signal,
 }: SendMessageParams): Promise<void> {
     const blockId = crypto.randomUUID();
     useChatStore.getState().setCurrentIds({ blockId });
@@ -56,6 +58,7 @@ export async function sendMessageWithStreaming({
                 model,
                 history,
             }),
+            signal,
         });
 
         if (!res.ok) {
@@ -123,7 +126,16 @@ export async function sendMessageWithStreaming({
         await reload();
         setStreamingBlock(null);
     } catch (error) {
+        // User pressed Stop button — keep streaming block visible, reload, then clear
+        if (error instanceof DOMException && error.name === 'AbortError') {
+            await new Promise((resolve) => setTimeout(resolve, 300));
+            await reload();
+            setStreamingBlock(null);
+            return;
+        }
+
         setStreamingBlock(null);
+
         try {
             await fetch("/api/internal/message/revert", {
                 method: "POST",

@@ -68,6 +68,7 @@ model Block {
   branch_id    String   @db.Uuid
   user_content String
   ai_content   String
+  is_stopped   Boolean  @default(false)
   created_at   DateTime @default(now()) @db.Timestamp
   update_at    DateTime @updatedAt @db.Timestamp
 
