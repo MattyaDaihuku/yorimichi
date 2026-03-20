@@ -192,14 +192,25 @@ const UserMessageDisplay = memo(function UserMessageDisplay({
 }: UserMessageDisplayProps) {
     return (
         <div className="group flex items-start justify-end gap-3">
-            <div className="flex translate-x-1 items-center gap-2 opacity-100 transition-opacity">
-                <CopyButton
-                    isCopied={copiedTarget === "user"}
-                    onCopy={onCopyUser}
-                    size="icon-lg"
-                    ariaLabel="Copy user message"
-                    className="h-10 w-10"
-                />
+            <div className="flex translate-x-1 items-center gap-0.5 opacity-100 transition-opacity">
+                <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <span className="inline-flex">
+                                <CopyButton
+                                    isCopied={copiedTarget === "user"}
+                                    onCopy={onCopyUser}
+                                    size="icon-lg"
+                                    ariaLabel="Copy user message"
+                                    className="h-10 w-10"
+                                />
+                            </span>
+                        </TooltipTrigger>
+                        <TooltipContent className="bg-black text-white border-transparent">
+                            <p>コピーする</p>
+                        </TooltipContent>
+                    </Tooltip>
+                </TooltipProvider>
                 {!isStreaming && isLast && (
                     <TooltipProvider>
                         <Tooltip>
@@ -253,6 +264,7 @@ const UserMessageDisplay = memo(function UserMessageDisplay({
 interface UserMessageEditorProps {
     editText: string;
     isSubmittingEdit: boolean;
+    isSubmitDisabled: boolean;
     onChange: (value: string) => void;
     onSubmit: () => void;
     onCancel: () => void;
@@ -262,6 +274,7 @@ interface UserMessageEditorProps {
 const UserMessageEditor = memo(function UserMessageEditor({
     editText,
     isSubmittingEdit,
+    isSubmitDisabled,
     onChange,
     onSubmit,
     onCancel,
@@ -283,7 +296,9 @@ const UserMessageEditor = memo(function UserMessageEditor({
                             }
                             if (e.key === "Enter" && !e.shiftKey) {
                                 e.preventDefault();
-                                onSubmit();
+                                if (!isSubmitDisabled) {
+                                    onSubmit();
+                                }
                             }
                         }}
                     />
@@ -294,7 +309,7 @@ const UserMessageEditor = memo(function UserMessageEditor({
                             onClick={onCancel}
                             disabled={isSubmittingEdit}
                             aria-label="Cancel edit"
-                            className="h-9 rounded-full border border-transparent px-4 text-sm font-medium text-muted-foreground hover:border-gray-300 hover:bg-muted hover:text-foreground"
+                            className="h-9 rounded-full bg-transparent px-4 text-sm font-medium text-muted-foreground hover:bg-muted/60 hover:text-foreground"
                         >
                             キャンセル
                         </Button>
@@ -302,9 +317,14 @@ const UserMessageEditor = memo(function UserMessageEditor({
                             variant="default"
                             size="sm"
                             onClick={onSubmit}
-                            disabled={isSubmittingEdit || editText.trim().length === 0}
+                            disabled={isSubmitDisabled}
                             aria-label="Submit edit"
-                            className="h-9 rounded-full bg-blue-600 px-6 text-sm font-medium text-white hover:bg-blue-700"
+                            className={cn(
+                                "h-9 rounded-full px-6 text-sm font-medium disabled:opacity-100",
+                                isSubmitDisabled
+                                    ? "bg-gray-300 text-gray-400 cursor-not-allowed"
+                                    : "bg-blue-600 text-white hover:bg-blue-700"
+                            )}
                         >
                             更新
                         </Button>
@@ -346,6 +366,8 @@ export function MessageBlock({ block, connector, onBranch, onMerge, onEdit, isSt
     const [originalText, setOriginalText] = useState(block.user_content);
     const [isSubmittingEdit, setIsSubmittingEdit] = useState(false);
     const editTextareaRef = useRef<HTMLTextAreaElement | null>(null);
+    const isSubmitDisabled =
+        isSubmittingEdit || editText.trim().length === 0 || editText.trim() === originalText.trim();
 
     useEffect(() => {
         setEditText(block.user_content);
@@ -461,6 +483,7 @@ export function MessageBlock({ block, connector, onBranch, onMerge, onEdit, isSt
                             <UserMessageEditor
                                 editText={editText}
                                 isSubmittingEdit={isSubmittingEdit}
+                                isSubmitDisabled={isSubmitDisabled}
                                 onChange={setEditText}
                                 onSubmit={() => void handleSubmit()}
                                 onCancel={handleCancelEdit}
@@ -519,14 +542,25 @@ export function MessageBlock({ block, connector, onBranch, onMerge, onEdit, isSt
                                     </div>
                                 )}
                                 {!isStreaming && (
-                                    <div className="flex gap-2">
-                                        <CopyButton
-                                            isCopied={copiedTarget === "ai"}
-                                            onCopy={() => void copyToClipboard(block.ai_content, "ai")}
-                                            size="icon-lg"
-                                            ariaLabel="Copy AI message"
-                                            className="h-10 w-10"
-                                        />
+                                    <div className="flex gap-0.5">
+                                        <TooltipProvider>
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    <span className="inline-flex">
+                                                        <CopyButton
+                                                            isCopied={copiedTarget === "ai"}
+                                                            onCopy={() => void copyToClipboard(block.ai_content, "ai")}
+                                                            size="icon-lg"
+                                                            ariaLabel="Copy AI message"
+                                                            className="h-10 w-10"
+                                                        />
+                                                    </span>
+                                                </TooltipTrigger>
+                                                <TooltipContent className="bg-black text-white border-transparent">
+                                                    <p>コピーする</p>
+                                                </TooltipContent>
+                                            </Tooltip>
+                                        </TooltipProvider>
                                         {!isEditing && isLast && onEdit && (
                                             <TooltipProvider>
                                                 <Tooltip>
