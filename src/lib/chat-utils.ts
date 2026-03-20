@@ -1,8 +1,16 @@
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
+import { createOpenAI } from '@ai-sdk/openai';
+import { createAnthropic } from '@ai-sdk/anthropic';
 import { streamText } from 'ai';
 import prisma from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 import { ACTIVE_MODEL, type AiModel } from './ai-active-model';
+
+type ApiKeys = {
+    google?: string;
+    openai?: string;
+    anthropic?: string;
+};
 
 export type ChatMessage = {
     role: 'user' | 'assistant' | 'system';
@@ -17,12 +25,7 @@ export class RateLimitError extends Error {
     }
 }
 
-const apiKeys = [
-    process.env.GOOGLE_GENERATIVE_AI_API_KEY,
-    ...Array.from({ length: 19 }, (_, i) => process.env[`GOOGLE_GENERATIVE_AI_API_KEY_${i + 2}`]),
-].filter(Boolean) as string[];
 
-let currentKeyIndex = 0;
 
 function normalizeAiError(error: unknown): { status: number; message: string } {
     const defaultMessage = 'AI応答の取得に失敗しました。しばらく時間をおいて再度お試しください。';
@@ -61,28 +64,71 @@ function normalizeAiError(error: unknown): { status: number; message: string } {
         };
     }
 
+    if (message.includes('api_key_not_found')) {
+        return {
+            status: 400,
+            message: 'APIキーが設定されていません。設定画面からAPIキーを登録してください。',
+        };
+    }
+
+    if (status === 401 || message.includes('unauthorized') || message.includes('invalid api key')) {
+        return {
+            status: 401,
+            message: 'APIキーが正しくないか、無効になっています。設定画面から正しいAPIキーを再登録してください。',
+        };
+    }
+
+    if (status === 403 || message.includes('forbidden') || message.includes('permission denied')) {
+        return {
+            status: 403,
+            message: 'このモデルを利用する権限がありません（無料枠の制限やAPI側の設定を確認してください）。',
+        };
+    }
+
+    if (status === 404 || message.includes('model not found')) {
+        return {
+            status: 404,
+            message: '指定されたモデルは存在しないか、現在プロバイダ側で提供されていません。',
+        };
+    }
+
     return {
         status: typeof status === 'number' ? status : 500,
         message: defaultMessage,
     };
 }
 
-function getGoogleProvider() {
-    if (apiKeys.length === 0) {
-        throw new Error('No Google API keys found in environment variables.');
+function getProviderAndModel(model: AiModel, keys?: ApiKeys) {
+    if (model.startsWith('gpt-')) {
+        const apiKey = keys?.openai;
+        if (!apiKey) {
+            throw new Error('API_KEY_NOT_FOUND: OpenAI APIキーが設定されていません。設定画面から登録してください。');
+        }
+        return createOpenAI({ apiKey })(model);
+    }
+    
+    if (model.startsWith('claude-')) {
+        const apiKey = keys?.anthropic;
+        if (!apiKey) {
+            throw new Error('API_KEY_NOT_FOUND: Anthropic APIキーが設定されていません。設定画面から登録してください。');
+        }
+        return createAnthropic({ apiKey })(model);
     }
 
-    const selectedKey = apiKeys[currentKeyIndex];
-    currentKeyIndex = (currentKeyIndex + 1) % apiKeys.length;
-
-    return createGoogleGenerativeAI({ apiKey: selectedKey });
+    // Default to Google
+    const apiKey = keys?.google;
+    if (!apiKey) {
+        throw new Error('API_KEY_NOT_FOUND: Google APIキーが設定されていません。設定画面から登録してください。');
+    }
+    return createGoogleGenerativeAI({ apiKey })(model);
 }
 
 export async function processChatInteraction(
     branchId: string,
     messages: ChatMessage[],
     blockId?: string,
-    model: AiModel = ACTIVE_MODEL
+    model: AiModel = ACTIVE_MODEL,
+    apiKeys?: ApiKeys
 ) {
     try {
         const lastUserMessage = messages[messages.length - 1];
@@ -90,10 +136,10 @@ export async function processChatInteraction(
             console.error('Last message must be from user');
         }
 
-        const google = getGoogleProvider();
+        const providerModel = getProviderAndModel(model, apiKeys);
 
         const result = streamText({
-            model: google(model),
+            model: providerModel,
             messages,
             onFinish: async ({ text, finishReason }) => {
                 try {
