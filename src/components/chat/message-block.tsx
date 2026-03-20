@@ -1,7 +1,7 @@
 "use client";
 
 import { lazy, memo, Suspense, useCallback, useState, useEffect, useRef } from "react";
-import { Bot, Copy, MessageCircleQuestionMark, Check, ChevronDown, ChevronUp, Pencil } from "lucide-react";
+import { Bot, Copy, MessageCircleQuestionMark, Check, ChevronDown, ChevronUp, Pencil, RotateCcw } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { toast } from "sonner";
@@ -388,6 +388,24 @@ export function MessageBlock({ block, connector, onBranch, onMerge, onEdit, isSt
         setIsEditing(false);
     };
 
+    const handleRegenerate = async () => {
+        const message = block.user_content.trim();
+        if (!message || !onEdit) return;
+
+        setIsSubmittingEdit(true);
+        try {
+            await onEdit({ blockId: block.block_id, message });
+        } catch (error) {
+            const messageText =
+                error instanceof Error && error.message
+                    ? error.message
+                    : "再生成に失敗しました。";
+            toast.error(messageText);
+        } finally {
+            setIsSubmittingEdit(false);
+        }
+    };
+
     const copyToClipboard = useCallback(async (text: string, target: string) => {
         try {
             await navigator.clipboard.writeText(text);
@@ -502,6 +520,28 @@ export function MessageBlock({ block, connector, onBranch, onMerge, onEdit, isSt
                                             ariaLabel="Copy AI message"
                                             className="h-10 w-10"
                                         />
+                                        {!isEditing && isLast && onEdit && (
+                                            <TooltipProvider>
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon-lg"
+                                                            type="button"
+                                                            aria-label="Regenerate message"
+                                                            className="h-10 w-10 rounded-full p-0 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                                                            onClick={() => void handleRegenerate()}
+                                                            disabled={isSubmittingEdit}
+                                                        >
+                                                            <RotateCcw className="h-4 w-4" />
+                                                        </Button>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent className="bg-black text-white border-transparent">
+                                                        <p>やりなおす</p>
+                                                    </TooltipContent>
+                                                </Tooltip>
+                                            </TooltipProvider>
+                                        )}
                                     </div>
                                 )}
                             </div>
