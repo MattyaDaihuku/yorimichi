@@ -1,12 +1,28 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import useSWR, { useSWRConfig } from "swr";
 import { useUser, useClerk } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
-import { Clock, Pin } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { EllipsisVertical, Pin, Trash2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Chatlist } from "@/generated/prisma"; // 型だけインポート
 import { cn } from "@/lib/utils";
 
@@ -15,9 +31,7 @@ type SerializedChatlist = Omit<Chatlist, "created_at" | "update_at"> & {
   update_at: string;
 };
 
-const fetcher = async (
-  url: string
-): Promise<SerializedChatlist[]> => {
+const fetcher = async (url: string): Promise<SerializedChatlist[]> => {
   const res = await fetch(url);
   if (!res.ok) throw new Error("Failed to fetch");
   return res.json();
@@ -27,6 +41,9 @@ export function ChatHistory({ onClickItem }: { onClickItem?: () => void }) {
   const { user, isLoaded: isUserLoaded } = useUser();
   const { openSignIn } = useClerk();
   const pathname = usePathname();
+  const router = useRouter();
+  const [openMenuChatId, setOpenMenuChatId] = useState<string | null>(null);
+  const [deletingChatId, setDeletingChatId] = useState<string | null>(null);
   const previousPathname = useRef(pathname);
   const { cache } = useSWRConfig();
   const key = isUserLoaded && user ? "/api/internal/chat/list" : null;
@@ -61,6 +78,29 @@ export function ChatHistory({ onClickItem }: { onClickItem?: () => void }) {
     }
   };
 
+  const deleteChat = async (chatId: string) => {
+    try {
+      const isCurrentChatPage = pathname === `/chat/${chatId}`;
+      const res = await fetch(`/api/internal/chat/${chatId}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!res.ok) throw new Error("Failed to delete chat");
+      setDeletingChatId(null);
+      if (isCurrentChatPage) {
+        router.replace("/");
+        onClickItem?.();
+      }
+      await mutate();
+    } catch (error) {
+      console.error(error);
+      setDeletingChatId(null);
+    }
+  };
+
   return (
     <div className="relative h-full w-full min-w-0">
       <div className="pointer-events-none absolute top-0 left-0 right-0 z-10 h-8 bg-gradient-to-b from-[#E9EEF6] to-transparent" />
@@ -76,7 +116,7 @@ export function ChatHistory({ onClickItem }: { onClickItem?: () => void }) {
                 key={chat.chat_id}
                 className={cn(
                   "grid h-10 w-full min-w-0 max-w-full grid-cols-[minmax(0,1fr)_auto] items-center rounded-full hover:bg-[#DDE3EA] group transition-colors",
-                  pathname === `/chat/${chat.chat_id}` && "bg-[#DDE3EA]"
+                  pathname === `/chat/${chat.chat_id}` && "bg-[#DDE3EA]",
                 )}
               >
                 <Link
@@ -90,57 +130,105 @@ export function ChatHistory({ onClickItem }: { onClickItem?: () => void }) {
                     </span>
                   </div>
                 </Link>
-                <button
-                  type="button"
-                  aria-label={chat.is_pinned ? "Unpin chat" : "Pin chat"}
-                  className={cn(
-                    "mr-2 shrink-0 rounded p-1 text-muted-foreground hover:text-foreground",
-                    chat.is_pinned
-                      ? "opacity-100"
-                      : "opacity-0 group-hover:opacity-100 focus-visible:opacity-100"
-                  )}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    void togglePin(chat.chat_id, !chat.is_pinned);
+                <DropdownMenu
+                  open={openMenuChatId === chat.chat_id}
+                  onOpenChange={(open) => {
+                    setOpenMenuChatId(open ? chat.chat_id : null);
                   }}
                 >
-                  <Pin
-                    className={cn(
-                      "h-4 w-4",
-                      chat.is_pinned
-                        ? "text-primary fill-current"
-                        : "group-hover:text-primary"
-                    )}
-                  />
-                </button>
+                  <div className="relative mr-2 h-8 w-8 shrink-0">
+                    <div
+                      className={cn(
+                        "pointer-events-none absolute inset-0 flex items-center justify-center text-primary transition-opacity",
+                        chat.is_pinned && openMenuChatId !== chat.chat_id
+                          ? "opacity-100 group-hover:opacity-0"
+                          : "opacity-0",
+                      )}
+                    >
+                      <Pin className="h-4 w-4 fill-current" />
+                    </div>
+                    <DropdownMenuTrigger asChild>
+                      <button
+                        type="button"
+                        aria-label="Chat actions"
+                        className={cn(
+                          "absolute inset-0 flex items-center justify-center rounded-full p-1 text-muted-foreground transition-opacity hover:bg-[#D4DBE3] hover:text-foreground",
+                          "opacity-0 group-hover:opacity-100 focus-visible:opacity-100 data-[state=open]:opacity-100",
+                        )}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                        }}
+                      >
+                        <EllipsisVertical className="h-4 w-4" />
+                      </button>
+                    </DropdownMenuTrigger>
+                  </div>
+                  <DropdownMenuContent
+                    align="end"
+                    className="w-40 rounded-xl border border-gray-200 bg-white p-1.5 shadow-lg"
+                  >
+                    <DropdownMenuItem
+                      className="cursor-pointer rounded-md px-3 py-2 text-sm text-gray-700 focus:bg-gray-50"
+                      onSelect={() => {
+                        setOpenMenuChatId(null);
+                        void togglePin(chat.chat_id, !chat.is_pinned);
+                      }}
+                    >
+                      <Pin
+                        className={cn(
+                          "h-4 w-4",
+                          chat.is_pinned && "fill-current text-primary",
+                        )}
+                      />
+                      <span>
+                        {chat.is_pinned ? "ピン留めを解除" : "ピン留めする"}
+                      </span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="cursor-pointer rounded-md px-3 py-2 text-sm text-gray-700 focus:bg-gray-50"
+                      onSelect={() => {
+                        setOpenMenuChatId(null);
+                        setDeletingChatId(chat.chat_id);
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      <span>会話を削除する</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             ))
           ) : (
             <div className="flex flex-col items-center justify-center py-8 px-4 text-center space-y-4 bg-[#DDE3EA] rounded-2xl border border-gray-200/50 mx-2 mt-2">
               <p className="text-sm text-muted-foreground leading-relaxed">
-                ログインすることでチャットの利用と<br />履歴の保存が可能になります</p>
+                ログインすることでチャットの利用と
+                <br />
+                履歴の保存が可能になります
+              </p>
               <Button
                 variant="outline"
                 size="sm"
                 className="w-full h-9 rounded-full text-xs bg-white border-gray-200 transition-colors"
-                onClick={() => openSignIn({
-                  appearance: {
-                    elements: {
-                      modalBackdrop: {
-                        backgroundColor: "rgba(0, 0, 0, 0.4)",
-                      },
-                      modalCloseButton: {
-                        outline: "none",
-                        boxShadow: "none",
-                        "&:focus": {
+                onClick={() =>
+                  openSignIn({
+                    appearance: {
+                      elements: {
+                        modalBackdrop: {
+                          backgroundColor: "rgba(0, 0, 0, 0.4)",
+                        },
+                        modalCloseButton: {
                           outline: "none",
                           boxShadow: "none",
-                        }
-                      }
-                    }
-                  }
-                })}
+                          "&:focus": {
+                            outline: "none",
+                            boxShadow: "none",
+                          },
+                        },
+                      },
+                    },
+                  })
+                }
               >
                 ログイン
               </Button>
@@ -148,6 +236,35 @@ export function ChatHistory({ onClickItem }: { onClickItem?: () => void }) {
           )}
         </div>
       </div>
+
+      <AlertDialog
+        open={deletingChatId !== null}
+        onOpenChange={(open) => {
+          if (!open) setDeletingChatId(null);
+        }}
+      >
+        <AlertDialogContent className="min-w-0 w-[400px] sm:max-w-[400px]">
+          <AlertDialogHeader>
+            <AlertDialogTitle>会話削除の確認</AlertDialogTitle>
+            <AlertDialogDescription>
+              本当にこの会話を削除しますか？この操作は取り消せません。
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="!flex-row justify-end gap-2">
+            <AlertDialogCancel className="mt-0">キャンセル</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (deletingChatId) {
+                  void deleteChat(deletingChatId);
+                }
+              }}
+              variant="destructive"
+            >
+              削除
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
