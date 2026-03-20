@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ChevronDown, Image as ImageIcon, Mic, Paperclip, Send, Plus } from "lucide-react";
+import { ChevronDown, Image as ImageIcon, Mic, Paperclip, Send, Square, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { AVAILABLE_MODELS } from "@/lib/ai-active-model";
@@ -23,6 +23,7 @@ type ChatComposerProps = {
     value: string;
     onChange: (value: string) => void;
     onSubmit: () => Promise<void>;
+    onStop?: () => void;
     placeholder?: string;
     disabled?: boolean;
     isSending?: boolean;
@@ -34,6 +35,7 @@ export function ChatComposer({
     value,
     onChange,
     onSubmit,
+    onStop,
     placeholder = "会話してみましょう",
     disabled = false,
     isSending = false,
@@ -164,20 +166,31 @@ export function ChatComposer({
                             </DropdownMenuContent>
                         </DropdownMenu>
 
-                        <Button
-                            onClick={() => {
-                                if (canSubmit) {
-                                    void onSubmit();
-                                }
-                            }}
-                            size="icon"
-                            className={`rounded-full transition-all ${canSubmit
-                                ? "bg-blue-600 hover:bg-blue-700 text-white"
-                                : "bg-gray-100 text-gray-400 hover:bg-gray-100 cursor-default"
-                                }`}
-                        >
-                            <Send className="h-4 w-4 rotate-45 -translate-x-[1px]" />
-                        </Button>
+                        {isSending && onStop ? (
+                            <Button
+                                onClick={onStop}
+                                size="icon"
+                                className="rounded-full transition-all bg-gray-800 hover:bg-gray-900 text-white"
+                                aria-label="生成を停止"
+                            >
+                                <Square className="h-3.5 w-3.5 fill-current" />
+                            </Button>
+                        ) : (
+                            <Button
+                                onClick={() => {
+                                    if (canSubmit) {
+                                        void onSubmit();
+                                    }
+                                }}
+                                size="icon"
+                                className={`rounded-full transition-all ${canSubmit
+                                    ? "bg-blue-600 hover:bg-blue-700 text-white"
+                                    : "bg-gray-100 text-gray-400 hover:bg-gray-100 cursor-default"
+                                    }`}
+                            >
+                                <Send className="h-4 w-4 rotate-45 -translate-x-[1px]" />
+                            </Button>
+                        )}
                     </div>
                 </div>
             </div>

@@ -92,11 +92,19 @@ export async function processChatInteraction(
 
         const google = getGoogleProvider();
 
+        let cancelled = false;
+
         const result = streamText({
             model: google(model),
             messages,
             onFinish: async ({ text, finishReason }) => {
                 try {
+                    // If cancelled by user, don't touch the DB — partial save is already handled in cancel()
+                    if (cancelled) {
+                        console.log(`[Chat] Skipping onFinish for cancelled block: ${blockId}`);
+                        return;
+                    }
+
                     if (!text.trim().length || finishReason === 'error') {
                         if (blockId) {
                             await prisma.block.deleteMany({ where: { block_id: blockId } });
@@ -132,11 +140,14 @@ export async function processChatInteraction(
         });
 
         const encoder = new TextEncoder();
+        let accText = '';
+
         const stream = new ReadableStream<Uint8Array>({
             async start(controller) {
                 try {
                     for await (const part of result.fullStream) {
                         if (part.type === 'text-delta') {
+                            accText += part.text;
                             controller.enqueue(encoder.encode(part.text));
                             continue;
                         }
@@ -151,6 +162,32 @@ export async function processChatInteraction(
                     controller.enqueue(encoder.encode(`[[ERROR:${normalized.status}]]`));
                 } finally {
                     controller.close();
+                }
+            },
+            async cancel() {
+                // Client disconnected (user pressed Stop button)
+                cancelled = true;
+                console.log(`[Chat] Client disconnected for block: ${blockId}`);
+                try {
+                    if (blockId && accText.trim().length > 0) {
+                        console.log(`[Chat] Saving partial response for block: ${blockId}`);
+                        await prisma.block.upsert({
+                            where: { block_id: blockId },
+                            update: { ai_content: accText },
+                            create: {
+                                block_id: blockId,
+                                branch_id: branchId,
+                                user_content: lastUserMessage?.content ?? '',
+                                ai_content: accText,
+                            },
+                        });
+                    } else if (blockId) {
+                        // No content generated yet, clean up empty block
+                        console.log(`[Chat] Cleaning up empty block: ${blockId}`);
+                        await prisma.block.deleteMany({ where: { block_id: blockId } });
+                    }
+                } catch (cancelError) {
+                    console.error('[Chat] Failed to save partial response:', cancelError);
                 }
             },
         });
