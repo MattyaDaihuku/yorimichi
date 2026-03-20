@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import useSWR, { useSWRConfig } from "swr";
 import { useUser, useClerk } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
@@ -41,6 +41,7 @@ export function ChatHistory({ onClickItem }: { onClickItem?: () => void }) {
   const { user, isLoaded: isUserLoaded } = useUser();
   const { openSignIn } = useClerk();
   const pathname = usePathname();
+  const router = useRouter();
   const [openMenuChatId, setOpenMenuChatId] = useState<string | null>(null);
   const [deletingChatId, setDeletingChatId] = useState<string | null>(null);
   const previousPathname = useRef(pathname);
@@ -79,6 +80,7 @@ export function ChatHistory({ onClickItem }: { onClickItem?: () => void }) {
 
   const deleteChat = async (chatId: string) => {
     try {
+      const isCurrentChatPage = pathname === `/chat/${chatId}`;
       const res = await fetch(`/api/internal/chat/${chatId}`, {
         method: "DELETE",
         headers: {
@@ -88,6 +90,9 @@ export function ChatHistory({ onClickItem }: { onClickItem?: () => void }) {
 
       if (!res.ok) throw new Error("Failed to delete chat");
       setDeletingChatId(null);
+      if (isCurrentChatPage) {
+        router.replace("/");
+      }
       await mutate();
     } catch (error) {
       console.error(error);
