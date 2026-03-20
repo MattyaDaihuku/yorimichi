@@ -209,7 +209,11 @@ export async function processChatInteraction(
             },
         });
     } catch (error) {
-        console.error('[ProcessChatInteraction]', error);
+        if (error instanceof Error && error.message.includes('API_KEY_NOT_FOUND')) {
+            console.warn('[ProcessChatInteraction] API Key is missing. Returning 400.');
+        } else {
+            console.error('[ProcessChatInteraction]', error);
+        }
 
         if (blockId) {
             try {
