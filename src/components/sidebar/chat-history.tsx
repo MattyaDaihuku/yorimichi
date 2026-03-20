@@ -6,13 +6,14 @@ import { usePathname, useRouter } from "next/navigation";
 import useSWR, { useSWRConfig } from "swr";
 import { useUser, useClerk } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { EllipsisVertical, Pin, Trash2 } from "lucide-react";
+import { EllipsisVertical, Pencil, Pin, Trash2 } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -44,6 +45,12 @@ export function ChatHistory({ onClickItem }: { onClickItem?: () => void }) {
   const router = useRouter();
   const [openMenuChatId, setOpenMenuChatId] = useState<string | null>(null);
   const [deletingChatId, setDeletingChatId] = useState<string | null>(null);
+  const [editingChat, setEditingChat] = useState<{
+    chatId: string;
+    initialTitle: string;
+  } | null>(null);
+  const [editingTitle, setEditingTitle] = useState("");
+  const [isUpdatingTitle, setIsUpdatingTitle] = useState(false);
   const previousPathname = useRef(pathname);
   const { cache } = useSWRConfig();
   const key = isUserLoaded && user ? "/api/internal/chat/list" : null;
@@ -100,6 +107,39 @@ export function ChatHistory({ onClickItem }: { onClickItem?: () => void }) {
       setDeletingChatId(null);
     }
   };
+
+  const updateChatTitle = async () => {
+    if (!editingChat) return;
+
+    const trimmedTitle = editingTitle.trim();
+    if (!trimmedTitle || trimmedTitle === editingChat.initialTitle) return;
+
+    try {
+      setIsUpdatingTitle(true);
+      const res = await fetch(`/api/internal/chat/${editingChat.chatId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ chat_title: trimmedTitle }),
+      });
+
+      if (!res.ok) throw new Error("Failed to update chat title");
+      setEditingChat(null);
+      setEditingTitle("");
+      await mutate();
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsUpdatingTitle(false);
+    }
+  };
+
+  const canSubmitTitleUpdate =
+    !!editingChat &&
+    editingTitle.trim().length > 0 &&
+    editingTitle.trim() !== editingChat.initialTitle &&
+    !isUpdatingTitle;
 
   return (
     <div className="relative h-full w-full min-w-0">
@@ -189,6 +229,20 @@ export function ChatHistory({ onClickItem }: { onClickItem?: () => void }) {
                       className="cursor-pointer rounded-md px-3 py-2 text-sm text-gray-700 focus:bg-gray-50"
                       onSelect={() => {
                         setOpenMenuChatId(null);
+                        setEditingChat({
+                          chatId: chat.chat_id,
+                          initialTitle: chat.chat_title,
+                        });
+                        setEditingTitle(chat.chat_title);
+                      }}
+                    >
+                      <Pencil className="h-4 w-4" />
+                      <span>タイトルを編集</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="cursor-pointer rounded-md px-3 py-2 text-sm text-gray-700 focus:bg-gray-50"
+                      onSelect={() => {
+                        setOpenMenuChatId(null);
                         setDeletingChatId(chat.chat_id);
                       }}
                     >
@@ -236,6 +290,64 @@ export function ChatHistory({ onClickItem }: { onClickItem?: () => void }) {
           )}
         </div>
       </div>
+
+      <AlertDialog
+        open={editingChat !== null}
+        onOpenChange={(open) => {
+          if (!open && !isUpdatingTitle) {
+            setEditingChat(null);
+            setEditingTitle("");
+          }
+        }}
+      >
+        <AlertDialogContent className="min-w-0 w-[400px] sm:max-w-[400px]">
+          <AlertDialogHeader>
+            <AlertDialogTitle>タイトル編集</AlertDialogTitle>
+            <AlertDialogDescription>
+              会話のタイトルを変更できます。
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <Input
+            value={editingTitle}
+            onChange={(event) => setEditingTitle(event.target.value)}
+            placeholder="会話タイトル"
+            maxLength={255}
+            autoFocus
+            onKeyDown={(event) => {
+              if (event.key === "Enter") {
+                event.preventDefault();
+                if (canSubmitTitleUpdate) {
+                  void updateChatTitle();
+                }
+              }
+            }}
+          />
+          <AlertDialogFooter className="!flex-row justify-end gap-2">
+            <AlertDialogCancel
+              className="mt-0"
+              disabled={isUpdatingTitle}
+              onClick={(event) => {
+                if (isUpdatingTitle) {
+                  event.preventDefault();
+                }
+              }}
+            >
+              キャンセル
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(event) => {
+                event.preventDefault();
+                if (canSubmitTitleUpdate) {
+                  void updateChatTitle();
+                }
+              }}
+              disabled={!canSubmitTitleUpdate}
+            >
+              更新
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <AlertDialog
         open={deletingChatId !== null}
