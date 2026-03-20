@@ -71,6 +71,27 @@ function normalizeAiError(error: unknown): { status: number; message: string } {
         };
     }
 
+    if (status === 401 || message.includes('unauthorized') || message.includes('invalid api key')) {
+        return {
+            status: 401,
+            message: 'APIキーが正しくないか、無効になっています。設定画面から正しいAPIキーを再登録してください。',
+        };
+    }
+
+    if (status === 403 || message.includes('forbidden') || message.includes('permission denied')) {
+        return {
+            status: 403,
+            message: 'このモデルを利用する権限がありません（無料枠の制限やAPI側の設定を確認してください）。',
+        };
+    }
+
+    if (status === 404 || message.includes('model not found')) {
+        return {
+            status: 404,
+            message: '指定されたモデルは存在しないか、現在プロバイダ側で提供されていません。',
+        };
+    }
+
     return {
         status: typeof status === 'number' ? status : 500,
         message: defaultMessage,
