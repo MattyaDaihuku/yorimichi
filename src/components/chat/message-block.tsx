@@ -305,7 +305,7 @@ const UserMessageEditor = memo(function UserMessageEditor({
                             onClick={onCancel}
                             disabled={isSubmittingEdit}
                             aria-label="Cancel edit"
-                            className="h-9 rounded-full border border-transparent px-4 text-sm font-medium text-muted-foreground hover:border-gray-300 hover:bg-muted hover:text-foreground"
+                            className="h-9 rounded-full bg-transparent px-4 text-sm font-medium text-muted-foreground hover:bg-muted/60 hover:text-foreground"
                         >
                             キャンセル
                         </Button>
