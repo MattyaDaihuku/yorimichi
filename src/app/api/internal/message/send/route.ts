@@ -5,6 +5,7 @@ import { getAuthUserId } from '@/lib/auth-utils';
 import { processChatInteraction, ChatMessage, RateLimitError } from '@/lib/chat-utils';
 import { z } from 'zod';
 import { AVAILABLE_MODELS } from '@/lib/ai-active-model';
+import { decryptApiKey } from '@/lib/encryption';
 
 const requestSchema = z.object({
     branch_id: z.string().uuid(),
@@ -60,13 +61,29 @@ export async function POST(req: Request) {
         });
         blockIdForCleanup = block_id;
 
+        // Get keys from DB and decrypt them
+        const dbKeys = await prisma.userApiKey.findMany({
+            where: { user_id: userId }
+        });
+        const apiKeysObj: { google?: string; openai?: string; anthropic?: string; } = {};
+        for (const k of dbKeys) {
+            try {
+                const plaintext = decryptApiKey(k.encrypted_key, k.iv, k.auth_tag);
+                if (k.provider === 'google') apiKeysObj.google = plaintext;
+                if (k.provider === 'openai') apiKeysObj.openai = plaintext;
+                if (k.provider === 'anthropic') apiKeysObj.anthropic = plaintext;
+            } catch (err) {
+                console.error(`Failed to decrypt key for provider ${k.provider}`, err);
+            }
+        }
+
         // 2. Call Gemini and Stream Response
         const messages: ChatMessage[] = [
             ...(history || []),
             { role: 'user', content: message }
         ];
 
-        return await processChatInteraction(branch_id, messages, block_id, model);
+        return await processChatInteraction(branch_id, messages, block_id, model, apiKeysObj);
 
     } catch (error: any) {
         if (error instanceof RateLimitError || error?.isRateLimitError) {
