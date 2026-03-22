@@ -33,6 +33,14 @@ services:
     environment:
       # Windows / WSL2 環境でのファイル変更検知にポーリングを使用
       - WATCHPACK_POLLING=true
+      - PS1=\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ 
+      # タイムゾーンを日本時間に
+      - TZ=Asia/Tokyo
+      # 日本語の文字化け防止
+      - LANG=C.UTF-8
+      # ページャーを見やすく
+      - PAGER=less
+      - LESS=-R
 
     # 手動停止以外で異常終了した場合は自動再起動
     restart: unless-stopped
