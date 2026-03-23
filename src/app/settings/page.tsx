@@ -9,6 +9,8 @@ import { Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
+import { Header } from "@/components/header";
+
 function PasswordInput({ id, placeholder, className, value, onChange }: { id: string; placeholder?: string; className?: string, value?: string, onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void }) {
   const [showPassword, setShowPassword] = useState(false);
   return (
@@ -39,7 +41,7 @@ function PasswordInput({ id, placeholder, className, value, onChange }: { id: st
 }
 
 export default function SettingsPage() {
-  const [keys, setKeys] = useState<{openai: string, anthropic: string, google: string}>({ openai: "", anthropic: "", google: "" });
+  const [keys, setKeys] = useState<{ openai: string, anthropic: string, google: string }>({ openai: "", anthropic: "", google: "" });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -77,75 +79,75 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="flex-1 space-y-4 p-8 pt-6 max-w-4xl mx-auto w-full">
-      <div className="flex items-center justify-between space-y-2">
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight">API キー</h2>
-          <div className="text-muted-foreground mt-2">
-            各AIサービスを利用するためのAPI キーを入力してください。
+    <>
+      <Header title="" className="bg-background" />
+      <div className="flex-1 space-y-4 p-8 pt-6 max-w-4xl mx-auto w-full">
+        <div className="flex items-center justify-between space-y-2">
+          <div>
+            <h2 className="text-3xl font-bold tracking-tight">API キー</h2>
           </div>
         </div>
-      </div>
 
-      <Separator className="my-6" />
+        <Separator className="my-6" />
 
-      <div className="flex flex-col space-y-8 lg:flex-row lg:space-x-12 lg:space-y-0">
-        <aside className="lg:w-1/4">
-          <nav className="flex space-x-2 lg:flex-col lg:space-x-0 lg:space-y-1">
-            <Button variant="secondary" className="justify-start">
-              API キー
-            </Button>
-            <Button variant="ghost" className="justify-start">
-              一般設定
-            </Button>
-          </nav>
-        </aside>
-
-        <div className="flex-1 lg:max-w-2xl">
-          <div className="space-y-6">
-            <div className="space-y-4">
-              <div className="grid gap-2">
-                <Label htmlFor="openai-key">OpenAI API キー</Label>
-                <PasswordInput
-                  id="openai-key"
-                  placeholder="sk-..."
-                  value={keys.openai}
-                  onChange={(e) => setKeys(prev => ({ ...prev, openai: e.target.value }))}
-                  className="font-mono bg-background"
-                />
-              </div>
-
-              <div className="grid gap-2">
-                <Label htmlFor="anthropic-key">Anthropic API キー</Label>
-                <PasswordInput
-                  id="anthropic-key"
-                  placeholder="sk-ant-..."
-                  value={keys.anthropic}
-                  onChange={(e) => setKeys(prev => ({ ...prev, anthropic: e.target.value }))}
-                  className="font-mono bg-background"
-                />
-              </div>
-
-              <div className="grid gap-2">
-                <Label htmlFor="gemini-key">Gemini API キー</Label>
-                <PasswordInput
-                  id="gemini-key"
-                  placeholder="AIza..."
-                  value={keys.google}
-                  onChange={(e) => setKeys(prev => ({ ...prev, google: e.target.value }))}
-                  className="font-mono bg-background"
-                />
-              </div>
-            </div>
-
-            <div className="pt-6 border-t mt-6 flex justify-start">
-              <Button onClick={handleSave} disabled={loading || saving}>
-                {saving ? "保存中..." : "一括保存"}
+        <div className="flex flex-col space-y-8 lg:flex-row lg:space-x-12 lg:space-y-0">
+          <aside className="lg:w-1/4">
+            <nav className="flex space-x-2 lg:flex-col lg:space-x-0 lg:space-y-1">
+              <Button variant="secondary" className="justify-start">
+                API キー
               </Button>
+              <Button variant="ghost" className="justify-start">
+                一般設定
+              </Button>
+            </nav>
+          </aside>
+
+          <div className="flex-1 lg:max-w-2xl">
+            <div className="space-y-6">
+              <div className="space-y-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="openai-key">OpenAI API キー</Label>
+                  <PasswordInput
+                    id="openai-key"
+                    placeholder="sk-..."
+                    value={keys.openai}
+                    onChange={(e) => setKeys(prev => ({ ...prev, openai: e.target.value }))}
+                    className="font-mono bg-background"
+                  />
+                </div>
+
+                <div className="grid gap-2">
+                  <Label htmlFor="anthropic-key">Anthropic API キー</Label>
+                  <PasswordInput
+                    id="anthropic-key"
+                    placeholder="sk-ant-..."
+                    value={keys.anthropic}
+                    onChange={(e) => setKeys(prev => ({ ...prev, anthropic: e.target.value }))}
+                    className="font-mono bg-background"
+                  />
+                </div>
+
+                <div className="grid gap-2">
+                  <Label htmlFor="gemini-key">Gemini API キー</Label>
+                  <PasswordInput
+                    id="gemini-key"
+                    placeholder="AIza..."
+                    value={keys.google}
+                    onChange={(e) => setKeys(prev => ({ ...prev, google: e.target.value }))}
+                    className="font-mono bg-background"
+                  />
+                </div>
+              </div>
+
+              <div className="pt-6 border-t mt-6 flex justify-start">
+                <Button onClick={handleSave} disabled={loading || saving}>
+                  {saving ? "保存中..." : "一括保存"}
+                </Button>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
