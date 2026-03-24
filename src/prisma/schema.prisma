@@ -16,6 +16,9 @@ model Users {
   created_at DateTime @default(now()) @db.Timestamp
   update_at  DateTime @updatedAt @db.Timestamp
 
+  free_usage_count     Int       @default(5)
+  last_free_usage_date DateTime? @db.Timestamp
+
   // Relations
   chatlists Chatlist[]
   api_keys  UserApiKey[]

@@ -1,11 +1,18 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ChevronDown, Image as ImageIcon, Mic, Paperclip, Send, Square, Plus } from "lucide-react";
+import { ChevronDown, Image as ImageIcon, Mic, Paperclip, Send, Square, Plus, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useModelStore } from "@/store/model-store";
-import { AVAILABLE_MODELS, type AiModel } from "@/lib/ai-active-model";
+import {
+    AVAILABLE_MODELS,
+    ACTIVE_MODEL,
+    MODEL_DISPLAY_CONFIG,
+    PROVIDER_LABELS,
+    type AiModel,
+    type ModelProvider,
+} from "@/lib/ai-active-model";
 import {
     Tooltip,
     TooltipContent,
@@ -17,7 +24,20 @@ import {
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
+    DropdownMenuSeparator,
+    DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { useRouter } from "next/navigation";
 
 type ChatComposerProps = {
     value: string;
@@ -42,37 +62,69 @@ export function ChatComposer({
     className,
     alwaysBorder = false,
 }: ChatComposerProps) {
+    const router = useRouter();
     const canSubmit = !!value.trim() && !disabled && !isSending;
     const selectedModel = useModelStore((state) => state.selectedModel);
     const setSelectedModel = useModelStore((state) => state.setSelectedModel);
 
-    const [availableModels, setAvailableModels] = useState<AiModel[]>([]);
+    // 登録済みプロバイダのSet（"google", "openai", "anthropic"）
+    const [registeredProviders, setRegisteredProviders] = useState<Set<string>>(new Set());
+    const [showKeyDialog, setShowKeyDialog] = useState(false);
 
-    useEffect(() => {
+    /** APIキーの状態を取得する */
+    const fetchApiKeyStatus = () => {
         fetch("/api/user/apikeys")
             .then((res) => res.json())
             .then((data) => {
                 if (data.keys) {
-                    const models = AVAILABLE_MODELS.filter((model: AiModel) => {
-                        if (model.startsWith("gpt-")) return !!data.keys.openai;
-                        if (model.startsWith("claude-")) return !!data.keys.anthropic;
-                        if (model.startsWith("gemini-") || model.startsWith("gemma-")) return !!data.keys.google;
-                        return false;
-                    });
-                    
-                    // APIキーが何も登録されていない場合は初期モデルをフォールバックとして1つだけ表示するか空にする
-                    setAvailableModels(models.length > 0 ? models : [AVAILABLE_MODELS[0]]);
+                    const providers = new Set<string>();
+                    if (data.keys.google) providers.add("google");
+                    if (data.keys.openai) providers.add("openai");
+                    if (data.keys.anthropic) providers.add("anthropic");
+                    setRegisteredProviders(providers);
                 }
             })
             .catch((err) => console.error("Failed to fetch API keys status:", err));
+    };
+
+    // 初回マウント時に取得
+    useEffect(() => {
+        fetchApiKeyStatus();
     }, []);
 
-    useEffect(() => {
-        // availableModelsの一覧に現在の選択モデルが含まれていなければ、一番上のモデルに切り替える
-        if (availableModels.length > 0 && !availableModels.some(m => m === selectedModel)) {
-            setSelectedModel(availableModels[0]);
+    /** モデルがAPIキー登録なしで利用可能かどうかを判定 */
+    const isModelAvailable = (model: AiModel): boolean => {
+        if (model === ACTIVE_MODEL) return true;
+        return registeredProviders.has(MODEL_DISPLAY_CONFIG[model].provider);
+    };
+
+    /** デフォルトモデルしか使えない状態か */
+    const isDefaultOnly = registeredProviders.size === 0;
+
+    /** ボタンに表示するモデル名（④ 表示名を使用） */
+    const displayModelName = isDefaultOnly
+        ? "default"
+        : MODEL_DISPLAY_CONFIG[selectedModel]?.displayName ?? selectedModel;
+
+    /** モデルクリック時の処理 */
+    const handleModelSelect = (model: AiModel) => {
+        if (isModelAvailable(model)) {
+            setSelectedModel(model);
+        } else {
+            setShowKeyDialog(true);
         }
-    }, [availableModels, selectedModel, setSelectedModel]);
+    };
+
+    /** ③ 登録済みプロバイダのモデルだけを表示するグループを動的に生成 */
+    const visibleGroups = (["google", "openai", "anthropic"] as ModelProvider[])
+        .map(provider => ({
+            provider,
+            label: PROVIDER_LABELS[provider],
+            models: AVAILABLE_MODELS.filter(m =>
+                MODEL_DISPLAY_CONFIG[m].provider === provider && isModelAvailable(m)
+            ),
+        }))
+        .filter(group => group.models.length > 0);
 
     return (
         <div className={className}>
@@ -162,7 +214,7 @@ export function ChatComposer({
                     </TooltipProvider>
 
                     <div className="flex items-center gap-2">
-                        <DropdownMenu>
+                        <DropdownMenu onOpenChange={(open) => { if (open) fetchApiKeyStatus(); }}>
                             <DropdownMenuTrigger asChild>
                                 <Button
                                     type="button"
@@ -170,27 +222,66 @@ export function ChatComposer({
                                     size="sm"
                                     className="h-9 gap-1 rounded-full px-3 text-xs text-gray-700 hover:bg-gray-100"
                                 >
-                                    <span className="block max-w-[90px] sm:max-w-[120px] md:max-w-[170px] truncate">{selectedModel}</span>
+                                    <span className="block max-w-[90px] sm:max-w-[120px] md:max-w-[170px] truncate">{displayModelName}</span>
                                     <ChevronDown className="ml-0 h-3.5 w-3.5 shrink-0" />
                                 </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-[170px] bg-white z-50 rounded-xl shadow-lg border border-gray-200 p-1.5 flex flex-col gap-1">
-                                {availableModels.map((model) => {
-                                    const isSelected = model === selectedModel;
+                            <DropdownMenuContent align="end" className="w-[260px] max-h-[320px] overflow-y-auto bg-white z-50 rounded-xl shadow-lg border border-gray-200 p-1.5 flex flex-col">
+                                {isDefaultOnly ? (
+                                    <div
+                                        onClick={() => router.push("/settings")}
+                                        className="rounded-md px-3 py-3 cursor-pointer hover:bg-blue-50 transition-colors"
+                                    >
+                                        <div className="flex items-center gap-2 text-sm text-blue-600 font-medium">
+                                            <Settings className="h-3.5 w-3.5" />
+                                            <span>APIキーを設定する</span>
+                                        </div>
+                                        <p className="text-[11px] text-gray-400 mt-1 leading-relaxed pl-[22px]">
+                                            APIキーを登録すると、GPT-4oやClaude 3.5など多様なモデルが利用できます
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <>
+                                        {visibleGroups.map((group, groupIndex) => (
+                                            <div key={group.provider}>
+                                                {groupIndex > 0 && <DropdownMenuSeparator className="my-1" />}
+                                                <DropdownMenuLabel className="px-3 py-1.5 text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
+                                                    {group.label}
+                                                </DropdownMenuLabel>
+                                                {group.models.map((model) => {
+                                                    const isSelected = model === selectedModel;
 
-                                    return (
-                                        <DropdownMenuItem
-                                            key={model}
-                                            onClick={() => setSelectedModel(model)}
-                                            className={`rounded-md px-3 py-2 text-sm transition-colors cursor-pointer ${isSelected
-                                                ? "bg-gray-100 text-gray-900 font-medium"
-                                                : "text-gray-700 hover:bg-gray-50 focus:bg-gray-50"
-                                                }`}
+                                                    return (
+                                                        <DropdownMenuItem
+                                                            key={model}
+                                                            onClick={() => handleModelSelect(model)}
+                                                            className={`rounded-md px-3 py-2 text-sm transition-colors cursor-pointer ${isSelected
+                                                                ? "bg-gray-100 text-gray-900 font-medium"
+                                                                : "text-gray-700 hover:bg-gray-50 focus:bg-gray-50"
+                                                                }`}
+                                                        >
+                                                            {MODEL_DISPLAY_CONFIG[model].displayName}
+                                                        </DropdownMenuItem>
+                                                    );
+                                                })}
+                                            </div>
+                                        ))}
+
+                                        <DropdownMenuSeparator className="my-1" />
+                                        <div
+                                            onClick={() => router.push("/settings")}
+                                            className="rounded-md px-3 py-3 cursor-pointer hover:bg-blue-50 transition-colors"
                                         >
-                                            {model}
-                                        </DropdownMenuItem>
-                                    );
-                                })}
+                                            <div className="flex items-center gap-2 text-sm text-blue-600 font-medium">
+                                                <Settings className="h-3.5 w-3.5" />
+                                                <span>APIキーを設定する</span>
+                                            </div>
+                                            <p className="text-[11px] text-gray-400 mt-1 leading-relaxed pl-[22px]">
+                                                他のプロバイダのモデルを追加できます
+                                            </p>
+                                        </div>
+                                    </>
+                                )}
                             </DropdownMenuContent>
                         </DropdownMenu>
 
@@ -222,6 +313,23 @@ export function ChatComposer({
                     </div>
                 </div>
             </div>
+
+            <AlertDialog open={showKeyDialog} onOpenChange={setShowKeyDialog}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>APIキー登録画面に移動しますか？</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            このモデルを利用するにはAPIキーの登録が必要です。APIキー設定画面に移動して登録しますか？
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>キャンセル</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => router.push("/settings")}>
+                            はい、移動する
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 }

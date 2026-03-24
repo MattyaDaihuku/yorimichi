@@ -4,7 +4,7 @@ import prisma from '@/lib/prisma';
 import { getAuthUserId } from '@/lib/auth-utils';
 import { processChatInteraction, ChatMessage, RateLimitError } from '@/lib/chat-utils';
 import { z } from 'zod';
-import { AVAILABLE_MODELS } from '@/lib/ai-active-model';
+import { AVAILABLE_MODELS, ACTIVE_MODEL, FREE_DAILY_LIMIT } from '@/lib/ai-active-model';
 import { decryptApiKey } from '@/lib/encryption';
 
 const requestSchema = z.object({
@@ -74,6 +74,57 @@ export async function POST(req: Request) {
                 if (k.provider === 'anthropic') apiKeysObj.anthropic = plaintext;
             } catch (err) {
                 console.error(`Failed to decrypt key for provider ${k.provider}`, err);
+            }
+        }
+
+        // --- 救済措置のロジック（カウントダウン方式） ---
+        if (model === ACTIVE_MODEL && !apiKeysObj.google) {
+            const user = await prisma.users.findUnique({
+                where: { user_id: userId },
+                select: { free_usage_count: true, last_free_usage_date: true }
+            });
+
+            if (!user) {
+                return NextResponse.json({ error: "User not found" }, { status: 404 });
+            }
+
+            const now = new Date();
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            let remainingCount = user.free_usage_count;
+
+            // 日付が変わっていたら残り回数をリセット
+            if (!user.last_free_usage_date || user.last_free_usage_date < today) {
+                remainingCount = FREE_DAILY_LIMIT;
+            }
+
+            if (remainingCount <= 0) {
+                return NextResponse.json(
+                    {
+                        error: `本日の無料利用枠（${FREE_DAILY_LIMIT}回）を使い切りました。引き続きご利用いただくには、設定画面からご自身のAPIキーを登録してください。`,
+                        code: "RATE_LIMIT_DAILY",
+                        retryable: false
+                    },
+                    { status: 429 }
+                );
+            }
+
+            // 残り回数を1つ減らす
+            await prisma.users.update({
+                where: { user_id: userId },
+                data: {
+                    free_usage_count: remainingCount - 1,
+                    last_free_usage_date: now
+                }
+            });
+
+            // システムのAPIキーを使用
+            apiKeysObj.google = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+            
+            if (!apiKeysObj.google) {
+                return NextResponse.json(
+                    { error: "System API Key not configured" },
+                    { status: 500 }
+                );
             }
         }
 
