@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE "USERS"
+ADD COLUMN IF NOT EXISTS "system_prompt" TEXT,
+ADD COLUMN IF NOT EXISTS "system_prompt_enabled" BOOLEAN NOT NULL DEFAULT false;
