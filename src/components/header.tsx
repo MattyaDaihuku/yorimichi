@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Menu } from "lucide-react";
 import Image from "next/image";
 import { UserButton, useUser, useClerk } from "@clerk/nextjs";
@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { SidebarContent } from "@/components/sidebar/sidebar-content";
+import { SettingsDialog } from "@/components/settings/settings-dialog";
 
 interface HeaderProps {
   title?: string;
@@ -22,11 +23,7 @@ export function Header({ title = "", className }: HeaderProps) {
   const { user, isLoaded } = useUser();
   const { openSignIn } = useClerk();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
+  const [isMobileSettingsOpen, setIsMobileSettingsOpen] = useState(false);
 
   return (
     <>
@@ -52,14 +49,17 @@ export function Header({ title = "", className }: HeaderProps) {
               <Menu className="h-5 w-5" />
             </button>
           </SheetTrigger>
-          <SheetContent side="left" className="w-[85vw] max-w-[280px] p-0 border-none bg-[#E9EEF6] md:hidden">
+          <SheetContent side="left" className="w-[85vw] max-w-[280px] p-0 border-none bg-[#E9EEF6] dark:bg-sidebar md:hidden">
             <SheetTitle className="sr-only">メニュー</SheetTitle>
             <SidebarContent
               isCollapsed={false}
               toggleSidebar={() => setIsMobileOpen(false)}
+              onOpenSettings={() => setIsMobileSettingsOpen(true)}
             />
           </SheetContent>
         </Sheet>
+
+        <SettingsDialog open={isMobileSettingsOpen} onOpenChange={setIsMobileSettingsOpen} />
 
         <div className="grid grid-cols-3 items-center h-16 w-full">
           {/* 左側: サービスロゴ */}
@@ -84,7 +84,7 @@ export function Header({ title = "", className }: HeaderProps) {
 
           {/* 右側: ユーザーアイコン */}
           <div className="flex justify-end">
-            {!isMounted || !isLoaded ? (
+            {!isLoaded ? (
               <div className="h-9 w-9 rounded-full flex items-center justify-center">
                 <Skeleton className="h-9 w-9 rounded-full skeleton-breathe" />
               </div>

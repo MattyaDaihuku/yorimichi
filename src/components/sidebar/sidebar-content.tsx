@@ -5,19 +5,23 @@ import { Menu, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NewChatButton } from "./new-chat-button";
 import { ChatHistory } from "./chat-history";
-import Link from "next/link";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { SettingsDialog } from "@/components/settings/settings-dialog";
+import { useState } from "react";
 
 interface SidebarContentProps {
   isCollapsed: boolean;
   toggleSidebar: () => void;
+  onOpenSettings?: () => void;
 }
 
-export function SidebarContent({ isCollapsed, toggleSidebar }: SidebarContentProps) {
+export function SidebarContent({ isCollapsed, toggleSidebar, onOpenSettings }: SidebarContentProps) {
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
   const handleClose = () => {
     if (!isCollapsed) {
       toggleSidebar();
@@ -40,7 +44,7 @@ export function SidebarContent({ isCollapsed, toggleSidebar }: SidebarContentPro
               size={isCollapsed ? "icon" : "default"}
               onClick={toggleSidebar}
               className={cn(
-                "h-10 shrink-0 text-muted-foreground hover:text-foreground hover:bg-[#D2D9E1]",
+                "h-10 shrink-0 text-muted-foreground hover:text-foreground hover:bg-[#D2D9E1] dark:hover:bg-sidebar-accent",
                 isCollapsed ? "w-10 rounded-full" : "w-10 rounded-full" // hamburger is always an icon, but kept class structure
               )}
             >
@@ -78,25 +82,27 @@ export function SidebarContent({ isCollapsed, toggleSidebar }: SidebarContentPro
               variant="ghost"
               className={cn(
                 "relative group flex items-center justify-start overflow-hidden transition-all duration-300 border-none",
-                "h-10 p-0 text-muted-foreground hover:text-foreground hover:bg-[#D2D9E1]",
+                "h-10 p-0 text-muted-foreground hover:text-foreground hover:bg-[#D2D9E1] dark:hover:bg-sidebar-accent",
                 !isCollapsed ? "w-full rounded-full" : "w-10 rounded-full"
               )}
-              asChild
+              onClick={() => {
+                if (onOpenSettings) {
+                  onOpenSettings();
+                } else {
+                  setIsSettingsOpen(true);
+                }
+                handleClose();
+              }}
             >
-              <Link
-                href="/settings"
-                onClick={handleClose}
-              >
-                <div className="flex items-center justify-center shrink-0 h-10 w-10">
-                  <Settings className="h-5 w-5" />
-                </div>
-                <span className={cn(
-                  "whitespace-nowrap transition-all duration-300 ease-in-out pr-4 font-medium",
-                  !isCollapsed ? "opacity-100 max-w-[200px]" : "opacity-0 max-w-0"
-                )}>
-                  設定
-                </span>
-              </Link>
+              <div className="flex items-center justify-center shrink-0 h-10 w-10">
+                <Settings className="h-5 w-5" />
+              </div>
+              <span className={cn(
+                "whitespace-nowrap transition-all duration-300 ease-in-out pr-4 font-medium",
+                !isCollapsed ? "opacity-100 max-w-[200px]" : "opacity-0 max-w-0"
+              )}>
+                設定
+              </span>
             </Button>
           </TooltipTrigger>
           <TooltipContent className="bg-black text-white border-transparent" side="right" sideOffset={10}>
@@ -104,6 +110,8 @@ export function SidebarContent({ isCollapsed, toggleSidebar }: SidebarContentPro
           </TooltipContent>
         </Tooltip>
       </div>
+      
+      {!onOpenSettings && <SettingsDialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen} />}
     </div>
   );
 }
