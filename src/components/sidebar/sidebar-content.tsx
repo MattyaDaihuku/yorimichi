@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/tooltip";
 import { SettingsDialog } from "@/components/settings/settings-dialog";
 import { useState } from "react";
+import { useSettingsDialogStore } from "@/store/settings-dialog-store";
 
 interface SidebarContentProps {
   isCollapsed: boolean;
@@ -20,7 +21,7 @@ interface SidebarContentProps {
 }
 
 export function SidebarContent({ isCollapsed, toggleSidebar, onOpenSettings }: SidebarContentProps) {
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const settingsDialog = useSettingsDialogStore();
 
   const handleClose = () => {
     if (!isCollapsed) {
@@ -89,7 +90,7 @@ export function SidebarContent({ isCollapsed, toggleSidebar, onOpenSettings }: S
                 if (onOpenSettings) {
                   onOpenSettings();
                 } else {
-                  setIsSettingsOpen(true);
+                  settingsDialog.open("general");
                 }
                 handleClose();
               }}
@@ -111,7 +112,7 @@ export function SidebarContent({ isCollapsed, toggleSidebar, onOpenSettings }: S
         </Tooltip>
       </div>
       
-      {!onOpenSettings && <SettingsDialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen} />}
+      {!onOpenSettings && <SettingsDialog open={settingsDialog.isOpen} onOpenChange={settingsDialog.setOpen} />}
     </div>
   );
 }
