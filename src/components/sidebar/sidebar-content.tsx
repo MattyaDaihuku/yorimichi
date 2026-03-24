@@ -16,9 +16,10 @@ import { useState } from "react";
 interface SidebarContentProps {
   isCollapsed: boolean;
   toggleSidebar: () => void;
+  onOpenSettings?: () => void;
 }
 
-export function SidebarContent({ isCollapsed, toggleSidebar }: SidebarContentProps) {
+export function SidebarContent({ isCollapsed, toggleSidebar, onOpenSettings }: SidebarContentProps) {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const handleClose = () => {
@@ -85,7 +86,11 @@ export function SidebarContent({ isCollapsed, toggleSidebar }: SidebarContentPro
                 !isCollapsed ? "w-full rounded-full" : "w-10 rounded-full"
               )}
               onClick={() => {
-                setIsSettingsOpen(true);
+                if (onOpenSettings) {
+                  onOpenSettings();
+                } else {
+                  setIsSettingsOpen(true);
+                }
                 handleClose();
               }}
             >
@@ -106,7 +111,7 @@ export function SidebarContent({ isCollapsed, toggleSidebar }: SidebarContentPro
         </Tooltip>
       </div>
       
-      <SettingsDialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen} />
+      {!onOpenSettings && <SettingsDialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen} />}
     </div>
   );
 }
