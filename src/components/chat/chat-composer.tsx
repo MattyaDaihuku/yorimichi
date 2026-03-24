@@ -82,6 +82,7 @@ export function ChatComposer({
                     if (data.keys.openai) providers.add("openai");
                     if (data.keys.anthropic) providers.add("anthropic");
                     setRegisteredProviders(providers);
+
                 }
             })
             .catch((err) => console.error("Failed to fetch API keys status:", err));
@@ -144,9 +145,9 @@ export function ChatComposer({
     return (
         <div className={className}>
             <div
-                className={`bg-white rounded-[28px] shadow-sm border transition-all p-4 ${alwaysBorder
-                    ? "border-gray-200 focus-within:shadow-md"
-                    : "border-transparent focus-within:shadow-md focus-within:border-gray-200"
+                className={`bg-white dark:bg-transparent rounded-[28px] shadow-sm dark:shadow-none border transition-all p-4 ${alwaysBorder
+                    ? "border-gray-200 dark:border-border focus-within:shadow-md dark:focus-within:shadow-none"
+                    : "border-transparent focus-within:shadow-md dark:focus-within:shadow-none focus-within:border-gray-200 dark:focus-within:border-gray-700"
                     }`}
             >
                 <Textarea
@@ -154,7 +155,7 @@ export function ChatComposer({
                     value={value}
                     onChange={(e) => onChange(e.target.value)}
                     placeholder={placeholder}
-                    className="w-full resize-none border-none outline-none text-lg bg-transparent min-h-[56px] max-h-[200px] placeholder:text-gray-400 focus-visible:ring-0 shadow-none"
+                    className="w-full resize-none border-none outline-none text-lg bg-transparent dark:bg-transparent min-h-[56px] max-h-[200px] placeholder:text-gray-400 focus-visible:ring-0 shadow-none"
                     rows={1}
                     onKeyDown={(e) => {
                         if (e.key === "Enter" && !e.shiftKey) {
@@ -171,7 +172,7 @@ export function ChatComposer({
                         <div className="hidden md:flex gap-1">
                             <Tooltip>
                                 <TooltipTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="rounded-full text-gray-500 hover:bg-gray-100">
+                                    <Button variant="ghost" size="icon" className="rounded-full text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800">
                                         <Paperclip className="h-5 w-5 -rotate-45" />
                                     </Button>
                                 </TooltipTrigger>
@@ -182,7 +183,7 @@ export function ChatComposer({
 
                             <Tooltip>
                                 <TooltipTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="rounded-full text-gray-500 hover:bg-gray-100">
+                                    <Button variant="ghost" size="icon" className="rounded-full text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800">
                                         <ImageIcon className="h-5 w-5" />
                                     </Button>
                                 </TooltipTrigger>
@@ -193,7 +194,7 @@ export function ChatComposer({
 
                             <Tooltip>
                                 <TooltipTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="rounded-full text-gray-500 hover:bg-gray-100">
+                                    <Button variant="ghost" size="icon" className="rounded-full text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800">
                                         <Mic className="h-5 w-5" />
                                     </Button>
                                 </TooltipTrigger>
@@ -206,11 +207,11 @@ export function ChatComposer({
                         <div className="flex md:hidden gap-1">
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="rounded-full text-gray-500 hover:bg-gray-100">
+                                    <Button variant="ghost" size="icon" className="rounded-full text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800">
                                         <Plus className="h-5 w-5" />
                                     </Button>
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent align="start" className="w-48 bg-white z-50 rounded-xl shadow-lg border border-gray-200">
+                                <DropdownMenuContent align="start" className="w-48 bg-white dark:bg-popover z-50 rounded-xl shadow-lg border border-gray-200 dark:border-border">
                                     <DropdownMenuItem disabled className="gap-2 text-gray-400 p-3">
                                         <Paperclip className="h-4 w-4 -rotate-45" />
                                         <span className="text-sm">ファイル添付 (準備中)</span>
@@ -235,12 +236,13 @@ export function ChatComposer({
                                     type="button"
                                     variant="ghost"
                                     size="sm"
-                                    className="h-9 gap-1 rounded-full px-3 text-xs text-gray-700 hover:bg-gray-100"
+                                    className="h-9 gap-1 rounded-full px-3 text-xs text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
                                 >
                                     <span className="block max-w-[90px] sm:max-w-[120px] md:max-w-[170px] truncate">{displayModelName}</span>
                                     <ChevronDown className="ml-0 h-3.5 w-3.5 shrink-0" />
                                 </Button>
                             </DropdownMenuTrigger>
+
                             <DropdownMenuContent align="end" className="w-[260px] max-h-[320px] overflow-y-auto bg-white z-50 rounded-xl shadow-lg border border-gray-200 p-1.5 flex flex-col">
                                 {isDefaultOnly ? (
                                     <div
@@ -286,6 +288,7 @@ export function ChatComposer({
                                         <div
                                             onClick={() => router.push("/settings")}
                                             className="rounded-md px-3 py-3 cursor-pointer hover:bg-blue-50 transition-colors"
+
                                         >
                                             <div className="flex items-center gap-2 text-sm text-blue-600 font-medium">
                                                 <Settings className="h-3.5 w-3.5" />
@@ -304,7 +307,7 @@ export function ChatComposer({
                             <Button
                                 onClick={onStop}
                                 size="icon"
-                                className="rounded-full transition-all bg-blue-50 hover:bg-blue-200 text-blue-600"
+                                className="rounded-full transition-all bg-blue-50 dark:bg-blue-900/40 hover:bg-blue-200 dark:hover:bg-blue-900/80 text-blue-600 dark:text-blue-400"
                                 aria-label="生成を停止"
                             >
                                 <Square className="h-3.5 w-3.5 fill-current" />
@@ -319,7 +322,7 @@ export function ChatComposer({
                                 size="icon"
                                 className={`rounded-full transition-all ${canSubmit
                                     ? "bg-blue-600 hover:bg-blue-700 text-white"
-                                    : "bg-gray-100 text-gray-400 hover:bg-gray-100 cursor-default"
+                                    : "bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-default"
                                     }`}
                             >
                                 <Send className="h-4 w-4 rotate-45 -translate-x-[1px]" />

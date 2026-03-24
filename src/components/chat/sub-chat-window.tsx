@@ -102,7 +102,6 @@ export function SubChatWindow({ branchId }: SubChatWindowProps) {
             value={input}
             onChange={setInput}
             onSubmit={send}
-            placeholder="会話してみましょう"
             isSending={isSending}
             alwaysBorder={true}
           />

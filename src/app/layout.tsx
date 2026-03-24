@@ -6,6 +6,7 @@ import { UserSync } from "@/components/auth/user-sync";
 import { Sidebar } from "@/components/sidebar";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { ThemeProvider } from "@/components/theme-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -40,19 +41,26 @@ export default function RootLayout({
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
-          <TooltipProvider delayDuration={300}>
-            <SignedIn>
-              <UserSync />
-            </SignedIn>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <TooltipProvider delayDuration={300}>
+              <SignedIn>
+                <UserSync />
+              </SignedIn>
 
-            <div className="flex min-h-screen">
-              <Sidebar />
-              <main className="flex-1 flex h-screen flex-col overflow-y-auto hide-scrollbar md:pl-[72px]">
-                {children}
-              </main>
-            </div>
-            <Toaster position="bottom-right" />
-          </TooltipProvider>
+              <div className="flex min-h-screen">
+                <Sidebar />
+                <main className="flex-1 flex h-screen flex-col overflow-y-auto hide-scrollbar md:pl-[72px]">
+                  {children}
+                </main>
+              </div>
+              <Toaster position="bottom-right" />
+            </TooltipProvider>
+          </ThemeProvider>
         </body>
       </html>
     </ClerkProvider>

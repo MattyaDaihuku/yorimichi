@@ -77,6 +77,7 @@ export async function POST(req: Request) {
             }
         }
 
+
         // --- 救済措置のロジック（カウントダウン方式） ---
         if (model === ACTIVE_MODEL && !apiKeysObj.google) {
             const user = await prisma.users.findUnique({
@@ -129,7 +130,23 @@ export async function POST(req: Request) {
         }
 
         // 2. Call Gemini and Stream Response
+
+        const userSystemPrompt = await prisma.users.findUnique({
+            where: { user_id: userId },
+            select: { system_prompt: true, system_prompt_enabled: true },
+        });
+
+        const hasSystemInHistory = (history || []).some((msg) => msg.role === 'system');
+
+
         const messages: ChatMessage[] = [
+            ...(
+                userSystemPrompt?.system_prompt_enabled &&
+                (userSystemPrompt.system_prompt || '').trim().length > 0 &&
+                !hasSystemInHistory
+                    ? [{ role: 'system', content: userSystemPrompt.system_prompt as string } as ChatMessage]
+                    : []
+            ),
             ...(history || []),
             { role: 'user', content: message }
         ];

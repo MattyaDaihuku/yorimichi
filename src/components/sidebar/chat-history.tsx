@@ -143,7 +143,7 @@ export function ChatHistory({ onClickItem }: { onClickItem?: () => void }) {
 
   return (
     <div className="relative h-full w-full min-w-0">
-      <div className="pointer-events-none absolute top-0 left-0 right-0 z-10 h-8 bg-gradient-to-b from-[#E9EEF6] to-transparent" />
+      <div className="pointer-events-none absolute top-0 left-0 right-0 z-10 h-8 bg-gradient-to-b from-[#E9EEF6] dark:from-sidebar to-transparent" />
 
       <div className="h-full w-full min-w-0 box-border overflow-y-auto overscroll-contain hide-scrollbar px-4 pt-6 pb-4">
         <div className="px-2 mb-2 text-sm font-semibold text-muted-foreground uppercase tracking-wider">
@@ -155,8 +155,8 @@ export function ChatHistory({ onClickItem }: { onClickItem?: () => void }) {
               <div
                 key={chat.chat_id}
                 className={cn(
-                  "grid h-10 w-full min-w-0 max-w-full grid-cols-[minmax(0,1fr)_auto] items-center rounded-full hover:bg-[#DDE3EA] group transition-colors",
-                  pathname === `/chat/${chat.chat_id}` && "bg-[#DDE3EA]",
+                  "grid h-10 w-full min-w-0 max-w-full grid-cols-[minmax(0,1fr)_auto] items-center rounded-full hover:bg-[#DDE3EA] dark:hover:bg-sidebar-accent group transition-colors",
+                  pathname === `/chat/${chat.chat_id}` && "bg-[#DDE3EA] dark:bg-sidebar-accent",
                 )}
               >
                 <Link
@@ -192,7 +192,7 @@ export function ChatHistory({ onClickItem }: { onClickItem?: () => void }) {
                         type="button"
                         aria-label="Chat actions"
                         className={cn(
-                          "absolute inset-0 flex items-center justify-center rounded-full p-1 text-muted-foreground transition-opacity hover:bg-[#D4DBE3] hover:text-foreground",
+                          "absolute inset-0 flex items-center justify-center rounded-full p-1 text-muted-foreground transition-opacity hover:bg-[#D4DBE3] dark:hover:bg-sidebar-accent/80 hover:text-foreground",
                           "opacity-0 group-hover:opacity-100 focus-visible:opacity-100 data-[state=open]:opacity-100",
                         )}
                         onClick={(e) => {
@@ -254,7 +254,7 @@ export function ChatHistory({ onClickItem }: { onClickItem?: () => void }) {
               </div>
             ))
           ) : (
-            <div className="flex flex-col items-center justify-center py-8 px-4 text-center space-y-4 bg-[#DDE3EA] rounded-2xl border border-gray-200/50 mx-2 mt-2">
+            <div className="flex flex-col items-center justify-center py-8 px-4 text-center space-y-4 bg-[#DDE3EA] dark:bg-sidebar-accent rounded-2xl border border-gray-200/50 dark:border-transparent mx-2 mt-2">
               <p className="text-sm text-muted-foreground leading-relaxed">
                 ログインすることでチャットの利用と
                 <br />

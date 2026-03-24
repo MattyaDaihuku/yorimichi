@@ -199,9 +199,9 @@ export default function Home() {
         </AlertDialogContent>
       </AlertDialog>
 
-      <Header className="bg-[#F0F4F8]" />
+      <Header className="bg-[#F0F4F8] dark:bg-background" />
 
-      <main className="flex-1 flex flex-col items-center justify-center min-h-[calc(100vh-4rem)] bg-[#F0F4F8] text-[#1F1F1F]">
+      <main className="flex-1 flex flex-col items-center justify-center min-h-[calc(100vh-4rem)] bg-[#F0F4F8] dark:bg-background text-[#1F1F1F] dark:text-foreground">
         <div className="w-full max-w-3xl px-4 flex flex-col gap-8">
 
           {/* 挨拶エリア */}
