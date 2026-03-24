@@ -37,7 +37,7 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useRouter } from "next/navigation";
+import { useSettingsDialogStore } from "@/store/settings-dialog-store";
 
 type ChatComposerProps = {
     value: string;
@@ -62,7 +62,7 @@ export function ChatComposer({
     className,
     alwaysBorder = false,
 }: ChatComposerProps) {
-    const router = useRouter();
+    const settingsDialog = useSettingsDialogStore();
     const canSubmit = !!value.trim() && !disabled && !isSending;
     const selectedModel = useModelStore((state) => state.selectedModel);
     const setSelectedModel = useModelStore((state) => state.setSelectedModel);
@@ -246,7 +246,7 @@ export function ChatComposer({
                             <DropdownMenuContent align="end" className="w-[260px] max-h-[320px] overflow-y-auto bg-white z-50 rounded-xl shadow-lg border border-gray-200 p-1.5 flex flex-col">
                                 {isDefaultOnly ? (
                                     <div
-                                        onClick={() => router.push("/settings")}
+                                        onClick={() => settingsDialog.open("api")}
                                         className="rounded-md px-3 py-3 cursor-pointer hover:bg-blue-50 transition-colors"
                                     >
                                         <div className="flex items-center gap-2 text-sm text-blue-600 font-medium">
@@ -286,7 +286,7 @@ export function ChatComposer({
 
                                         <DropdownMenuSeparator className="my-1" />
                                         <div
-                                            onClick={() => router.push("/settings")}
+                                            onClick={() => settingsDialog.open("api")}
                                             className="rounded-md px-3 py-3 cursor-pointer hover:bg-blue-50 transition-colors"
 
                                         >
@@ -342,7 +342,7 @@ export function ChatComposer({
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <AlertDialogCancel>キャンセル</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => router.push("/settings")}>
+                        <AlertDialogAction onClick={() => settingsDialog.open("api")}>
                             はい、移動する
                         </AlertDialogAction>
                     </AlertDialogFooter>

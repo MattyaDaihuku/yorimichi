@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { SidebarContent } from "@/components/sidebar/sidebar-content";
 import { SettingsDialog } from "@/components/settings/settings-dialog";
+import { useSettingsDialogStore } from "@/store/settings-dialog-store";
 
 interface HeaderProps {
   title?: string;
@@ -23,7 +24,7 @@ export function Header({ title = "", className }: HeaderProps) {
   const { user, isLoaded } = useUser();
   const { openSignIn } = useClerk();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
-  const [isMobileSettingsOpen, setIsMobileSettingsOpen] = useState(false);
+  const settingsDialog = useSettingsDialogStore();
 
   return (
     <>
@@ -54,12 +55,12 @@ export function Header({ title = "", className }: HeaderProps) {
             <SidebarContent
               isCollapsed={false}
               toggleSidebar={() => setIsMobileOpen(false)}
-              onOpenSettings={() => setIsMobileSettingsOpen(true)}
+              onOpenSettings={() => settingsDialog.open("api")}
             />
           </SheetContent>
         </Sheet>
 
-        <SettingsDialog open={isMobileSettingsOpen} onOpenChange={setIsMobileSettingsOpen} />
+        <SettingsDialog open={settingsDialog.isOpen} onOpenChange={settingsDialog.setOpen} />
 
         <div className="grid grid-cols-3 items-center h-16 w-full">
           {/* 左側: サービスロゴ */}

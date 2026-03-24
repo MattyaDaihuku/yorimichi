@@ -5,6 +5,7 @@ import { Separator } from "@/components/ui/separator";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import { useSettingsDialogStore } from "@/store/settings-dialog-store";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -34,11 +35,13 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
   const [loading, setLoading] = useState(true);
   const [savingApiKeys, setSavingApiKeys] = useState(false);
   const [savingSystemPrompt, setSavingSystemPrompt] = useState(false);
+  const settingsStore = useSettingsDialogStore();
   const [activeTab, setActiveTab] = useState<"api" | "general" | "custom">("general");
   const [showCloseConfirm, setShowCloseConfirm] = useState(false);
 
   useEffect(() => {
     if (open) {
+      setActiveTab(settingsStore.activeTab);
       setLoading(true);
       Promise.all([
         fetch("/api/user/apikeys").then((res) => res.json()),
