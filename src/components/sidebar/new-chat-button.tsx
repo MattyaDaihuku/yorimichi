@@ -34,7 +34,7 @@ export function NewChatButton({ isExpanded, onClick }: NewChatButtonProps) {
             className={cn(
               "relative group flex items-center justify-start overflow-hidden transition-all duration-300 border-none",
               "h-10 p-0",
-              "bg-[#DDE3EA] hover:bg-[#D2D9E1] text-foreground",
+              "bg-[#DDE3EA] dark:bg-sidebar-primary/10 hover:bg-[#D2D9E1] dark:hover:bg-sidebar-primary/20 text-foreground",
               isExpanded ? "w-full rounded-full" : "w-10 rounded-full"
             )}
           >

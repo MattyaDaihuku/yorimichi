@@ -189,7 +189,7 @@ export function BranchTree({
   if (!chatData?.branches) return null;
 
   return (
-    <div className="pl-0 py-0 pr-0 mt-0 h-full flex flex-col min-h-0 bg-[#fafafa]">
+    <div className="pl-0 py-0 pr-0 mt-0 h-full flex flex-col min-h-0 bg-[#fafafa] dark:bg-background">
       <div className="overflow-hidden overflow-x-hidden flex-1 min-h-0">
         <div className="flex h-full w-full items-stretch gap-2 md:gap-6 pt-2.5 min-w-0">
           <div className="flex flex-col items-start justify-start shrink-0">

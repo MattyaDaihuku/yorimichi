@@ -52,7 +52,7 @@ export function Header({ title = "", className }: HeaderProps) {
               <Menu className="h-5 w-5" />
             </button>
           </SheetTrigger>
-          <SheetContent side="left" className="w-[85vw] max-w-[280px] p-0 border-none bg-[#E9EEF6] md:hidden">
+          <SheetContent side="left" className="w-[85vw] max-w-[280px] p-0 border-none bg-[#E9EEF6] dark:bg-sidebar md:hidden">
             <SheetTitle className="sr-only">メニュー</SheetTitle>
             <SidebarContent
               isCollapsed={false}

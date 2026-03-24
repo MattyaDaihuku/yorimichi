@@ -97,7 +97,7 @@ const AiMarkdownContent = memo(function AiMarkdownContent({
     onCopy,
 }: AiMarkdownContentProps) {
     return (
-        <div className="mb-2 w-full min-w-0 rounded-2xl rounded-tl-sm bg-white px-1 py-2 text-foreground/90">
+        <div className="mb-2 w-full min-w-0 rounded-2xl rounded-tl-sm bg-white dark:bg-muted/50 px-1 py-2 text-foreground/90">
             <div className={`prose prose-sm max-w-none break-words md:prose-base 
                             prose-code:before:content-none prose-code:after:content-none 
                             ${showThinking ? "text-muted-foreground" : "text-foreground"}`}>
@@ -127,8 +127,8 @@ const AiMarkdownContent = memo(function AiMarkdownContent({
                             }
 
                             return (
-                                <div className="my-4 flex w-full flex-col overflow-hidden rounded-xl border border-gray-700 bg-[#282C34]">
-                                    <div className="flex items-center justify-between border-b border-gray-700 bg-[#21252B] px-4 py-2">
+                                <div className="my-4 flex w-full flex-col overflow-hidden rounded-xl border border-gray-700 bg-[#282C34] dark:bg-muted">
+                                    <div className="flex items-center justify-between border-b border-gray-700 bg-[#21252B] dark:bg-muted/80 px-4 py-2">
                                         <span className="font-mono text-xs lowercase text-gray-300">
                                             {language}
                                         </span>
@@ -234,7 +234,7 @@ const UserMessageDisplay = memo(function UserMessageDisplay({
                 )}
             </div>
 
-            <div className={`w-fit overflow-hidden rounded-4xl rounded-tr-sm bg-[#E6F0FF] pl-6 ${isLongMessage ? "pr-3" : "pr-6"} py-4 text-foreground/90 transition-all duration-200`}>
+            <div className={`w-fit overflow-hidden rounded-4xl rounded-tr-sm bg-[#E6F0FF] dark:bg-[#1a2b4b] pl-6 ${isLongMessage ? "pr-3" : "pr-6"} py-4 text-foreground/90 transition-all duration-200`}>
                 <div className="flex items-start gap-2">
                     <p className={`whitespace-pre-wrap break-all text-sm leading-relaxed md:text-base ${!isExpanded && isLongMessage ? "line-clamp-2" : ""}`}>
                         {userContent}
@@ -282,14 +282,14 @@ const UserMessageEditor = memo(function UserMessageEditor({
 }: UserMessageEditorProps) {
     return (
         <div className="flex w-full justify-end">
-            <div className="w-full max-w-[calc(100%-80px)] rounded-[24px] rounded-tr-sm bg-[#E6F0FF] px-4 py-4 text-foreground/90">
+            <div className="w-full max-w-[calc(100%-80px)] rounded-[24px] rounded-tr-sm bg-[#E6F0FF] dark:bg-[#1a2b4b] px-4 py-4 text-foreground/90">
                 <div className="flex flex-col gap-3">
                     <textarea
                         ref={textareaRef}
                         value={editText}
                         onChange={(e) => onChange(e.target.value)}
                         disabled={isSubmittingEdit}
-                        className="w-full resize-none overflow-hidden rounded-2xl border border-slate-300 bg-white px-3 py-2 text-sm leading-relaxed text-slate-900 outline-none ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-base"
+                        className="w-full resize-none overflow-hidden rounded-2xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-background px-3 py-2 text-sm leading-relaxed text-slate-900 dark:text-slate-100 outline-none ring-offset-background placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-base"
                         onKeyDown={(e) => {
                             if (e.key === "Escape") {
                                 onCancel();
@@ -470,13 +470,13 @@ export function MessageBlock({ block, connector, onBranch, onMerge, onEdit, isSt
     return (
         <div data-message-block="true" className="flex w-full flex-col items-center scroll-mt-24">
             <div className={cn(
-                "relative z-10 w-full rounded-[24px] border border-gray-100 bg-white shadow-sm transition-all",
+                "relative z-10 w-full rounded-[24px] border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm transition-all",
                 isCompact ? "max-w-full" : "max-w-3xl"
             )}>
                 {/* Sticky user prompt — liquid glass */}
                 <>
                     <div className={cn(
-                        "sticky -top-2 z-20 ml-auto mr-2 rounded-[24px] bg-white/60 pl-2 pr-4 pt-4 pb-4 backdrop-blur-xl",
+                        "sticky -top-2 z-20 ml-auto mr-2 rounded-[24px] bg-white/60 dark:bg-gray-900/60 pl-2 pr-4 pt-4 pb-4 backdrop-blur-xl",
                         isEditing ? "w-full max-w-none" : "w-fit max-w-[75%]"
                     )}>
                         {isEditing ? (
@@ -509,7 +509,7 @@ export function MessageBlock({ block, connector, onBranch, onMerge, onEdit, isSt
                     <div className="px-6 pb-6 pt-4">
                         <div className="flex w-full min-w-0 flex-col items-stretch gap-3 md:flex-row md:items-start md:gap-4">
                             <div className="shrink-0 self-start pt-0 md:pt-1">
-                                <div className="relative flex h-10 w-10 items-center justify-center rounded-full border border-gray-100 bg-white shadow-sm">
+                                <div className="relative flex h-10 w-10 items-center justify-center rounded-full border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm">
                                     {isStreaming && (
                                         <span className="pointer-events-none absolute -inset-1.5">
                                             <svg className="bot-circular-loader h-full w-full" viewBox="25 25 50 50">
@@ -722,11 +722,11 @@ export function MessageBlock({ block, connector, onBranch, onMerge, onEdit, isSt
                                                     size="icon-lg"
                                                     type="button"
                                                     onClick={() => onMerge?.(block.block_id)}
-                                                    className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-100 bg-white shadow-sm transition-all hover:border-gray-300 hover:bg-[#F9FAFB]"
+                                                    className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm transition-all hover:border-gray-300 dark:hover:border-gray-700 hover:bg-[#F9FAFB] dark:hover:bg-gray-800"
                                                     onMouseEnter={() => setHoveredConnectorAction("return")}
                                                     onMouseLeave={() => setHoveredConnectorAction(null)}
                                                 >
-                                                    <Check className="h-5 w-5 text-black" />
+                                                    <Check className="h-5 w-5 text-black dark:text-white" />
                                                 </Button>
                                             </TooltipTrigger>
                                             <TooltipContent side="bottom" className="bg-black text-white border-transparent">
@@ -750,12 +750,12 @@ export function MessageBlock({ block, connector, onBranch, onMerge, onEdit, isSt
                                                     size="icon-lg"
                                                     type="button"
                                                     onClick={() => onBranch?.(block.block_id)}
-                                                    className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-100 bg-white shadow-sm transition-all hover:border-gray-300 hover:bg-[#F9FAFB]"
+                                                    className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm transition-all hover:border-gray-300 dark:hover:border-gray-700 hover:bg-[#F9FAFB] dark:hover:bg-gray-800"
                                                     onMouseEnter={() => setHoveredConnectorAction("branch")}
                                                     onMouseLeave={() => setHoveredConnectorAction(null)}
                                                 >
                                                     <MessageCircleQuestionMark
-                                                        className="h-5 w-5 text-black"
+                                                        className="h-5 w-5 text-black dark:text-white"
                                                     />
                                                 </Button>
                                             </TooltipTrigger>

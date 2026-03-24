@@ -30,7 +30,7 @@ export function Sidebar() {
       <aside
         className={cn(
           "hidden md:flex flex-col h-full fixed top-0 left-0 z-40 transition-all duration-200 ease-out shadow-xl border-none",
-          "bg-[#E9EEF6]",
+          "bg-[#E9EEF6] dark:bg-sidebar dark:border-r border-sidebar-border",
           isCollapsed ? "w-[72px] shadow-none" : "w-[280px]"
         )}
       >
