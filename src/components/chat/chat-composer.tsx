@@ -92,19 +92,34 @@ export function ChatComposer({
         fetchApiKeyStatus();
     }, []);
 
-    /** モデルがAPIキー登録なしで利用可能かどうかを判定 */
-    const isModelAvailable = (model: AiModel): boolean => {
-        if (model === ACTIVE_MODEL) return true;
-        return registeredProviders.has(MODEL_DISPLAY_CONFIG[model].provider);
-    };
-
     /** デフォルトモデルしか使えない状態か */
     const isDefaultOnly = registeredProviders.size === 0;
+
+    /** モデルが利用可能かどうかを判定 */
+    const isModelAvailable = (model: AiModel): boolean => {
+        // APIキー未登録時は無料モデルのみ利用可能
+        if (isDefaultOnly) return model === ACTIVE_MODEL;
+        // APIキーが1つでもあれば、登録済みプロバイダのモデルのみ利用可能
+        return registeredProviders.has(MODEL_DISPLAY_CONFIG[model].provider);
+    };
 
     /** ボタンに表示するモデル名（④ 表示名を使用） */
     const displayModelName = isDefaultOnly
         ? "default"
         : MODEL_DISPLAY_CONFIG[selectedModel]?.displayName ?? selectedModel;
+
+    // APIキー状態の変化で現在の選択モデルが利用不可になった場合、自動で切り替え
+    useEffect(() => {
+        if (isDefaultOnly) {
+            setSelectedModel(ACTIVE_MODEL);
+            return;
+        }
+        if (!isModelAvailable(selectedModel)) {
+            const firstAvailable = AVAILABLE_MODELS.find(m => isModelAvailable(m));
+            if (firstAvailable) setSelectedModel(firstAvailable);
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [registeredProviders]);
 
     /** モデルクリック時の処理 */
     const handleModelSelect = (model: AiModel) => {
