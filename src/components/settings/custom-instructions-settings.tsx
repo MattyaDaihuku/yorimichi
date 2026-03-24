@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect, useRef } from "react";
+
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -24,6 +26,14 @@ export function CustomInstructionsSettings({
   saving,
   onSave,
 }: CustomInstructionsSettingsProps) {
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+
+  useEffect(() => {
+    if (!textareaRef.current) return;
+    textareaRef.current.style.height = "0px";
+    textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+  }, [systemPrompt]);
+
   return (
     <div className="space-y-6">
       <h3 className="text-xl font-medium">カスタム指示</h3>
@@ -60,11 +70,12 @@ export function CustomInstructionsSettings({
         <div className="space-y-2">
           <Label htmlFor="system-prompt">カスタム指示文</Label>
           <Textarea
+            ref={textareaRef}
             id="system-prompt"
             placeholder="例: あなたは日本語で簡潔に回答し、手順を箇条書きで示してください。"
             value={systemPrompt}
             onChange={(e) => setSystemPrompt(e.target.value)}
-            className="min-h-20 bg-background"
+            className="min-h-20 resize-none overflow-hidden bg-background"
             maxLength={4000}
           />
           <p className="text-xs text-muted-foreground text-right">{systemPrompt.length} / 4000</p>
