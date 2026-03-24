@@ -4,6 +4,8 @@ import { useState } from "react";
 import { Menu } from "lucide-react";
 import Image from "next/image";
 import { UserButton, useUser, useClerk } from "@clerk/nextjs";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -23,6 +25,7 @@ export function Skeleton({ className }: { className?: string }) {
 export function Header({ title = "", className }: HeaderProps) {
   const { user, isLoaded } = useUser();
   const { openSignIn } = useClerk();
+  const pathname = usePathname();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const settingsDialog = useSettingsDialogStore();
 
@@ -65,7 +68,15 @@ export function Header({ title = "", className }: HeaderProps) {
         <div className="grid grid-cols-3 items-center h-16 w-full">
           {/* 左側: サービスロゴ */}
           <div className="flex items-center justify-start gap-2 pl-10 md:pl-0 h-full">
-            <div className="relative h-full w-28 sm:w-32 md:w-36 lg:w-44">
+            <Link
+              href="/"
+              onClick={(e) => {
+                if (pathname === "/") {
+                  e.preventDefault();
+                }
+              }}
+              className="relative h-full w-28 sm:w-32 md:w-36 lg:w-44 cursor-pointer"
+            >
               <Image
                 src="/yorimichi_logo.png"
                 alt="Yorimichi Logo"
@@ -73,7 +84,7 @@ export function Header({ title = "", className }: HeaderProps) {
                 priority
                 className="object-contain object-left"
               />
-            </div>
+            </Link>
           </div>
 
           {/* 中央: 会話タイトル */}
