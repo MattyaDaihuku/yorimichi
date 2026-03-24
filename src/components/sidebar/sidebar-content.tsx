@@ -43,7 +43,7 @@ export function SidebarContent({ isCollapsed, toggleSidebar }: SidebarContentPro
               size={isCollapsed ? "icon" : "default"}
               onClick={toggleSidebar}
               className={cn(
-                "h-10 shrink-0 text-muted-foreground hover:text-foreground hover:bg-[#D2D9E1]",
+                "h-10 shrink-0 text-muted-foreground hover:text-foreground hover:bg-[#D2D9E1] dark:hover:bg-sidebar-accent",
                 isCollapsed ? "w-10 rounded-full" : "w-10 rounded-full" // hamburger is always an icon, but kept class structure
               )}
             >
@@ -81,7 +81,7 @@ export function SidebarContent({ isCollapsed, toggleSidebar }: SidebarContentPro
               variant="ghost"
               className={cn(
                 "relative group flex items-center justify-start overflow-hidden transition-all duration-300 border-none",
-                "h-10 p-0 text-muted-foreground hover:text-foreground hover:bg-[#D2D9E1]",
+                "h-10 p-0 text-muted-foreground hover:text-foreground hover:bg-[#D2D9E1] dark:hover:bg-sidebar-accent",
                 !isCollapsed ? "w-full rounded-full" : "w-10 rounded-full"
               )}
               onClick={() => {
