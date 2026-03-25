@@ -52,7 +52,10 @@ export function BlockList({
             .map((branch) => branch.parent_block_id as string)
     );
 
-    const displayBlocks = [...sourceBlocks, ...(streamingBlock ? [streamingBlock] : [])];
+    const displayBlocks = [
+        ...sourceBlocks.filter((b) => b.block_id !== streamingBlock?.block_id),
+        ...(streamingBlock ? [streamingBlock] : [])
+    ];
 
     return (
         // <div className="space-y-4">

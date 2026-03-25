@@ -38,7 +38,7 @@ export async function sendMessageWithStreaming({
     useChatStore.getState().setCurrentIds({ blockId });
 
     setStreamingBlock({
-        block_id: "streaming-block",
+        block_id: blockId,
         user_content: message,
         ai_content: "",
         created_at: new Date().toISOString(),
