@@ -133,12 +133,16 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
     }
   };
 
-  const hasUnsavedChanges =
+  const hasApiKeyChanges =
     keys.openai !== initialKeys.openai ||
     keys.anthropic !== initialKeys.anthropic ||
-    keys.google !== initialKeys.google ||
+    keys.google !== initialKeys.google;
+
+  const hasSystemPromptChanges =
     systemPrompt !== initialSystemPrompt ||
     systemPromptEnabled !== initialSystemPromptEnabled;
+
+  const hasUnsavedChanges = hasApiKeyChanges || hasSystemPromptChanges;
 
   const handleDialogOpenChange = (nextOpen: boolean) => {
     if (!nextOpen && hasUnsavedChanges && !savingApiKeys && !savingSystemPrompt) {
@@ -206,6 +210,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                   loading={loading}
                   saving={savingApiKeys}
                   onSave={handleSaveApiKeys}
+                  hasChanges={hasApiKeyChanges}
                 />
               )}
               {activeTab === "custom" && (
@@ -217,6 +222,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                   loading={loading}
                   saving={savingSystemPrompt}
                   onSave={handleSaveSystemPrompt}
+                  hasChanges={hasSystemPromptChanges}
                 />
               )}
             </div>
