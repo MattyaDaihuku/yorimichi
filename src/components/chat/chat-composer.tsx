@@ -119,7 +119,7 @@ export function ChatComposer({
             const firstAvailable = AVAILABLE_MODELS.find(m => isModelAvailable(m));
             if (firstAvailable) setSelectedModel(firstAvailable);
         }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [registeredProviders]);
 
     /** モデルクリック時の処理 */
@@ -145,7 +145,7 @@ export function ChatComposer({
     return (
         <div className={className}>
             <div
-                className={`bg-white dark:bg-transparent rounded-[28px] shadow-sm dark:shadow-none border transition-all p-4 ${alwaysBorder
+                className={`bg-white dark:bg-input/50 rounded-[28px] shadow-sm dark:shadow-none border transition-all p-4 ${alwaysBorder
                     ? "border-gray-200 dark:border-border focus-within:shadow-md dark:focus-within:shadow-none"
                     : "border-transparent focus-within:shadow-md dark:focus-within:shadow-none focus-within:border-gray-200 dark:focus-within:border-gray-700"
                     }`}
