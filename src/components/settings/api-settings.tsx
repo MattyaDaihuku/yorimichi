@@ -16,9 +16,10 @@ type ApiSettingsProps = {
   loading: boolean;
   saving: boolean;
   onSave: () => Promise<void>;
+  hasChanges?: boolean;
 };
 
-export function ApiSettings({ keys, setKeys, loading, saving, onSave }: ApiSettingsProps) {
+export function ApiSettings({ keys, setKeys, loading, saving, onSave, hasChanges = true }: ApiSettingsProps) {
   return (
     <div className="space-y-6">
       <h3 className="text-xl font-medium">APIキー</h3>
@@ -62,7 +63,7 @@ export function ApiSettings({ keys, setKeys, loading, saving, onSave }: ApiSetti
       </div>
 
       <div className="pt-6 border-t mt-6 flex justify-start">
-        <Button onClick={onSave} disabled={loading || saving}>
+        <Button onClick={onSave} disabled={loading || saving || !hasChanges}>
           {saving ? "保存中..." : "保存"}
         </Button>
       </div>

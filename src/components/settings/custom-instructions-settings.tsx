@@ -15,6 +15,7 @@ type CustomInstructionsSettingsProps = {
   loading: boolean;
   saving: boolean;
   onSave: () => Promise<void>;
+  hasChanges?: boolean;
 };
 
 export function CustomInstructionsSettings({
@@ -25,6 +26,7 @@ export function CustomInstructionsSettings({
   loading,
   saving,
   onSave,
+  hasChanges = true,
 }: CustomInstructionsSettingsProps) {
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
@@ -83,7 +85,7 @@ export function CustomInstructionsSettings({
       </div>
 
       <div className="pt-6 border-t mt-6 flex justify-start">
-        <Button onClick={onSave} disabled={loading || saving}>
+        <Button onClick={onSave} disabled={loading || saving || !hasChanges}>
           {saving ? "保存中..." : "保存"}
         </Button>
       </div>
