@@ -12,9 +12,10 @@ type PasswordInputProps = {
   className?: string;
   value?: string;
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  disabled?: boolean;
 };
 
-export function PasswordInput({ id, placeholder, className, value, onChange }: PasswordInputProps) {
+export function PasswordInput({ id, placeholder, className, value, onChange, disabled }: PasswordInputProps) {
   const [showPassword, setShowPassword] = useState(false);
 
   return (
@@ -25,6 +26,7 @@ export function PasswordInput({ id, placeholder, className, value, onChange }: P
         placeholder={placeholder}
         value={value}
         onChange={onChange}
+        disabled={disabled}
         className={cn("pr-10", className)}
       />
       <Button
@@ -32,7 +34,11 @@ export function PasswordInput({ id, placeholder, className, value, onChange }: P
         variant="ghost"
         size="icon"
         className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent text-muted-foreground"
-        onClick={() => setShowPassword(!showPassword)}
+        onClick={() => {
+          if (disabled) return;
+          setShowPassword(!showPassword);
+        }}
+        disabled={disabled}
       >
         {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
       </Button>

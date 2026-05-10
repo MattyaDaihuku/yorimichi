@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useState, useEffect } from "react";
+import { useUser, useClerk } from "@clerk/nextjs";
 import { toast } from "sonner";
 import { useSettingsDialogStore } from "@/store/settings-dialog-store";
 import {
@@ -33,47 +34,67 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
   const [systemPromptEnabled, setSystemPromptEnabled] = useState(false);
   const [initialSystemPromptEnabled, setInitialSystemPromptEnabled] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [unauthenticated, setUnauthenticated] = useState(false);
   const [savingApiKeys, setSavingApiKeys] = useState(false);
   const [savingSystemPrompt, setSavingSystemPrompt] = useState(false);
   const settingsStore = useSettingsDialogStore();
   const [activeTab, setActiveTab] = useState<"api" | "general" | "custom">("general");
   const [showCloseConfirm, setShowCloseConfirm] = useState(false);
 
+  const { user, isLoaded } = useUser();
+  const { openSignIn } = useClerk();
+
   useEffect(() => {
-    if (open) {
-      setActiveTab(settingsStore.activeTab);
-      setLoading(true);
-      Promise.all([
-        fetch("/api/user/apikeys").then((res) => res.json()),
-        fetch("/api/user/system-prompt").then((res) => res.json()),
-      ])
-        .then(([apiKeysData, systemPromptData]) => {
-          const loadedKeys: ApiKeys = {
-            openai: apiKeysData.keys?.openai || "",
-            anthropic: apiKeysData.keys?.anthropic || "",
-            google: apiKeysData.keys?.google || "",
-          };
+    if (!open) return;
+    setActiveTab(settingsStore.activeTab);
+    setLoading(true);
+    setUnauthenticated(false);
 
-          const loadedSystemPrompt = systemPromptData.systemPrompt || "";
-          const loadedSystemPromptEnabled = Boolean(systemPromptData.enabled);
-
-          if (apiKeysData.keys) {
-            setKeys(loadedKeys);
-            setInitialKeys(loadedKeys);
-          } else {
-            setKeys(loadedKeys);
-            setInitialKeys(loadedKeys);
-          }
-
-          setSystemPrompt(loadedSystemPrompt);
-          setInitialSystemPrompt(loadedSystemPrompt);
-          setSystemPromptEnabled(loadedSystemPromptEnabled);
-          setInitialSystemPromptEnabled(loadedSystemPromptEnabled);
-        })
-        .catch((err) => console.error("Failed to load settings", err))
-        .finally(() => setLoading(false));
+    // Wait until Clerk initialization finishes
+    if (!isLoaded) {
+      // when clerk finishes loading, this effect will re-run
+      return;
     }
-  }, [open]);
+
+    if (!user) {
+      setUnauthenticated(true);
+      setLoading(false);
+      return;
+    }
+
+    Promise.all([
+      fetch("/api/user/apikeys"),
+      fetch("/api/user/system-prompt"),
+    ])
+      .then(async ([r1, r2]) => {
+        if (r1.status === 401 || r2.status === 401) {
+          setUnauthenticated(true);
+          return;
+        }
+
+        const apiKeysData = await r1.json().catch(() => ({}));
+        const systemPromptData = await r2.json().catch(() => ({}));
+
+        const loadedKeys: ApiKeys = {
+          openai: apiKeysData.keys?.openai || "",
+          anthropic: apiKeysData.keys?.anthropic || "",
+          google: apiKeysData.keys?.google || "",
+        };
+
+        const loadedSystemPrompt = systemPromptData.systemPrompt || "";
+        const loadedSystemPromptEnabled = Boolean(systemPromptData.enabled);
+
+        setKeys(loadedKeys);
+        setInitialKeys(loadedKeys);
+
+        setSystemPrompt(loadedSystemPrompt);
+        setInitialSystemPrompt(loadedSystemPrompt);
+        setSystemPromptEnabled(loadedSystemPromptEnabled);
+        setInitialSystemPromptEnabled(loadedSystemPromptEnabled);
+      })
+      .catch((err) => console.error("Failed to load settings", err))
+      .finally(() => setLoading(false));
+  }, [open, isLoaded, user]);
 
   const handleSaveApiKeys = async () => {
     setSavingApiKeys(true);
@@ -83,6 +104,10 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(keys),
       });
+      if (res.status === 401) {
+        setUnauthenticated(true);
+        throw new Error("Unauthorized");
+      }
       if (!res.ok) throw new Error("Failed to save keys");
       setInitialKeys(keys);
       toast.success("APIキーを保存しました。");
@@ -104,6 +129,11 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
           enabled: systemPromptEnabled,
         }),
       });
+
+      if (res.status === 401) {
+        setUnauthenticated(true);
+        throw new Error("Unauthorized");
+      }
 
       if (!res.ok) {
         if (res.status === 400) {
@@ -211,6 +241,12 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                   saving={savingApiKeys}
                   onSave={handleSaveApiKeys}
                   hasChanges={hasApiKeyChanges}
+                  disabled={unauthenticated || !user}
+                  onRequireAuth={() => {
+                    setShowCloseConfirm(false);
+                    onOpenChange(false);
+                    openSignIn();
+                  }}
                 />
               )}
               {activeTab === "custom" && (
@@ -223,6 +259,12 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                   saving={savingSystemPrompt}
                   onSave={handleSaveSystemPrompt}
                   hasChanges={hasSystemPromptChanges}
+                  disabled={unauthenticated || !user}
+                  onRequireAuth={() => {
+                    setShowCloseConfirm(false);
+                    onOpenChange(false);
+                    openSignIn();
+                  }}
                 />
               )}
             </div>

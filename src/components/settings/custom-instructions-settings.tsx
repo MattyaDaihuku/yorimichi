@@ -16,6 +16,8 @@ type CustomInstructionsSettingsProps = {
   saving: boolean;
   onSave: () => Promise<void>;
   hasChanges?: boolean;
+  disabled?: boolean;
+  onRequireAuth?: () => void;
 };
 
 export function CustomInstructionsSettings({
@@ -27,6 +29,8 @@ export function CustomInstructionsSettings({
   saving,
   onSave,
   hasChanges = true,
+  disabled = false,
+  onRequireAuth,
 }: CustomInstructionsSettingsProps) {
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
@@ -51,7 +55,13 @@ export function CustomInstructionsSettings({
             role="switch"
             aria-checked={systemPromptEnabled}
             aria-label="カスタム指示の有効化"
-            onClick={() => setSystemPromptEnabled((prev) => !prev)}
+            onClick={() => {
+              if (disabled) {
+                onRequireAuth?.();
+                return;
+              }
+              setSystemPromptEnabled((prev) => !prev);
+            }}
             className={[
               "relative inline-flex h-7 w-12 shrink-0 items-center rounded-full border transition-colors duration-200",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
@@ -79,15 +89,22 @@ export function CustomInstructionsSettings({
             onChange={(e) => setSystemPrompt(e.target.value)}
             className="min-h-20 resize-none overflow-hidden bg-background"
             maxLength={4000}
+            disabled={disabled}
           />
           <p className="text-xs text-muted-foreground text-right">{systemPrompt.length} / 4000</p>
         </div>
       </div>
 
       <div className="pt-6 border-t mt-6 flex justify-start">
-        <Button onClick={onSave} disabled={loading || saving || !hasChanges}>
-          {saving ? "保存中..." : "保存"}
-        </Button>
+        {disabled ? (
+          <Button onClick={() => onRequireAuth?.()}>
+            ログインして保存
+          </Button>
+        ) : (
+          <Button onClick={onSave} disabled={loading || saving || !hasChanges}>
+            {saving ? "保存中..." : "保存"}
+          </Button>
+        )}
       </div>
     </div>
   );
