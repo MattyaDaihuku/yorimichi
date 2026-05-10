@@ -242,7 +242,11 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                   onSave={handleSaveApiKeys}
                   hasChanges={hasApiKeyChanges}
                   disabled={unauthenticated || !user}
-                  onRequireAuth={() => openSignIn()}
+                  onRequireAuth={() => {
+                    setShowCloseConfirm(false);
+                    onOpenChange(false);
+                    openSignIn();
+                  }}
                 />
               )}
               {activeTab === "custom" && (
@@ -256,7 +260,11 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                   onSave={handleSaveSystemPrompt}
                   hasChanges={hasSystemPromptChanges}
                   disabled={unauthenticated || !user}
-                  onRequireAuth={() => openSignIn()}
+                  onRequireAuth={() => {
+                    setShowCloseConfirm(false);
+                    onOpenChange(false);
+                    openSignIn();
+                  }}
                 />
               )}
             </div>
