@@ -17,9 +17,11 @@ type ApiSettingsProps = {
   saving: boolean;
   onSave: () => Promise<void>;
   hasChanges?: boolean;
+  disabled?: boolean;
+  onRequireAuth?: () => void;
 };
 
-export function ApiSettings({ keys, setKeys, loading, saving, onSave, hasChanges = true }: ApiSettingsProps) {
+export function ApiSettings({ keys, setKeys, loading, saving, onSave, hasChanges = true, disabled = false, onRequireAuth, }: ApiSettingsProps) {
   return (
     <div className="space-y-6">
       <h3 className="text-xl font-medium">APIキー</h3>
@@ -35,6 +37,7 @@ export function ApiSettings({ keys, setKeys, loading, saving, onSave, hasChanges
             placeholder="sk-..."
             value={keys.openai}
             onChange={(e) => setKeys((prev) => ({ ...prev, openai: e.target.value }))}
+            disabled={disabled}
             className="font-mono bg-background"
           />
         </div>
@@ -46,6 +49,7 @@ export function ApiSettings({ keys, setKeys, loading, saving, onSave, hasChanges
             placeholder="sk-ant-..."
             value={keys.anthropic}
             onChange={(e) => setKeys((prev) => ({ ...prev, anthropic: e.target.value }))}
+            disabled={disabled}
             className="font-mono bg-background"
           />
         </div>
@@ -57,15 +61,22 @@ export function ApiSettings({ keys, setKeys, loading, saving, onSave, hasChanges
             placeholder="AIza..."
             value={keys.google}
             onChange={(e) => setKeys((prev) => ({ ...prev, google: e.target.value }))}
+            disabled={disabled}
             className="font-mono bg-background"
           />
         </div>
       </div>
 
       <div className="pt-6 border-t mt-6 flex justify-start">
-        <Button onClick={onSave} disabled={loading || saving || !hasChanges}>
-          {saving ? "保存中..." : "保存"}
-        </Button>
+        {disabled ? (
+          <Button onClick={() => onRequireAuth?.()}>
+            ログインして保存
+          </Button>
+        ) : (
+          <Button onClick={onSave} disabled={loading || saving || !hasChanges}>
+            {saving ? "保存中..." : "保存"}
+          </Button>
+        )}
       </div>
     </div>
   );
