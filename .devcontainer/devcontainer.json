@@ -1,0 +1,13 @@
+{
+  "name": "yorimichi",
+  "dockerComposeFile": "compose.yaml",
+  "service": "app",
+  "workspaceFolder": "/workspace",
+  "features": {
+		"ghcr.io/devcontainers/features/node:1": {
+			"version": "22.15.0"
+		}
+	},
+  "forwardPorts": [3000],
+  "postCreateCommand": "/bin/bash .devcontainer/init.sh"
+}

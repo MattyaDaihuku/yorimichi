@@ -1,0 +1,47 @@
+# ==============================================================================
+# GitChat Docker Compose 設定
+# ==============================================================================
+# 使い方:
+#   初回:    docker compose up --build
+#   以降:    docker compose up
+#   停止:    docker compose down
+#
+# パッケージ追加:
+#   docker compose exec app npm install <package-name>
+#
+# Prisma マイグレーション:
+#   docker compose exec app npx prisma migrate dev
+# ==============================================================================
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    volumes:
+      - ../:/workspace:cached
+      - ../node_modules:/workspace/node_modules
+
+    command: sleep infinity
+
+    networks:
+      - internal_network
+      - external_network
+
+    env_file:
+      - ../.env.local
+
+    environment:
+      - TZ=Asia/Tokyo
+      - LANG=C.UTF-8
+      - PAGER=less
+      - LESS=-R
+
+volumes:
+  node_modules:
+      
+networks:
+  internal_network:
+    internal: true
+  external_network:
