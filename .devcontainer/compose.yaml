@@ -21,7 +21,7 @@ services:
 
     volumes:
       - ../:/workspace:cached
-      - ../node_modules:/workspace/node_modules
+      - node_modules:/workspace/node_modules
 
     command: sleep infinity
 
@@ -40,7 +40,7 @@ services:
 
 volumes:
   node_modules:
-      
+
 networks:
   internal_network:
     internal: true
