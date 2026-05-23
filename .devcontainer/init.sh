@@ -13,7 +13,7 @@ if [ ! -f /workspace/.env.local ]; then
         exit 1
     fi
 fi
-npm install --frozen-lockfile
+npm install
 if [ -f /workspace/src/prisma/schema.prisma ]; then
     npx prisma generate --schema=/workspace/src/prisma/schema.prisma
 fi
