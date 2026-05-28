@@ -240,7 +240,7 @@ export default function Home() {
                 key={suggestion}
                 type="button"
                 variant="ghost"
-                className="px-4 py-2 bg-white rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50 border border-transparent hover:border-gray-200 transition-all text-left"
+                className="px-4 py-2 bg-white dark:bg-input/50 rounded-xl text-sm font-medium text-gray-600 dark:text-white hover:bg-gray-50 border border-transparent hover:border-gray-200 transition-all text-left"
                 onClick={() => setInput(suggestion)}
               >
                 {suggestion}
