@@ -243,7 +243,7 @@ export function ChatComposer({
                                 </Button>
                             </DropdownMenuTrigger>
 
-                            <DropdownMenuContent align="end" className="w-[260px] max-h-[320px] overflow-y-auto bg-white z-50 rounded-xl shadow-lg border border-gray-200 p-1.5 flex flex-col">
+                            <DropdownMenuContent align="end" className="w-[260px] max-h-[320px] overflow-y-auto bg-white dark:bg-black z-50 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-1.5 flex flex-col">
                                 {isDefaultOnly ? (
                                     <div
                                         onClick={() => settingsDialog.open("api")}
@@ -273,8 +273,8 @@ export function ChatComposer({
                                                             key={model}
                                                             onClick={() => handleModelSelect(model)}
                                                             className={`rounded-md px-3 py-2 text-sm transition-colors cursor-pointer ${isSelected
-                                                                ? "bg-gray-100 text-gray-900 font-medium"
-                                                                : "text-gray-700 hover:bg-gray-50 focus:bg-gray-50"
+                                                                ? "bg-gray-100 text-gray-900 dark:text-black font-medium dark:focus:bg-gray-200"
+                                                                : "text-gray-700 dark:text-white hover:bg-gray-50 focus:bg-gray-50 dark:focus:bg-gray-500"
                                                                 }`}
                                                         >
                                                             {MODEL_DISPLAY_CONFIG[model].displayName}
