@@ -39,6 +39,8 @@ services:
       - PAGER=less
       - LESS=-R
 
+    restart: unless-stopped
+
 volumes:
   node_modules:
 
